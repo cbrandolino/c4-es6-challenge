@@ -5777,16 +5777,21 @@
 	
 	var _tape2 = _interopRequireDefault(_tape);
 	
+	var _fixtures = __webpack_require__(249);
+	
+	var _fixtures2 = _interopRequireDefault(_fixtures);
+	
 	var _Board = __webpack_require__(247);
 	
 	var _Board2 = _interopRequireDefault(_Board);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
+	var board = new _Board2.default();
+	
 	(0, _tape2.default)('Board Creation', function (t) {
-	  var board = new _Board2.default();
-	  t.plan(1);
-	  t.same(board.state, [1, 1, 1, 1, 1, 1]);
+	  t.plan(2);
+	  t.same(board.state, _fixtures2.default.boards.base);
 	});
 
 /***/ },
@@ -12319,6 +12324,22 @@
 	}();
 	
 	exports.default = Board;
+
+/***/ },
+/* 248 */,
+/* 249 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = {
+	  boards: {
+	    base: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
+	  }
+	};
 
 /***/ }
 /******/ ]);
