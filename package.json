@@ -1,0 +1,26 @@
+{
+  "name": "c4-es6-challenge",
+  "version": "0.0.1",
+  "description": "A c4 implementation using pixi.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cbrandolino/c4-es6-challenge.git"
+  },
+  "author": "Claudio Brandolino <cbrandolino@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cbrandolino/c4-es6-challenge/issues"
+  },
+  "homepage": "https://github.com/cbrandolino/c4-es6-challenge#readme",
+  "devDependencies": {
+    "babel-core": "^6.4.5",
+    "babel-loader": "^6.2.1",
+    "babel-preset-es2015": "^6.3.13",
+    "http-server": "^0.8.5",
+    "webpack": "^1.12.12"
+  }
+}
