@@ -20,5 +20,6 @@ test('Player setup', (t) => {
 
 test('Board Update', (t) => {
   const board = new Board();
-  t.plan(1);
+  board.play(0);
+  t.same(board.state, fixtures.boards.base);
 });

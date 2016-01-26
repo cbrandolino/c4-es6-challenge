@@ -10,6 +10,12 @@ class Board {
     this._currentPlayer = this.nextPlayer;
     return this._currentPlayer;
   }
+  play(col) {
+    const candidateCell = this.state[col].findIndex((cell) => cell === 0);
+    if (candidateCell !== undefined) {
+      this.state[col][candidateCell] = this._currentPlayer;
+    }
+  }
   get currentPlayer() {
     return this._currentPlayer;
   }

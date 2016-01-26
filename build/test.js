@@ -5805,7 +5805,9 @@
 	
 	(0, _tape2.default)('Board Update', function (t) {
 	  var board = new _Board2.default();
-	  t.plan(1);
+	  board.play(0);
+	  t.plan(4);
+	  t.same(board.state, _fixtures2.default.boards.base);
 	});
 
 /***/ },
@@ -12338,6 +12340,16 @@
 	    value: function changePlayer() {
 	      this._currentPlayer = this.nextPlayer;
 	      return this._currentPlayer;
+	    }
+	  }, {
+	    key: "play",
+	    value: function play(col) {
+	      var candidateCell = this.state[col].findIndex(function (cell) {
+	        return cell === 0;
+	      });
+	      if (candidateCell !== undefined) {
+	        this.state[col][candidateCell] = this._currentPlayer;
+	      }
 	    }
 	  }, {
 	    key: "currentPlayer",
