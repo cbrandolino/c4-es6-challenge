@@ -5787,11 +5787,25 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var board = new _Board2.default();
-	
 	(0, _tape2.default)('Board Creation', function (t) {
+	  var board = new _Board2.default();
 	  t.plan(2);
+	  t.ok(board);
 	  t.same(board.state, _fixtures2.default.boards.base);
+	});
+	
+	(0, _tape2.default)('Player setup', function (t) {
+	  var board = new _Board2.default();
+	  t.plan(4);
+	  t.equal(board.currentPlayer, 1);
+	  t.equal(board.nextPlayer, -1);
+	  t.equal(board.changePlayer(), -1);
+	  t.equal(board.currentPlayer, -1);
+	});
+	
+	(0, _tape2.default)('Board Update', function (t) {
+	  var board = new _Board2.default();
+	  t.plan(1);
 	});
 
 /***/ },
@@ -12311,12 +12325,29 @@
 	    _classCallCheck(this, Board);
 	
 	    this.initializeEmptyBoard();
+	    this._currentPlayer = 1;
 	  }
 	
 	  _createClass(Board, [{
 	    key: "initializeEmptyBoard",
 	    value: function initializeEmptyBoard() {
-	      this.state = new Array(6).fill(1);
+	      this.state = new Array(7).fill(new Array(6).fill(0));
+	    }
+	  }, {
+	    key: "changePlayer",
+	    value: function changePlayer() {
+	      this._currentPlayer = this.nextPlayer;
+	      return this._currentPlayer;
+	    }
+	  }, {
+	    key: "currentPlayer",
+	    get: function get() {
+	      return this._currentPlayer;
+	    }
+	  }, {
+	    key: "nextPlayer",
+	    get: function get() {
+	      return -this._currentPlayer;
 	    }
 	  }]);
 	
