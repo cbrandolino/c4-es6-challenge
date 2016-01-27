@@ -4,7 +4,7 @@ class Board {
     this._currentPlayer = 1;
   }
   initializeEmptyBoard() {
-    const cols = Array.from({length: 7}, 
+    const cols = Array.from({ length: 7 }, 
       () => Array(6).fill(0));
     this.state = cols;
   }

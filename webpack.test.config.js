@@ -4,7 +4,7 @@
  module.exports = {
     entry: [
         'babel-polyfill',
-        './test/main.es6'
+        './test/base.es6'
     ],
     output: {
         path: path.resolve(__dirname, 'build'),
