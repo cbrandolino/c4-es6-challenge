@@ -44,8 +44,7 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(1);
-	(function webpackMissingModule() { throw new Error("Cannot find module \"/Users/claudiobrandolino/Work/c4-es6-challenge/test\""); }());
+	module.exports = __webpack_require__(1);
 
 
 /***/ },
@@ -85,12 +84,60 @@
 	    _classCallCheck(this, Board);
 	
 	    this.initializeEmptyBoard();
+	    this._currentPlayer = 1;
 	  }
 	
 	  _createClass(Board, [{
 	    key: "initializeEmptyBoard",
 	    value: function initializeEmptyBoard() {
-	      this.state = new Array(6).fill(1);
+	      var cols = Array.from({ length: 7 }, function () {
+	        return Array(6).fill(0);
+	      });
+	      this.state = cols;
+	    }
+	  }, {
+	    key: "changePlayer",
+	    value: function changePlayer() {
+	      this._currentPlayer = this.nextPlayer;
+	      return this._currentPlayer;
+	    }
+	  }, {
+	    key: "play",
+	    value: function play(col) {
+	      var column = this.state[col];
+	      var row = column.findIndex(function (cell) {
+	        return cell === 0;
+	      });
+	      return row !== undefined ? this.swap(col, row) : { col: col, row: row, value: 0 };
+	    }
+	  }, {
+	    key: "swap",
+	    value: function swap(col, row) {
+	      var player = arguments.length <= 2 || arguments[2] === undefined ? this.currentPlayer : arguments[2];
+	
+	      var oldState = this.state;
+	      oldState[col][row] = player;
+	      this.state = oldState;
+	      return { col: col, row: row, player: player };
+	    }
+	  }, {
+	    key: "state",
+	    set: function set(val) {
+	      this._state = val;
+	      return this._state;
+	    },
+	    get: function get() {
+	      return this._state;
+	    }
+	  }, {
+	    key: "currentPlayer",
+	    get: function get() {
+	      return this._currentPlayer;
+	    }
+	  }, {
+	    key: "nextPlayer",
+	    get: function get() {
+	      return -this.currentPlayer;
 	    }
 	  }]);
 	

@@ -2,15 +2,12 @@ import test from 'tape';
 import fixtures from '../test/fixtures.es6';
 import Board from '../src/lib/Board.es6';
 
-window.Board = Board;
-
 test('Board Creation', (t) => {
   const board = new Board();
   t.plan(2);
   t.ok(board);
   t.same(board.state, fixtures.boards.base);
 });
-
 
 test('Player setup', (t) => {
   const board = new Board();
