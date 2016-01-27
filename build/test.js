@@ -5777,15 +5777,17 @@
 	
 	var _tape2 = _interopRequireDefault(_tape);
 	
-	var _fixtures = __webpack_require__(249);
+	var _fixtures = __webpack_require__(247);
 	
 	var _fixtures2 = _interopRequireDefault(_fixtures);
 	
-	var _Board = __webpack_require__(247);
+	var _Board = __webpack_require__(248);
 	
 	var _Board2 = _interopRequireDefault(_Board);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	window.Board = _Board2.default;
 	
 	(0, _tape2.default)('Board Creation', function (t) {
 	  var board = new _Board2.default();
@@ -5805,8 +5807,7 @@
 	
 	(0, _tape2.default)('Board Update', function (t) {
 	  var board = new _Board2.default();
-	  board.play(0);
-	  t.plan(4);
+	  t.same(board.play(0), 0);
 	  t.same(board.state, _fixtures2.default.boards.base);
 	});
 
@@ -12314,6 +12315,21 @@
 
 	"use strict";
 	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = {
+	  boards: {
+	    base: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
+	  }
+	};
+
+/***/ },
+/* 248 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	Object.defineProperty(exports, "__esModule", {
@@ -12333,7 +12349,10 @@
 	  _createClass(Board, [{
 	    key: "initializeEmptyBoard",
 	    value: function initializeEmptyBoard() {
-	      this.state = new Array(7).fill(new Array(6).fill(0));
+	      var cols = Array.from({ length: 7 }, function () {
+	        return Array(6).fill(0);
+	      });
+	      this.state = cols;
 	    }
 	  }, {
 	    key: "changePlayer",
@@ -12344,12 +12363,30 @@
 	  }, {
 	    key: "play",
 	    value: function play(col) {
-	      var candidateCell = this.state[col].findIndex(function (cell) {
+	      var column = this.state[col];
+	      var row = column.findIndex(function (cell) {
 	        return cell === 0;
 	      });
-	      if (candidateCell !== undefined) {
-	        this.state[col][candidateCell] = this._currentPlayer;
-	      }
+	      return row !== undefined ? this.swap(col, row) : { col: col, row: row, value: 0 };
+	    }
+	  }, {
+	    key: "swap",
+	    value: function swap(col, row) {
+	      var player = arguments.length <= 2 || arguments[2] === undefined ? this.currentPlayer : arguments[2];
+	
+	      var oldState = this.state;
+	      oldState[col][row] = player;
+	      this.state = oldState;
+	      return { col: col, row: row, player: player };
+	    }
+	  }, {
+	    key: "state",
+	    set: function set(val) {
+	      this._state = val;
+	      return this._state;
+	    },
+	    get: function get() {
+	      return this._state;
 	    }
 	  }, {
 	    key: "currentPlayer",
@@ -12359,7 +12396,7 @@
 	  }, {
 	    key: "nextPlayer",
 	    get: function get() {
-	      return -this._currentPlayer;
+	      return -this.currentPlayer;
 	    }
 	  }]);
 	
@@ -12367,22 +12404,6 @@
 	}();
 	
 	exports.default = Board;
-
-/***/ },
-/* 248 */,
-/* 249 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.default = {
-	  boards: {
-	    base: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
-	  }
-	};
 
 /***/ }
 /******/ ]);
