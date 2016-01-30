@@ -5858,27 +5858,26 @@
 	(0, _tape2.default)('Edge cases/Final states', function (container) {
 	  var board = new _Board2.default();
 	  container.test('Full-column edge cases', function (t) {
+	    t.plan(5);
 	    board.state = _fixtures2.default.boards.noSpaceCol2;
-	    moveResult = board.play(1);
+	    board.on('fullCol', function () {
+	      return t.pass('Emit event signaling col is full');
+	    });
+	    var moveResult = board.play(2);
 	    t.comment('do not change cell ownership');
-	    t.same(git);
+	    t.equal(board.cellValue(5, 2), -1);
 	    t.comment('do not swap player');
+	    t.equal(board.currentPlayer, 1);
 	    t.comment('Return unchanged cell');
-	    t.comment('Emit event signaling col is full');
+	    t.not(moveResult);
 	  });
 	  container.test('Full-board edge cases', function (t) {
 	    board.state = _fixtures2.default.boards.full;
-	    board.play = 1;
-	    t.comment('do not change cell ownership');
-	    t.comment('do not swap player');
-	    t.comment('Return unchanged cell');
-	    t.comment('Emit event signaling board is full');
-	  });
-	  container.test('After victory', function (t) {
-	    board.state = _fixtures2.default.boards.oneWins;
-	    t.comment('no further moves are possible');
-	    t.comment('attempts to new moves will throw exception');
-	    t.comment('a score is given');
+	    t.plan(2);
+	    t.throws(board.play(1));
+	    board.on('fullBoard', function () {
+	      return t.pass('Emit event signaling board is full');
+	    });
 	  });
 	});
 
@@ -12434,11 +12433,31 @@
 	  }, {
 	    key: 'play',
 	    value: function play(col) {
+	      if (this.fullBoard) {
+	        throw new Exception('Board is full');
+	      }
 	      var column = this.state[col];
-	      var row = column.findIndex(function (cell) {
+	      var freeRow = column.findIndex(function (cell) {
 	        return cell === 0;
 	      });
-	      return row !== undefined ? this.completeMove(col, row) : { col: col, row: row, value: 0 };
+	      if (freeRow !== -1) {
+	        return this.completeMove(col, freeRow);
+	      }
+	      this.emit('fullCol');
+	      this.checkFullBoard();
+	      return null;
+	    }
+	  }, {
+	    key: 'checkFullBoard',
+	    value: function checkFullBoard() {
+	      for (var col in this.state) {
+	        if (col.includes(0)) {
+	          return false;
+	        }
+	      }
+	      this.fullBoard = true;
+	      this.emit('fullBoard');
+	      return true;
 	    }
 	  }, {
 	    key: 'checkVector',
@@ -12538,6 +12557,15 @@
 	      return this._state;
 	    }
 	  }, {
+	    key: 'fullBoard',
+	    get: function get() {
+	      return this._fullBoard;
+	    },
+	    set: function set(full) {
+	      this._fullBoard = full;
+	      return this._fullBoard;
+	    }
+	  }, {
 	    key: 'currentPlayer',
 	    get: function get() {
 	      return this._currentPlayer;
@@ -12568,7 +12596,7 @@
 	    base: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
 	    first: [[1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
 	    second: [[1, 0, 0, 0, 0, 0], [-1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    noSpaceCol2: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, -1, 1, 1, 1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    noSpaceCol2: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, -1, 1, 1, -1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
 	    oneWins: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
 	    minusOneWins: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, 1, 1, 1, 1], [1, -1, 0, 0, 0, 0], [0, 0, -1, 0, 0, 0], [0, 0, 0, -1, 0, 0], [0, 0, 0, 0, 0, 0]],
 	    full: [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]],

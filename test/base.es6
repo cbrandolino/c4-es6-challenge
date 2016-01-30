@@ -74,26 +74,25 @@ test('Victory detection', (t) => {
 test('Edge cases/Final states', (container) => {
   const board = new Board();
   container.test('Full-column edge cases', (t) => {
+    t.plan(5);
     board.state = fixtures.boards.noSpaceCol2;
-    moveResult = board.play(1);
+    board.on('fullCol', () =>
+      t.pass('Emit event signaling col is full')
+    );
+    const moveResult = board.play(2);
     t.comment('do not change cell ownership');
-    t.same(git);
+    t.equal(board.cellValue(5, 2), -1);
     t.comment('do not swap player');
+    t.equal(board.currentPlayer, 1);
     t.comment('Return unchanged cell');
-    t.comment('Emit event signaling col is full');
+    t.not(moveResult);
   });
   container.test('Full-board edge cases', (t) => {
     board.state = fixtures.boards.full;
-    board.play = 1;
-    t.comment('do not change cell ownership');
-    t.comment('do not swap player');
-    t.comment('Return unchanged cell');
-    t.comment('Emit event signaling board is full');
-  });
-  container.test('After victory', (t) => {
-    board.state = fixtures.boards.oneWins;
-    t.comment('no further moves are possible');
-    t.comment('attempts to new moves will throw exception');
-    t.comment('a score is given');
+    t.plan(2);
+    t.throws(board.play(1));
+    board.on('fullBoard', () =>
+      t.pass('Emit event signaling board is full')
+    );
   });
 });

@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 
 class Board extends EventEmitter {
+
   constructor() {
     super();
     this.initializeEmptyBoard();
@@ -8,6 +9,7 @@ class Board extends EventEmitter {
     this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
     this._winner = 0;
   }
+
   initializeEmptyBoard() {
     const cols = Array.from({ length: 7 },
       () => Array(6).fill(0));
@@ -20,9 +22,28 @@ class Board extends EventEmitter {
   }
 
   play(col) {
+    if (this.fullBoard) {
+      throw new Exception('Board is full');
+    }
     const column = this.state[col];
-    const row = column.findIndex((cell) => cell === 0);
-    return (row !== undefined) ? this.completeMove(col, row) : { col, row, value: 0 };
+    const freeRow = column.findIndex((cell) => cell === 0);
+    if (freeRow !== -1) {
+      return this.completeMove(col, freeRow);
+    }
+    this.emit('fullCol');
+    this.checkFullBoard();
+    return null;
+  }
+
+  checkFullBoard() {
+    for (const col in this.state) {
+      if (col.includes(0)) {
+        return false;
+      }
+    }
+    this.fullBoard = true;
+    this.emit('fullBoard');
+    return true;
   }
 
   checkVector(centerX, centerY, changeX, changeY, length = 7) {
@@ -87,6 +108,15 @@ class Board extends EventEmitter {
 
   get state() {
     return this._state;
+  }
+
+  get fullBoard() {
+    return this._fullBoard;
+  }
+
+  set fullBoard(full) {
+    this._fullBoard = full;
+    return this._fullBoard;
   }
 
   get currentPlayer() {
