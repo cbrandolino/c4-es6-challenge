@@ -5777,11 +5777,11 @@
 	
 	var _tape2 = _interopRequireDefault(_tape);
 	
-	var _fixtures = __webpack_require__(247);
+	var _fixtures = __webpack_require__(248);
 	
 	var _fixtures2 = _interopRequireDefault(_fixtures);
 	
-	var _Board = __webpack_require__(248);
+	var _Board = __webpack_require__(247);
 	
 	var _Board2 = _interopRequireDefault(_Board);
 	
@@ -5801,7 +5801,7 @@
 	  t.equal(board.currentPlayer, 1);
 	  t.equal(board.nextPlayer, -1);
 	  t.equal(board.changePlayer(), -1);
-	  t.equal(board.currentPlayer, -1);
+	  t.equal(board.currentPlayer, -2);
 	});
 	
 	(0, _tape2.default)('Board Update', function (t) {
@@ -5819,18 +5819,21 @@
 	  t.same(board.state, _fixtures2.default.boards.second);
 	});
 	
-	(0, _tape2.default)('Repetition test', function (t) {
+	(0, _tape2.default)('Vector check', function (t) {
 	  t.plan(2);
 	  var board = new _Board2.default();
+	  var breaktures = Object.assign({}, _fixtures2.default.boards);
+	  t.comment('Vertical');
+	  board.state = breaktures.oneWins;
 	  t.comment('Returns true if there are four repeated elements of a certain type');
-	  t.ok(board.checkRepeatedElements(1, [0, 0, 0, 1, 1, 1, 1, 0]));
-	  t.comment('Returns false if there aren\'t four repeated elements of a certain type');
-	  t.notOk(board.checkRepeatedElements(1, [0, 0, 0, 0, 1, 1, 1, 0]));
+	  t.ok(board.checkVector(5, 2, 1, 0));
+	  t.comment('Returns false if there are four repeated elements of a certain type');
+	  t.notOk(board.checkVector(5, 3, 1, 0));
 	});
 	
 	(0, _tape2.default)('Victory detection', function (t) {
 	  t.plan(3);
-	  var breaktures = Object.assign({}, _fixtures2.default);
+	  var breaktures = Object.assign({}, _fixtures2.default.boards);
 	  var board = new _Board2.default();
 	  t.comment('Vertical');
 	  board.state = breaktures.minusOneWins;
@@ -5847,7 +5850,7 @@
 	(0, _tape2.default)('Edge edge/Final states', function (container) {
 	  var board = new _Board2.default();
 	  container.test('Full-column edge cases', function (t) {
-	    board.state = _fixtures2.default.noSpaceCol2;
+	    board.state = _fixtures2.default.boards.noSpaceCol2;
 	    board.play = 1;
 	    t.comment('do not change cell ownership');
 	    t.comment('do not swap player');
@@ -5855,7 +5858,7 @@
 	    t.comment('Emit event signaling col is full');
 	  });
 	  container.test('Full-board edge cases', function (t) {
-	    board.state = _fixtures2.default.full;
+	    board.state = _fixtures2.default.boards.full;
 	    board.play = 1;
 	    t.comment('do not change cell ownership');
 	    t.comment('do not swap player');
@@ -5863,7 +5866,7 @@
 	    t.comment('Emit event signaling board is full');
 	  });
 	  container.test('After victory', function (t) {
-	    board.state = _fixtures2.default.oneWins;
+	    board.state = _fixtures2.default.boards.oneWins;
 	    t.comment('no further moves are possible');
 	    t.comment('attempts to new moves will throw exception');
 	    t.comment('a score is given');
@@ -12374,29 +12377,6 @@
 
 	"use strict";
 	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.default = {
-	  boards: {
-	    base: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    first: [[1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    second: [[1, 0, 0, 0, 0, 0], [-1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    noSpaceCol2: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, -1, 1, 1, 1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    oneWins: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    minusOneWins: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, 1, 1, 1, 1], [1, -1, 0, 0, 0, 0], [0, 0, -1, 0, 0, 0], [0, 0, 0, -1, 0, 0], [0, 0, 0, 0, -1, 0]],
-	    full: [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]],
-	    oneIsJustChillin: [[1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    oneWillWinWithCol4: [[0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [-1, 1, 0, 0, 0, 0], [-1, -1, 1, 0, 0, 0], [1, 1, -1, 0, 0, 0], [0, 0, 0, 0, 0, 0], [1, 1, 1, -1, 0, 0]]
-	  }
-	};
-
-/***/ },
-/* 248 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	Object.defineProperty(exports, "__esModule", {
@@ -12437,29 +12417,26 @@
 	      return row !== undefined ? this.completeMove(col, row) : { col: col, row: row, value: 0 };
 	    }
 	  }, {
-	    key: "checkRepeatedElements",
-	    value: function checkRepeatedElements(needle, haystack) {
-	      var repetitions = arguments.length <= 2 || arguments[2] === undefined ? 4 : arguments[2];
+	    key: "checkVector",
+	    value: function checkVector(centerX, centerY, changeX, changeY) {
+	      var length = arguments.length <= 4 || arguments[4] === undefined ? 7 : arguments[4];
 	
-	      var foundRepetitions = 0;
-	      for (var index in haystack) {
-	        if (haystack[index] === needle) {
-	          foundRepetitions++;
-	          if (foundRepetitions === repetitions) {
-	            return true;
-	          }
-	        } else {
-	          foundRepetitions = 0;
+	      var x = centerX - changeX * 4;
+	      var y = centerY - changeY * 4;
+	      var consecutiveMarbles = 0;
+	      for (var step = 0; step < length; step++) {
+	        x += changeX;
+	        y += changeY;
+	        if (this.cellValue(x, y) !== this.currentPlayer) {
+	          consecutiveMarbles = 0;
+	          continue;
+	        }
+	        consecutiveMarbles++;
+	        if (consecutiveMarbles === 4) {
+	          return true;
 	        }
 	      }
 	      return false;
-	    }
-	  }, {
-	    key: "checkGoalState",
-	    value: function checkGoalState(_ref) {
-	      var col = _ref.col;
-	      var row = _ref.row;
-	      var player = _ref.player;
 	    }
 	  }, {
 	    key: "completeMove",
@@ -12471,6 +12448,15 @@
 	      this.state = oldState;
 	      this.changePlayer();
 	      return { col: col, row: row, player: player };
+	    }
+	  }, {
+	    key: "cellValue",
+	    value: function cellValue(x, y) {
+	      try {
+	        return this.state[y][x];
+	      } catch (e) {
+	        return undefined;
+	      }
 	    }
 	  }, {
 	    key: "state",
@@ -12497,6 +12483,29 @@
 	}();
 	
 	exports.default = Board;
+
+/***/ },
+/* 248 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = {
+	  boards: {
+	    base: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    first: [[1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    second: [[1, 0, 0, 0, 0, 0], [-1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    noSpaceCol2: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, -1, 1, 1, 1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    oneWins: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    minusOneWins: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, 1, 1, 1, 1], [1, -1, 0, 0, 0, 0], [0, 0, -1, 0, 0, 0], [0, 0, 0, -1, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    full: [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]],
+	    oneIsJustChillin: [[1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    oneWillWinWithCol4: [[0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [-1, 1, 0, 0, 0, 0], [-1, -1, 1, 0, 0, 0], [1, 1, -1, 0, 0, 0], [0, 0, 0, 0, 0, 0], [1, 1, 1, -1, 0, 0]]
+	  }
+	};
 
 /***/ }
 /******/ ]);

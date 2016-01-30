@@ -19,23 +19,23 @@ class Board {
     return (row !== undefined) ? this.completeMove(col, row) : { col, row, value: 0 };
   }
 
-  checkRepeatedElements(needle, haystack, repetitions = 4) {
-    let foundRepetitions = 0;
-    for (const index in haystack) {
-      if (haystack[index] === needle) {
-        foundRepetitions ++;
-        if (foundRepetitions === repetitions) {
-          return true;
-        }
-      } else {
-        foundRepetitions = 0;
+  checkVector(centerX, centerY, changeX, changeY, length = 7) {
+    let x = centerX - changeX * 4;
+    let y = centerY - changeY * 4;
+    let consecutiveMarbles = 0;
+    for (let step = 0; step < length; step++) {
+      x += changeX;
+      y += changeY;
+      if (this.cellValue(x, y) !== this.currentPlayer) {
+        consecutiveMarbles = 0;
+        continue;
+      }
+      consecutiveMarbles ++;
+      if (consecutiveMarbles === 4) {
+        return true;
       }
     }
     return false;
-  }
-
-  checkGoalState({ col, row, player }) {
-
   }
 
   completeMove(col, row, player = this.currentPlayer) {
@@ -44,6 +44,14 @@ class Board {
     this.state = oldState;
     this.changePlayer();
     return { col, row, player };
+  }
+
+  cellValue(x, y) {
+    try {
+      return this.state[y][x];
+    } catch (e) {
+      return undefined;
+    }
   }
 
   set state(val) {

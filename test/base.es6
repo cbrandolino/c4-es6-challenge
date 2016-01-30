@@ -17,7 +17,7 @@ test('Player setup', (t) => {
   t.equal(board.currentPlayer, 1);
   t.equal(board.nextPlayer, -1);
   t.equal(board.changePlayer(), -1);
-  t.equal(board.currentPlayer, -1);
+  t.equal(board.currentPlayer, -2);
 });
 
 test('Board Update', (t) => {
@@ -35,18 +35,21 @@ test('Board Update', (t) => {
   t.same(board.state, fixtures.boards.second);
 });
 
-test('Repetition test', (t) => {
+test('Vector check', (t) => {
   t.plan(2);
   const board = new Board();
+  const breaktures = Object.assign({}, fixtures.boards);
+  t.comment('Vertical');
+  board.state = breaktures.oneWins;
   t.comment('Returns true if there are four repeated elements of a certain type');
-  t.ok(board.checkRepeatedElements(1, [0, 0, 0, 1, 1, 1, 1, 0]));
-  t.comment('Returns false if there aren\'t four repeated elements of a certain type');
-  t.notOk(board.checkRepeatedElements(1, [0, 0, 0, 0, 1, 1, 1, 0]));
+  t.ok(board.checkVector(5, 2, 1, 0));
+  t.comment('Returns false if there are four repeated elements of a certain type');
+  t.notOk(board.checkVector(5, 3, 1, 0));
 });
 
 test('Victory detection', (t) => {
   t.plan(3);
-  const breaktures = Object.assign({}, fixtures);
+  const breaktures = Object.assign({}, fixtures.boards);
   const board = new Board();
   t.comment('Vertical');
   board.state = breaktures.minusOneWins;
@@ -63,7 +66,7 @@ test('Victory detection', (t) => {
 test('Edge edge/Final states', (container) => {
   const board = new Board();
   container.test('Full-column edge cases', (t) => {
-    board.state = fixtures.noSpaceCol2;
+    board.state = fixtures.boards.noSpaceCol2;
     board.play = 1;
     t.comment('do not change cell ownership');
     t.comment('do not swap player');
@@ -71,7 +74,7 @@ test('Edge edge/Final states', (container) => {
     t.comment('Emit event signaling col is full');
   });
   container.test('Full-board edge cases', (t) => {
-    board.state = fixtures.full;
+    board.state = fixtures.boards.full;
     board.play = 1;
     t.comment('do not change cell ownership');
     t.comment('do not swap player');
@@ -79,7 +82,7 @@ test('Edge edge/Final states', (container) => {
     t.comment('Emit event signaling board is full');
   });
   container.test('After victory', (t) => {
-    board.state = fixtures.oneWins;
+    board.state = fixtures.boards.oneWins;
     t.comment('no further moves are possible');
     t.comment('attempts to new moves will throw exception');
     t.comment('a score is given');
