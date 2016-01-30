@@ -1,5 +1,8 @@
-class Board {
+import { EventEmitter } from 'events';
+
+class Board extends EventEmitter {
   constructor() {
+    super();
     this.initializeEmptyBoard();
     this._currentPlayer = 1;
     this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];

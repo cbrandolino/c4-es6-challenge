@@ -71,12 +71,13 @@ test('Victory detection', (t) => {
   t.equal(board.winner, 1);
 });
 
-test('Edge edge/Final states', (container) => {
+test('Edge cases/Final states', (container) => {
   const board = new Board();
   container.test('Full-column edge cases', (t) => {
     board.state = fixtures.boards.noSpaceCol2;
-    board.play = 1;
+    moveResult = board.play(1);
     t.comment('do not change cell ownership');
+    t.same(git);
     t.comment('do not swap player');
     t.comment('Return unchanged cell');
     t.comment('Emit event signaling col is full');

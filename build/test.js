@@ -5855,12 +5855,13 @@
 	  t.equal(board.winner, 1);
 	});
 	
-	(0, _tape2.default)('Edge edge/Final states', function (container) {
+	(0, _tape2.default)('Edge cases/Final states', function (container) {
 	  var board = new _Board2.default();
 	  container.test('Full-column edge cases', function (t) {
 	    board.state = _fixtures2.default.boards.noSpaceCol2;
-	    board.play = 1;
+	    moveResult = board.play(1);
 	    t.comment('do not change cell ownership');
+	    t.same(git);
 	    t.comment('do not swap player');
 	    t.comment('Return unchanged cell');
 	    t.comment('Emit event signaling col is full');
@@ -12381,9 +12382,9 @@
 
 /***/ },
 /* 247 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
@@ -12393,20 +12394,31 @@
 	  value: true
 	});
 	
+	var _events = __webpack_require__(199);
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var Board = function () {
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Board = function (_EventEmitter) {
+	  _inherits(Board, _EventEmitter);
+	
 	  function Board() {
 	    _classCallCheck(this, Board);
 	
-	    this.initializeEmptyBoard();
-	    this._currentPlayer = 1;
-	    this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
-	    this._winner = 0;
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Board).call(this));
+	
+	    _this.initializeEmptyBoard();
+	    _this._currentPlayer = 1;
+	    _this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+	    _this._winner = 0;
+	    return _this;
 	  }
 	
 	  _createClass(Board, [{
-	    key: "initializeEmptyBoard",
+	    key: 'initializeEmptyBoard',
 	    value: function initializeEmptyBoard() {
 	      var cols = Array.from({ length: 7 }, function () {
 	        return Array(6).fill(0);
@@ -12414,13 +12426,13 @@
 	      this.state = cols;
 	    }
 	  }, {
-	    key: "changePlayer",
+	    key: 'changePlayer',
 	    value: function changePlayer() {
 	      this._currentPlayer = this.nextPlayer;
 	      return this._currentPlayer;
 	    }
 	  }, {
-	    key: "play",
+	    key: 'play',
 	    value: function play(col) {
 	      var column = this.state[col];
 	      var row = column.findIndex(function (cell) {
@@ -12429,7 +12441,7 @@
 	      return row !== undefined ? this.completeMove(col, row) : { col: col, row: row, value: 0 };
 	    }
 	  }, {
-	    key: "checkVector",
+	    key: 'checkVector',
 	    value: function checkVector(centerX, centerY, changeX, changeY) {
 	      var length = arguments.length <= 4 || arguments[4] === undefined ? 7 : arguments[4];
 	
@@ -12451,7 +12463,7 @@
 	      return false;
 	    }
 	  }, {
-	    key: "checkVictory",
+	    key: 'checkVictory',
 	    value: function checkVictory(x, y) {
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
@@ -12487,7 +12499,7 @@
 	      return false;
 	    }
 	  }, {
-	    key: "completeMove",
+	    key: 'completeMove',
 	    value: function completeMove(col, row) {
 	      var player = arguments.length <= 2 || arguments[2] === undefined ? this.currentPlayer : arguments[2];
 	
@@ -12499,7 +12511,7 @@
 	      return { col: col, row: row, player: player };
 	    }
 	  }, {
-	    key: "cellValue",
+	    key: 'cellValue',
 	    value: function cellValue(x, y) {
 	      try {
 	        return this.state[y][x];
@@ -12508,7 +12520,7 @@
 	      }
 	    }
 	  }, {
-	    key: "winner",
+	    key: 'winner',
 	    get: function get() {
 	      return this._winner;
 	    },
@@ -12517,7 +12529,7 @@
 	      return this._winner;
 	    }
 	  }, {
-	    key: "state",
+	    key: 'state',
 	    set: function set(val) {
 	      this._state = val;
 	      return this._state;
@@ -12526,19 +12538,19 @@
 	      return this._state;
 	    }
 	  }, {
-	    key: "currentPlayer",
+	    key: 'currentPlayer',
 	    get: function get() {
 	      return this._currentPlayer;
 	    }
 	  }, {
-	    key: "nextPlayer",
+	    key: 'nextPlayer',
 	    get: function get() {
 	      return -this.currentPlayer;
 	    }
 	  }]);
 	
 	  return Board;
-	}();
+	}(_events.EventEmitter);
 	
 	exports.default = Board;
 
