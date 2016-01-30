@@ -36,23 +36,22 @@ test('Board Update', (t) => {
 });
 
 test('Vector check', (t) => {
-  t.plan(6);
+  t.plan(5);
   const board = new Board();
-  const breaktures = Object.assign({}, fixtures.boards);
   t.comment('Vertical');
-  board.state = breaktures.oneWins;
+  board.state = fixtures.boards.oneWins;
   t.comment('Returns true if there are four repeated elements of a certain type');
   t.ok(board.checkVector(5, 2, 1, 0));
   t.comment('Returns false if there are four repeated elements of a certain type');
   t.notOk(board.checkVector(5, 3, 1, 0));
   t.comment('Horizontal');
-  board.state = breaktures.oneIsJustChillin;
+  board.state = fixtures.boards.oneIsJustChillin;
   t.comment('Returns true if there are four repeated elements of a certain type');
   t.ok(board.checkVector(0, 1, 0, 1));
   t.comment('Returns false if there are four repeated elements of a certain type');
   t.notOk(board.checkVector(1, 1, 0, 1));
   t.comment('Diagonal');
-  board.state = breaktures.minusOneWins;
+  board.state = fixtures.boards.minusOneWins;
   board.changePlayer();
   t.comment('Returns true if there are four repeated elements of a certain type');
   t.ok(board.checkVector(0, 2, 1, 1));
@@ -60,18 +59,16 @@ test('Vector check', (t) => {
 
 test('Victory detection', (t) => {
   t.plan(3);
-  const breaktures = Object.assign({}, fixtures.boards);
   const board = new Board();
-  t.comment('Vertical');
-  board.state = breaktures.minusOneWins;
-  t.comment('Determine win from winning configuration + last moveResult');
-  t.ok(board.checkGoalState({ col: 0, row: 0, player: -1 }));
-  board.state = breaktures.oneIsJustChillin;
-  t.comment('Horizontal');
-  t.ok(board.checkGoalState({ col: 0, row: 0, player: 1 }));
-  t.comment('Diagonal');
-  breaktures.oneWillWinWithCol4[4][3] = 1;
-  t.ok(board.checkGoalState({ col: 1, row: 3, player: 1 }));
+  board.state = fixtures.boards.oneWins;
+  t.comment('Victory');
+  t.ok(board.checkVictory(5, 2));
+  t.comment('No Victory');
+  t.notOk(board.checkVictory(5, 3));
+  t.comment('Victory after move');
+  board.state = fixtures.boards.oneWillWinWithCol4;
+  board.play(4);
+  t.equal(board.winner, 1);
 });
 
 test('Edge edge/Final states', (container) => {

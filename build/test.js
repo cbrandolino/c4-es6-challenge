@@ -5820,23 +5820,22 @@
 	});
 	
 	(0, _tape2.default)('Vector check', function (t) {
-	  t.plan(6);
+	  t.plan(5);
 	  var board = new _Board2.default();
-	  var breaktures = Object.assign({}, _fixtures2.default.boards);
 	  t.comment('Vertical');
-	  board.state = breaktures.oneWins;
+	  board.state = _fixtures2.default.boards.oneWins;
 	  t.comment('Returns true if there are four repeated elements of a certain type');
 	  t.ok(board.checkVector(5, 2, 1, 0));
 	  t.comment('Returns false if there are four repeated elements of a certain type');
 	  t.notOk(board.checkVector(5, 3, 1, 0));
 	  t.comment('Horizontal');
-	  board.state = breaktures.oneIsJustChillin;
+	  board.state = _fixtures2.default.boards.oneIsJustChillin;
 	  t.comment('Returns true if there are four repeated elements of a certain type');
 	  t.ok(board.checkVector(0, 1, 0, 1));
 	  t.comment('Returns false if there are four repeated elements of a certain type');
 	  t.notOk(board.checkVector(1, 1, 0, 1));
 	  t.comment('Diagonal');
-	  board.state = breaktures.minusOneWins;
+	  board.state = _fixtures2.default.boards.minusOneWins;
 	  board.changePlayer();
 	  t.comment('Returns true if there are four repeated elements of a certain type');
 	  t.ok(board.checkVector(0, 2, 1, 1));
@@ -5844,18 +5843,16 @@
 	
 	(0, _tape2.default)('Victory detection', function (t) {
 	  t.plan(3);
-	  var breaktures = Object.assign({}, _fixtures2.default.boards);
 	  var board = new _Board2.default();
-	  t.comment('Vertical');
-	  board.state = breaktures.minusOneWins;
-	  t.comment('Determine win from winning configuration + last moveResult');
-	  t.ok(board.checkGoalState({ col: 0, row: 0, player: -1 }));
-	  board.state = breaktures.oneIsJustChillin;
-	  t.comment('Horizontal');
-	  t.ok(board.checkGoalState({ col: 0, row: 0, player: 1 }));
-	  t.comment('Diagonal');
-	  breaktures.oneWillWinWithCol4[4][3] = 1;
-	  t.ok(board.checkGoalState({ col: 1, row: 3, player: 1 }));
+	  board.state = _fixtures2.default.boards.oneWins;
+	  t.comment('Victory');
+	  t.ok(board.checkVictory(5, 2));
+	  t.comment('No Victory');
+	  t.notOk(board.checkVictory(5, 3));
+	  t.comment('Victory after move');
+	  board.state = _fixtures2.default.boards.oneWillWinWithCol4;
+	  board.play(4);
+	  t.equal(board.winner, 1);
 	});
 	
 	(0, _tape2.default)('Edge edge/Final states', function (container) {
@@ -12386,7 +12383,9 @@
 /* 247 */
 /***/ function(module, exports) {
 
-	'use strict';
+	"use strict";
+	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
@@ -12402,10 +12401,12 @@
 	
 	    this.initializeEmptyBoard();
 	    this._currentPlayer = 1;
+	    this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+	    this._winner = 0;
 	  }
 	
 	  _createClass(Board, [{
-	    key: 'initializeEmptyBoard',
+	    key: "initializeEmptyBoard",
 	    value: function initializeEmptyBoard() {
 	      var cols = Array.from({ length: 7 }, function () {
 	        return Array(6).fill(0);
@@ -12413,13 +12414,13 @@
 	      this.state = cols;
 	    }
 	  }, {
-	    key: 'changePlayer',
+	    key: "changePlayer",
 	    value: function changePlayer() {
 	      this._currentPlayer = this.nextPlayer;
 	      return this._currentPlayer;
 	    }
 	  }, {
-	    key: 'play',
+	    key: "play",
 	    value: function play(col) {
 	      var column = this.state[col];
 	      var row = column.findIndex(function (cell) {
@@ -12428,7 +12429,7 @@
 	      return row !== undefined ? this.completeMove(col, row) : { col: col, row: row, value: 0 };
 	    }
 	  }, {
-	    key: 'checkVector',
+	    key: "checkVector",
 	    value: function checkVector(centerX, centerY, changeX, changeY) {
 	      var length = arguments.length <= 4 || arguments[4] === undefined ? 7 : arguments[4];
 	
@@ -12450,29 +12451,73 @@
 	      return false;
 	    }
 	  }, {
-	    key: 'completeMove',
+	    key: "checkVictory",
+	    value: function checkVictory(x, y) {
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+	
+	      try {
+	        for (var _iterator = this._possibleDirections[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var _step$value = _slicedToArray(_step.value, 2);
+	
+	          var changeX = _step$value[0];
+	          var changeY = _step$value[1];
+	
+	          if (this.checkVector(x, y, changeX, changeY)) {
+	            this.winner = this.currentPlayer;
+	            return true;
+	          }
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+	
+	      return false;
+	    }
+	  }, {
+	    key: "completeMove",
 	    value: function completeMove(col, row) {
 	      var player = arguments.length <= 2 || arguments[2] === undefined ? this.currentPlayer : arguments[2];
 	
 	      var oldState = this.state;
 	      oldState[col][row] = player;
 	      this.state = oldState;
+	      this.checkVictory(col, row);
 	      this.changePlayer();
 	      return { col: col, row: row, player: player };
 	    }
 	  }, {
-	    key: 'cellValue',
+	    key: "cellValue",
 	    value: function cellValue(x, y) {
-	      console.log('x:', x, ', y: ', y);
 	      try {
-	        console.log(this.state[y][x]);
 	        return this.state[y][x];
 	      } catch (e) {
 	        return undefined;
 	      }
 	    }
 	  }, {
-	    key: 'state',
+	    key: "winner",
+	    get: function get() {
+	      return this._winner;
+	    },
+	    set: function set(val) {
+	      this._winner = val;
+	      return this._winner;
+	    }
+	  }, {
+	    key: "state",
 	    set: function set(val) {
 	      this._state = val;
 	      return this._state;
@@ -12481,12 +12526,12 @@
 	      return this._state;
 	    }
 	  }, {
-	    key: 'currentPlayer',
+	    key: "currentPlayer",
 	    get: function get() {
 	      return this._currentPlayer;
 	    }
 	  }, {
-	    key: 'nextPlayer',
+	    key: "nextPlayer",
 	    get: function get() {
 	      return -this.currentPlayer;
 	    }
