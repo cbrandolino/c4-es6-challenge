@@ -4,7 +4,7 @@ class Board {
     this._currentPlayer = 1;
   }
   initializeEmptyBoard() {
-    const cols = Array.from({ length: 7 }, 
+    const cols = Array.from({ length: 7 },
       () => Array(6).fill(0));
     this.state = cols;
   }
@@ -16,13 +16,14 @@ class Board {
   play(col) {
     const column = this.state[col];
     const row = column.findIndex((cell) => cell === 0);
-    return (row !== undefined) ? this.swap(col, row) : { col, row, value: 0 };
+    return (row !== undefined) ? this.completeMove(col, row) : { col, row, value: 0 };
   }
 
-  swap(col, row, player = this.currentPlayer) {
+  completeMove(col, row, player = this.currentPlayer) {
     const oldState = this.state;
     oldState[col][row] = player;
     this.state = oldState;
+    this.changePlayer();
     return { col, row, player };
   }
 

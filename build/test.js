@@ -5795,14 +5795,13 @@
 	});
 	
 	(0, _tape2.default)('Player setup', function (t) {
-	  t.comment('Players are indicated con 1 e -1');
-	  t.comment('for flippability and potential in for cost/search algos');
+	  t.comment('Players are indicated con 1 e -1 for flippability\n    and potential in for cost/search algos');
 	  var board = new _Board2.default();
 	  t.plan(4);
 	  t.equal(board.currentPlayer, 1);
 	  t.equal(board.nextPlayer, -1);
 	  t.equal(board.changePlayer(), -1);
-	  t.equal(board.currentPlayer, -2);
+	  t.equal(board.currentPlayer, -1);
 	});
 	
 	(0, _tape2.default)('Board Update', function (t) {
@@ -5816,7 +5815,7 @@
 	  t.equals(board.currentPlayer, -1);
 	  t.same(board.state, _fixtures2.default.boards.first);
 	  moveResult = board.play(1);
-	  t.same(moveResult, { col: 0, row: 0, player: -1 });
+	  t.same(moveResult, { col: 1, row: 0, player: -1 });
 	  t.same(board.state, _fixtures2.default.boards.second);
 	});
 	
@@ -12427,16 +12426,17 @@
 	      var row = column.findIndex(function (cell) {
 	        return cell === 0;
 	      });
-	      return row !== undefined ? this.swap(col, row) : { col: col, row: row, value: 0 };
+	      return row !== undefined ? this.completeMove(col, row) : { col: col, row: row, value: 0 };
 	    }
 	  }, {
-	    key: "swap",
-	    value: function swap(col, row) {
+	    key: "completeMove",
+	    value: function completeMove(col, row) {
 	      var player = arguments.length <= 2 || arguments[2] === undefined ? this.currentPlayer : arguments[2];
 	
 	      var oldState = this.state;
 	      oldState[col][row] = player;
 	      this.state = oldState;
+	      this.changePlayer();
 	      return { col: col, row: row, player: player };
 	    }
 	  }, {

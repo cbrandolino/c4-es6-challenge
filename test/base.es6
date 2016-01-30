@@ -10,14 +10,14 @@ test('Board Creation', (t) => {
 });
 
 test('Player setup', (t) => {
-  t.comment('Players are indicated con 1 e -1');
-  t.comment('for flippability and potential in for cost/search algos');
+  t.comment(`Players are indicated con 1 e -1 for flippability
+    and potential in for cost/search algos`);
   const board = new Board();
   t.plan(4);
   t.equal(board.currentPlayer, 1);
   t.equal(board.nextPlayer, -1);
   t.equal(board.changePlayer(), -1);
-  t.equal(board.currentPlayer, -2);
+  t.equal(board.currentPlayer, -1);
 });
 
 test('Board Update', (t) => {
@@ -31,7 +31,7 @@ test('Board Update', (t) => {
   t.equals(board.currentPlayer, -1);
   t.same(board.state, fixtures.boards.first);
   moveResult = board.play(1);
-  t.same(moveResult, { col: 0, row: 0, player: -1 });
+  t.same(moveResult, { col: 1, row: 0, player: -1 });
   t.same(board.state, fixtures.boards.second);
 });
 
