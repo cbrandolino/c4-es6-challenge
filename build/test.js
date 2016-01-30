@@ -5820,7 +5820,7 @@
 	});
 	
 	(0, _tape2.default)('Vector check', function (t) {
-	  t.plan(2);
+	  t.plan(4);
 	  var board = new _Board2.default();
 	  var breaktures = Object.assign({}, _fixtures2.default.boards);
 	  t.comment('Vertical');
@@ -5829,6 +5829,12 @@
 	  t.ok(board.checkVector(5, 2, 1, 0));
 	  t.comment('Returns false if there are four repeated elements of a certain type');
 	  t.notOk(board.checkVector(5, 3, 1, 0));
+	  t.comment('Horizontal');
+	  board.state = breaktures.oneIsJustChillin;
+	  t.comment('Returns true if there are four repeated elements of a certain type');
+	  t.ok(board.checkVector(0, 1, 0, 1));
+	  t.comment('Returns false if there are four repeated elements of a certain type');
+	  t.notOk(board.checkVector(1, 1, 0, 1));
 	});
 	
 	(0, _tape2.default)('Victory detection', function (t) {
@@ -12375,7 +12381,7 @@
 /* 247 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
@@ -12394,7 +12400,7 @@
 	  }
 	
 	  _createClass(Board, [{
-	    key: "initializeEmptyBoard",
+	    key: 'initializeEmptyBoard',
 	    value: function initializeEmptyBoard() {
 	      var cols = Array.from({ length: 7 }, function () {
 	        return Array(6).fill(0);
@@ -12402,13 +12408,13 @@
 	      this.state = cols;
 	    }
 	  }, {
-	    key: "changePlayer",
+	    key: 'changePlayer',
 	    value: function changePlayer() {
 	      this._currentPlayer = this.nextPlayer;
 	      return this._currentPlayer;
 	    }
 	  }, {
-	    key: "play",
+	    key: 'play',
 	    value: function play(col) {
 	      var column = this.state[col];
 	      var row = column.findIndex(function (cell) {
@@ -12417,7 +12423,7 @@
 	      return row !== undefined ? this.completeMove(col, row) : { col: col, row: row, value: 0 };
 	    }
 	  }, {
-	    key: "checkVector",
+	    key: 'checkVector',
 	    value: function checkVector(centerX, centerY, changeX, changeY) {
 	      var length = arguments.length <= 4 || arguments[4] === undefined ? 7 : arguments[4];
 	
@@ -12439,7 +12445,7 @@
 	      return false;
 	    }
 	  }, {
-	    key: "completeMove",
+	    key: 'completeMove',
 	    value: function completeMove(col, row) {
 	      var player = arguments.length <= 2 || arguments[2] === undefined ? this.currentPlayer : arguments[2];
 	
@@ -12450,8 +12456,9 @@
 	      return { col: col, row: row, player: player };
 	    }
 	  }, {
-	    key: "cellValue",
+	    key: 'cellValue',
 	    value: function cellValue(x, y) {
+	      console.log('x:', x, ', y: ', y);
 	      try {
 	        return this.state[y][x];
 	      } catch (e) {
@@ -12459,7 +12466,7 @@
 	      }
 	    }
 	  }, {
-	    key: "state",
+	    key: 'state',
 	    set: function set(val) {
 	      this._state = val;
 	      return this._state;
@@ -12468,12 +12475,12 @@
 	      return this._state;
 	    }
 	  }, {
-	    key: "currentPlayer",
+	    key: 'currentPlayer',
 	    get: function get() {
 	      return this._currentPlayer;
 	    }
 	  }, {
-	    key: "nextPlayer",
+	    key: 'nextPlayer',
 	    get: function get() {
 	      return -this.currentPlayer;
 	    }

@@ -47,6 +47,7 @@ class Board {
   }
 
   cellValue(x, y) {
+    console.log('x:', x, ', y: ', y)
     try {
       return this.state[y][x];
     } catch (e) {
