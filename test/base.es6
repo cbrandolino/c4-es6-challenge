@@ -23,7 +23,7 @@ test('Player setup', (t) => {
 test('Board Update', (t) => {
   const board = new Board();
   let moveResult = board.play(0);
-  t.plan(8);
+  t.plan(5);
   t.comment('A throw is executed on a column');
   t.comment('A thrown in a column should reach its lowest free cell');
   t.same(moveResult, { col: 0, row: 0, player: 1 });
@@ -35,21 +35,30 @@ test('Board Update', (t) => {
   t.same(board.state, fixtures.boards.second);
 });
 
-test('Victory detection', (container) =>
-  container.test('Winning conformations', (t) => {
-    const breaktures = Object.assign({}, fixtures);
-    const board = new Board();
-    t.comment('Vertical');
-    board.state = breaktures.minusOneWins;
-    container.comment('Determine win from winning configuration + last moveResult');
-    t.equal(board.checkGoalState({ col: 0, row: 0, player: -1 }), true);
-    board.state = breaktures.oneIsJustChillin;
-    t.comment('Horizontal');
-    t.equal(board.checkGoalState({ col: 0, row: 0, player: 1 }), true);
-    t.comment('Diagonal');
-    breaktures.oneWillWinWithCol4[4][3] = 1;
-    t.equal(board.checkGoalState({ col: 1, row: 3, player: 1 }), true);
-  }));
+test('Repetition test', (t) => {
+  t.plan(2);
+  const board = new Board();
+  t.comment('Returns true if there are four repeated elements of a certain type');
+  t.ok(board.checkRepeatedElements(1, [0, 0, 0, 1, 1, 1, 1, 0]));
+  t.comment('Returns false if there aren\'t four repeated elements of a certain type');
+  t.notOk(board.checkRepeatedElements(1, [0, 0, 0, 0, 1, 1, 1, 0]));
+});
+
+test('Victory detection', (t) => {
+  t.plan(3);
+  const breaktures = Object.assign({}, fixtures);
+  const board = new Board();
+  t.comment('Vertical');
+  board.state = breaktures.minusOneWins;
+  t.comment('Determine win from winning configuration + last moveResult');
+  t.ok(board.checkGoalState({ col: 0, row: 0, player: -1 }));
+  board.state = breaktures.oneIsJustChillin;
+  t.comment('Horizontal');
+  t.ok(board.checkGoalState({ col: 0, row: 0, player: 1 }));
+  t.comment('Diagonal');
+  breaktures.oneWillWinWithCol4[4][3] = 1;
+  t.ok(board.checkGoalState({ col: 1, row: 3, player: 1 }));
+});
 
 test('Edge edge/Final states', (container) => {
   const board = new Board();

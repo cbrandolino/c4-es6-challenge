@@ -5807,7 +5807,7 @@
 	(0, _tape2.default)('Board Update', function (t) {
 	  var board = new _Board2.default();
 	  var moveResult = board.play(0);
-	  t.plan(8);
+	  t.plan(5);
 	  t.comment('A throw is executed on a column');
 	  t.comment('A thrown in a column should reach its lowest free cell');
 	  t.same(moveResult, { col: 0, row: 0, player: 1 });
@@ -5819,21 +5819,29 @@
 	  t.same(board.state, _fixtures2.default.boards.second);
 	});
 	
-	(0, _tape2.default)('Victory detection', function (container) {
-	  return container.test('Winning conformations', function (t) {
-	    var breaktures = Object.assign({}, _fixtures2.default);
-	    var board = new _Board2.default();
-	    t.comment('Vertical');
-	    board.state = breaktures.minusOneWins;
-	    container.comment('Determine win from winning configuration + last moveResult');
-	    t.equal(board.checkGoalState({ col: 0, row: 0, player: -1 }), true);
-	    board.state = breaktures.oneIsJustChillin;
-	    t.comment('Horizontal');
-	    t.equal(board.checkGoalState({ col: 0, row: 0, player: 1 }), true);
-	    t.comment('Diagonal');
-	    breaktures.oneWillWinWithCol4[4][3] = 1;
-	    t.equal(board.checkGoalState({ col: 1, row: 3, player: 1 }), true);
-	  });
+	(0, _tape2.default)('Repetition test', function (t) {
+	  t.plan(2);
+	  var board = new _Board2.default();
+	  t.comment('Returns true if there are four repeated elements of a certain type');
+	  t.ok(board.checkRepeatedElements(1, [0, 0, 0, 1, 1, 1, 1, 0]));
+	  t.comment('Returns false if there aren\'t four repeated elements of a certain type');
+	  t.notOk(board.checkRepeatedElements(1, [0, 0, 0, 0, 1, 1, 1, 0]));
+	});
+	
+	(0, _tape2.default)('Victory detection', function (t) {
+	  t.plan(3);
+	  var breaktures = Object.assign({}, _fixtures2.default);
+	  var board = new _Board2.default();
+	  t.comment('Vertical');
+	  board.state = breaktures.minusOneWins;
+	  t.comment('Determine win from winning configuration + last moveResult');
+	  t.ok(board.checkGoalState({ col: 0, row: 0, player: -1 }));
+	  board.state = breaktures.oneIsJustChillin;
+	  t.comment('Horizontal');
+	  t.ok(board.checkGoalState({ col: 0, row: 0, player: 1 }));
+	  t.comment('Diagonal');
+	  breaktures.oneWillWinWithCol4[4][3] = 1;
+	  t.ok(board.checkGoalState({ col: 1, row: 3, player: 1 }));
 	});
 	
 	(0, _tape2.default)('Edge edge/Final states', function (container) {
@@ -12427,6 +12435,31 @@
 	        return cell === 0;
 	      });
 	      return row !== undefined ? this.completeMove(col, row) : { col: col, row: row, value: 0 };
+	    }
+	  }, {
+	    key: "checkRepeatedElements",
+	    value: function checkRepeatedElements(needle, haystack) {
+	      var repetitions = arguments.length <= 2 || arguments[2] === undefined ? 4 : arguments[2];
+	
+	      var foundRepetitions = 0;
+	      for (var index in haystack) {
+	        if (haystack[index] === needle) {
+	          foundRepetitions++;
+	          if (foundRepetitions === repetitions) {
+	            return true;
+	          }
+	        } else {
+	          foundRepetitions = 0;
+	        }
+	      }
+	      return false;
+	    }
+	  }, {
+	    key: "checkGoalState",
+	    value: function checkGoalState(_ref) {
+	      var col = _ref.col;
+	      var row = _ref.row;
+	      var player = _ref.player;
 	    }
 	  }, {
 	    key: "completeMove",

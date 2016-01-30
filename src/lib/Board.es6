@@ -19,6 +19,25 @@ class Board {
     return (row !== undefined) ? this.completeMove(col, row) : { col, row, value: 0 };
   }
 
+  checkRepeatedElements(needle, haystack, repetitions = 4) {
+    let foundRepetitions = 0;
+    for (const index in haystack) {
+      if (haystack[index] === needle) {
+        foundRepetitions ++;
+        if (foundRepetitions === repetitions) {
+          return true;
+        }
+      } else {
+        foundRepetitions = 0;
+      }
+    }
+    return false;
+  }
+
+  checkGoalState({ col, row, player }) {
+
+  }
+
   completeMove(col, row, player = this.currentPlayer) {
     const oldState = this.state;
     oldState[col][row] = player;
