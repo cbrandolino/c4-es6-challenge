@@ -49,6 +49,7 @@ class Board {
   cellValue(x, y) {
     console.log('x:', x, ', y: ', y)
     try {
+      console.log(this.state[y][x]);
       return this.state[y][x];
     } catch (e) {
       return undefined;

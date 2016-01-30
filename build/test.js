@@ -5820,7 +5820,7 @@
 	});
 	
 	(0, _tape2.default)('Vector check', function (t) {
-	  t.plan(4);
+	  t.plan(6);
 	  var board = new _Board2.default();
 	  var breaktures = Object.assign({}, _fixtures2.default.boards);
 	  t.comment('Vertical');
@@ -5835,6 +5835,11 @@
 	  t.ok(board.checkVector(0, 1, 0, 1));
 	  t.comment('Returns false if there are four repeated elements of a certain type');
 	  t.notOk(board.checkVector(1, 1, 0, 1));
+	  t.comment('Diagonal');
+	  board.state = breaktures.minusOneWins;
+	  board.changePlayer();
+	  t.comment('Returns true if there are four repeated elements of a certain type');
+	  t.ok(board.checkVector(0, 2, 1, 1));
 	});
 	
 	(0, _tape2.default)('Victory detection', function (t) {
@@ -12460,6 +12465,7 @@
 	    value: function cellValue(x, y) {
 	      console.log('x:', x, ', y: ', y);
 	      try {
+	        console.log(this.state[y][x]);
 	        return this.state[y][x];
 	      } catch (e) {
 	        return undefined;

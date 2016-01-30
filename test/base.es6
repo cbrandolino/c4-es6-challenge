@@ -36,7 +36,7 @@ test('Board Update', (t) => {
 });
 
 test('Vector check', (t) => {
-  t.plan(4);
+  t.plan(6);
   const board = new Board();
   const breaktures = Object.assign({}, fixtures.boards);
   t.comment('Vertical');
@@ -51,6 +51,11 @@ test('Vector check', (t) => {
   t.ok(board.checkVector(0, 1, 0, 1));
   t.comment('Returns false if there are four repeated elements of a certain type');
   t.notOk(board.checkVector(1, 1, 0, 1));
+  t.comment('Diagonal');
+  board.state = breaktures.minusOneWins;
+  board.changePlayer();
+  t.comment('Returns true if there are four repeated elements of a certain type');
+  t.ok(board.checkVector(0, 2, 1, 1));
 });
 
 test('Victory detection', (t) => {
