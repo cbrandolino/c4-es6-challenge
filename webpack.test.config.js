@@ -4,11 +4,11 @@
  module.exports = {
     entry: [
         'babel-polyfill',
-        './src/main.es6'
+        './test/base.es6'
     ],
     output: {
         path: path.resolve(__dirname, 'build'),
-        filename: "main.js"
+        filename: "test.js"
     },
     module: {
         loaders: [
