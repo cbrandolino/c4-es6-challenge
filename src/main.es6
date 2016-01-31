@@ -5,7 +5,7 @@ window.Renderer = Renderer;
 class App {
   constructor() {
     this.board = new Board();
-    this.renderer = new Renderer();
+    this.renderer = new Renderer(this.board.state);
   }
 }
 
