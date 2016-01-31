@@ -5791,7 +5791,7 @@
 	  _classCallCheck(this, App);
 	
 	  this.board = new _board2.default();
-	  this.renderer = new _renderer2.default(this.board.state);
+	  this.renderer = new _renderer2.default(this.board);
 	};
 	
 	window.app = new App();
@@ -6307,7 +6307,8 @@
 	    key: 'prepareTextures',
 	    value: function prepareTextures() {
 	      this.textures = {
-	        cell: PIXI.Texture.fromImage(__webpack_require__(332))
+	        cell: PIXI.Texture.fromImage(__webpack_require__(332)),
+	        marble: PIXI.Texture.fromImage(__webpack_require__(333))
 	      };
 	    }
 	  }, {
@@ -6318,17 +6319,18 @@
 	      requestAnimationFrame(function () {
 	        return _this.animate();
 	      });
+	      this.prepareMarbles();
 	      this.pixiRenderer.render(this.stage);
 	    }
 	  }, {
-	    key: 'prepareBoard',
-	    value: function prepareBoard() {
+	    key: 'prepareMarbles',
+	    value: function prepareMarbles() {
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
 	      var _iteratorError = undefined;
 	
 	      try {
-	        for (var _iterator = this.board.entries()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	        for (var _iterator = this.board.state.entries()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	          var _step$value = _slicedToArray(_step.value, 2);
 	
 	          var colIndex = _step$value[0];
@@ -6344,10 +6346,21 @@
 	              var rowIndex = _step2$value[0];
 	              var row = _step2$value[1];
 	
-	              var cellTile = new PIXI.Sprite(this.textures.cell);
-	              cellTile.x = this.tileWidth * colIndex;
-	              cellTile.y = this.tileWidth * rowIndex;
-	              this.stage.addChild(cellTile);
+	              var cellValue = this.board.cellValue(rowIndex, colIndex);
+	              if (cellValue === 0) {
+	                continue;
+	              }
+	              var marbleName = 'marble-' + rowIndex + '-' + colIndex;
+	              var oldMarble = this.stage.getChildByName(marbleName);
+	              if (oldMarble) {
+	                this.stage.removeChild(oldMarble);
+	              }
+	              var marble = new PIXI.Sprite(this.textures.marble);
+	              marble.name = marbleName;
+	              marble.tint = this.getMarbleTint(cellValue);
+	              marble.x = this.tileWidth * colIndex;
+	              marble.y = this.tileWidth * rowIndex;
+	              this.stage.addChild(marble);
 	            }
 	          } catch (err) {
 	            _didIteratorError2 = true;
@@ -6375,6 +6388,71 @@
 	        } finally {
 	          if (_didIteratorError) {
 	            throw _iteratorError;
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'getMarbleTint',
+	    value: function getMarbleTint(value) {
+	      return value === 1 ? 0xff0000 : 0x00ff00;
+	    }
+	  }, {
+	    key: 'prepareBoard',
+	    value: function prepareBoard() {
+	      var _iteratorNormalCompletion3 = true;
+	      var _didIteratorError3 = false;
+	      var _iteratorError3 = undefined;
+	
+	      try {
+	        for (var _iterator3 = this.board.state.entries()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	          var _step3$value = _slicedToArray(_step3.value, 2);
+	
+	          var colIndex = _step3$value[0];
+	          var col = _step3$value[1];
+	          var _iteratorNormalCompletion4 = true;
+	          var _didIteratorError4 = false;
+	          var _iteratorError4 = undefined;
+	
+	          try {
+	            for (var _iterator4 = col.entries()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	              var _step4$value = _slicedToArray(_step4.value, 2);
+	
+	              var rowIndex = _step4$value[0];
+	              var row = _step4$value[1];
+	
+	              var cellTile = new PIXI.Sprite(this.textures.cell);
+	              cellTile.x = this.tileWidth * colIndex;
+	              cellTile.y = this.tileWidth * rowIndex;
+	              cellTile.name = rowIndex + '-' + colIndex;
+	              this.stage.addChild(cellTile);
+	            }
+	          } catch (err) {
+	            _didIteratorError4 = true;
+	            _iteratorError4 = err;
+	          } finally {
+	            try {
+	              if (!_iteratorNormalCompletion4 && _iterator4.return) {
+	                _iterator4.return();
+	              }
+	            } finally {
+	              if (_didIteratorError4) {
+	                throw _iteratorError4;
+	              }
+	            }
+	          }
+	        }
+	      } catch (err) {
+	        _didIteratorError3 = true;
+	        _iteratorError3 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	            _iterator3.return();
+	          }
+	        } finally {
+	          if (_didIteratorError3) {
+	            throw _iteratorError3;
 	          }
 	        }
 	      }
@@ -33392,6 +33470,12 @@
 /***/ function(module, exports) {
 
 	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfATUwaqBHdgAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAACeUlEQVRo3u2bv2rrMBTGJSPuYHDAkOGOWUuXTu379Q2ydet+s5g7dTIaDKb2Eg/FowgEJ4PBwgZDaiPdKUbxTdImkRNb6nkA4x+ffHz+fIKccw40CgNoFqjLh3POQZ7nn2marrMsi4uiCMqyfK/r+gMAABBC96ZpPlmW9Wjb9t14PP49Go1+QQg7fSmpUVUVJ4SsMMbTc98JYzwlhKyqqpL9elwaMKV04/v+TLYgvu/PKKWb3gBTSjeXqHmK6jLAwSVHNwzDt2snnTAM3y456mcBJ0lCHceZ3CrTOo4zSZKEXgU4iqKwL7+YKIrCzoAZY9zzvNe+/Vc9z3tljMkFZoxx13Wf+1pMuK77/F3obwH3Udl9SksB7tM3K+ObBl9l46HVyl9l74PNQ13XIAiCh6EBB0HwUNf16bX0LYoKmcXJSUeaUroZeht4qAzde6Tn8/nL0IEPMqio7jGV/1M4juO/qgDvZWl3QKqNdNqd1Y7Cy+VyrRpwm2kHeLFY/FENuM0Et2NazjkwDAMCBYMxxreDwUbhPM8/VR3NimwNcJqma1WBRbYGOMuyWFVgka0BLooiUBVYZGuAy7J8VxVYZDOEdvBDVWCRTbtlWgOMELpXFVJka4BN03xSFVhka4Aty3pUFVhka4Bt275TFXiHTcXG/9ggQN/mAUIIrrHnvXZgjKc7FgpxGkAIWakGTAhZHRzTajfiQQiBLnwatwrf92cItYxKuo1p924eVEheGOPpz6rl2LpUq2XaNmPf0qlzbjiOMzlma9JuIf5jedDe1KKlbUk7Y5qW1kNtzaVa2oe1NIhrewVgaJc8YJcXtfp4jadT4D6Gdsu0f5PgJio/TvWzAAAAAElFTkSuQmCC"
+
+/***/ },
+/* 333 */
+/***/ function(module, exports) {
+
+	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfAh023NjysAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAC10lEQVRo3u2bPWvqUBjH/z2IeCEgDirUSSKli/gJCoVCN+fepZ/h0k9wsri4lHs3VwtyS53iYoZCl+4VN6t0SsFkkIBwL0I9d/GIL9ErbaLxiX/IlBjOjyc+53k7R0IIhEkRP1+uaRqLRqMniqJcJBKJ81QqVchkMsfpdPobAPT7/T+mab5bltUaDAZPw+HwcTQadTRNG/u1piOvLaxpWiwej1/lcrmbYrFY+Mw7Go1Gq9vt3jqOc69p2l9PFyiE8OQqlUqntVrNEB6rVqsZpVLp1Kt1egKq6/qL8Fm6rr94Af7pH3LOY9Vq9UFsWdVq9YFzHtsqcLlcvrQs60PsSJZlfZTL5cutAFcqlV8iIJqsxR9gzjmr1+vPImCq1+vPnHPmKTDnPNJsNjsioGo2mx3OecQTYM45CzLsAjT7MnAQP+N1n/eXgIPkoLxyZGu3HrGnWrdlrQwqdrnPerFPrwpOmFt8rarqXTKZZPuaAiaTSaaq6t1GycMkXiUht9h7yYr5fP43lWTflYWqdVdZec7C2Wz2J7WSzhLTrGcWRDXrsacWjsfjV1QLd7NsU+BcLndDFXiOTSYIgrhkYsEAIBqNnlCvR0tGBgCKolxQB5aMDAASicQ5dWDJyAAglUoVqANLRgYAmUzmmDqwZGQAIHs9lCUZGUImJrt41EElIwMA0zTfqQNLRgYAlmW1qANLRgYAg8HgiTqwZGQAMBwOH6kDS0YGAKPRqEMdeMooE+NtNLV3pQnbfAGg2+3eUrXuLNsU2HGce6rAc2yzFT0/hlJ2rQmTe9Xy7e3tBzXrLjEtVuYpOa9ZZ7Wy89But79Tsa4ri1uHbRfjSH6MN23cPez1ete2bY/31bK2bY97vd61681DQzysIw9Uh1rYBp7uzDCM16D/bw3DeG2322f/ffAwmHYYPQzpcKkI6/iwCOOAuAjjEQCxp4c8QneMx3PgBXj6B7WCrn+nRjeF9WK4JgAAAABJRU5ErkJggg=="
 
 /***/ }
 /******/ ]);
