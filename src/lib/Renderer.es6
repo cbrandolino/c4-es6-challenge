@@ -24,26 +24,42 @@ class Renderer {
     this.pixiRenderer.render(this.stage);
   }
 
-  prepareMarbles() {
-    for (const [colIndex, col] of this.board.state.entries()) {
-      for (const [rowIndex, row] of col.entries()) {
-        const cellValue = this.board.cellValue(rowIndex, colIndex);
-        if (cellValue === 0) {
-          continue;
-        }
-        const marbleName = `marble-${rowIndex}-${colIndex}`;
-        const oldMarble = this.stage.getChildByName(marbleName);
-        if (oldMarble) {
-          this.stage.removeChild(oldMarble);
-        }
-        const marble = new PIXI.Sprite(this.textures.marble);
-        marble.name = marbleName;
-        marble.tint = this.getMarbleTint(cellValue);
-        marble.x = this.tileWidth * colIndex;
-        marble.y = this.tileWidth * rowIndex;
-        this.stage.addChild(marble);
+  loopBoard(callback) {
+
+    for (const [col, colRows] of this.board.state.entries()) {
+      for (const row in colRows) {
+        callback({ row, col });
       }
     }
+  }
+
+  addSpriteOnTile(sprite, baseName, row, col, unique = false) {
+    sprite.name = `${baseName}-${row}-${col}`;
+    sprite.x = this.tileWidth * col;
+    sprite.y = this.tileWidth * row;
+    if (unique) {
+      this.removeSprite(sprite.name);
+    }
+    this.stage.addChild(sprite);
+  }
+
+  removeSprite(spriteName) {
+    const sprite = this.stage.getChildByName(spriteName);
+    if (sprite) {
+      this.stage.removeChild(sprite);
+    }
+  }
+
+  prepareMarbles() {
+    this.loopBoard(({ row, col }) => {
+      const cellValue = this.board.cellValue(row, col);
+      if (cellValue === 0) {
+        return;
+      }
+      const marble = new PIXI.Sprite(this.textures.marble);
+      marble.tint = this.getMarbleTint(cellValue);
+      this.addSpriteOnTile(marble, 'marble', row, col, true);
+    });
   }
 
   getMarbleTint(value) {
@@ -51,15 +67,10 @@ class Renderer {
   }
 
   prepareBoard() {
-    for (const [colIndex, col] of this.board.state.entries()) {
-      for (const [rowIndex, row] of col.entries()) {
-        const cellTile = new PIXI.Sprite(this.textures.cell);
-        cellTile.x = this.tileWidth * colIndex;
-        cellTile.y = this.tileWidth * rowIndex;
-        cellTile.name = `${rowIndex}-${colIndex}`;
-        this.stage.addChild(cellTile);
-      }
-    }
+    this.loopBoard(({ row, col }) => {
+      const cell = new PIXI.Sprite(this.textures.cell);
+      this.addSpriteOnTile(cell, 'cell', row, col);
+    });
   }
 
   prepareStage() {

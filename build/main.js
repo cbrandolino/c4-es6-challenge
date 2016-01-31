@@ -6323,58 +6323,22 @@
 	      this.pixiRenderer.render(this.stage);
 	    }
 	  }, {
-	    key: 'prepareMarbles',
-	    value: function prepareMarbles() {
+	    key: 'loopBoard',
+	    value: function loopBoard(callback) {
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
 	      var _iteratorError = undefined;
 	
 	      try {
+	
 	        for (var _iterator = this.board.state.entries()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	          var _step$value = _slicedToArray(_step.value, 2);
 	
-	          var colIndex = _step$value[0];
-	          var col = _step$value[1];
-	          var _iteratorNormalCompletion2 = true;
-	          var _didIteratorError2 = false;
-	          var _iteratorError2 = undefined;
+	          var col = _step$value[0];
+	          var colRows = _step$value[1];
 	
-	          try {
-	            for (var _iterator2 = col.entries()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	              var _step2$value = _slicedToArray(_step2.value, 2);
-	
-	              var rowIndex = _step2$value[0];
-	              var row = _step2$value[1];
-	
-	              var cellValue = this.board.cellValue(rowIndex, colIndex);
-	              if (cellValue === 0) {
-	                continue;
-	              }
-	              var marbleName = 'marble-' + rowIndex + '-' + colIndex;
-	              var oldMarble = this.stage.getChildByName(marbleName);
-	              if (oldMarble) {
-	                this.stage.removeChild(oldMarble);
-	              }
-	              var marble = new PIXI.Sprite(this.textures.marble);
-	              marble.name = marbleName;
-	              marble.tint = this.getMarbleTint(cellValue);
-	              marble.x = this.tileWidth * colIndex;
-	              marble.y = this.tileWidth * rowIndex;
-	              this.stage.addChild(marble);
-	            }
-	          } catch (err) {
-	            _didIteratorError2 = true;
-	            _iteratorError2 = err;
-	          } finally {
-	            try {
-	              if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                _iterator2.return();
-	              }
-	            } finally {
-	              if (_didIteratorError2) {
-	                throw _iteratorError2;
-	              }
-	            }
+	          for (var row in colRows) {
+	            callback({ row: row, col: col });
 	          }
 	        }
 	      } catch (err) {
@@ -6393,6 +6357,45 @@
 	      }
 	    }
 	  }, {
+	    key: 'addSpriteOnTile',
+	    value: function addSpriteOnTile(sprite, baseName, row, col) {
+	      var unique = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
+	
+	      sprite.name = baseName + '-' + row + '-' + col;
+	      sprite.x = this.tileWidth * col;
+	      sprite.y = this.tileWidth * row;
+	      if (unique) {
+	        this.removeSprite(sprite.name);
+	      }
+	      this.stage.addChild(sprite);
+	    }
+	  }, {
+	    key: 'removeSprite',
+	    value: function removeSprite(spriteName) {
+	      var sprite = this.stage.getChildByName(spriteName);
+	      if (sprite) {
+	        this.stage.removeChild(sprite);
+	      }
+	    }
+	  }, {
+	    key: 'prepareMarbles',
+	    value: function prepareMarbles() {
+	      var _this2 = this;
+	
+	      this.loopBoard(function (_ref) {
+	        var row = _ref.row;
+	        var col = _ref.col;
+	
+	        var cellValue = _this2.board.cellValue(row, col);
+	        if (cellValue === 0) {
+	          return;
+	        }
+	        var marble = new PIXI.Sprite(_this2.textures.marble);
+	        marble.tint = _this2.getMarbleTint(cellValue);
+	        _this2.addSpriteOnTile(marble, 'marble', row, col, true);
+	      });
+	    }
+	  }, {
 	    key: 'getMarbleTint',
 	    value: function getMarbleTint(value) {
 	      return value === 1 ? 0xff0000 : 0x00ff00;
@@ -6400,62 +6403,16 @@
 	  }, {
 	    key: 'prepareBoard',
 	    value: function prepareBoard() {
-	      var _iteratorNormalCompletion3 = true;
-	      var _didIteratorError3 = false;
-	      var _iteratorError3 = undefined;
+	      var _this3 = this;
 	
-	      try {
-	        for (var _iterator3 = this.board.state.entries()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	          var _step3$value = _slicedToArray(_step3.value, 2);
+	      console.log('bubu');
+	      this.loopBoard(function (_ref2) {
+	        var row = _ref2.row;
+	        var col = _ref2.col;
 	
-	          var colIndex = _step3$value[0];
-	          var col = _step3$value[1];
-	          var _iteratorNormalCompletion4 = true;
-	          var _didIteratorError4 = false;
-	          var _iteratorError4 = undefined;
-	
-	          try {
-	            for (var _iterator4 = col.entries()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-	              var _step4$value = _slicedToArray(_step4.value, 2);
-	
-	              var rowIndex = _step4$value[0];
-	              var row = _step4$value[1];
-	
-	              var cellTile = new PIXI.Sprite(this.textures.cell);
-	              cellTile.x = this.tileWidth * colIndex;
-	              cellTile.y = this.tileWidth * rowIndex;
-	              cellTile.name = rowIndex + '-' + colIndex;
-	              this.stage.addChild(cellTile);
-	            }
-	          } catch (err) {
-	            _didIteratorError4 = true;
-	            _iteratorError4 = err;
-	          } finally {
-	            try {
-	              if (!_iteratorNormalCompletion4 && _iterator4.return) {
-	                _iterator4.return();
-	              }
-	            } finally {
-	              if (_didIteratorError4) {
-	                throw _iteratorError4;
-	              }
-	            }
-	          }
-	        }
-	      } catch (err) {
-	        _didIteratorError3 = true;
-	        _iteratorError3 = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion3 && _iterator3.return) {
-	            _iterator3.return();
-	          }
-	        } finally {
-	          if (_didIteratorError3) {
-	            throw _iteratorError3;
-	          }
-	        }
-	      }
+	        var cell = new PIXI.Sprite(_this3.textures.cell);
+	        _this3.addSpriteOnTile(cell, 'cell', row, col);
+	      });
 	    }
 	  }, {
 	    key: 'prepareStage',
