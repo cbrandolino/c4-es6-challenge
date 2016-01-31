@@ -5773,23 +5773,28 @@
 
 	'use strict';
 	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
 	var _board = __webpack_require__(193);
 	
-	var Board = _interopRequireWildcard(_board);
+	var _board2 = _interopRequireDefault(_board);
 	
-	var _pixi = __webpack_require__(195);
+	var _renderer = __webpack_require__(331);
 	
-	var Pixi = _interopRequireWildcard(_pixi);
+	var _renderer2 = _interopRequireDefault(_renderer);
 	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var app = {};
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	exports.default = app;
+	window.Renderer = _renderer2.default;
+	
+	var App = function App() {
+	  _classCallCheck(this, App);
+	
+	  this.board = new _board2.default();
+	  this.renderer = new _renderer2.default();
+	};
+	
+	window.app = new App();
 
 /***/ },
 /* 193 */
@@ -33261,6 +33266,61 @@
 	    console.warn('utils.uuid() is deprecated, please use utils.uid() from now on.');
 	    return core.utils.uid();
 	};
+
+/***/ },
+/* 331 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(195);
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	window.Pixi = PIXI;
+	
+	var Renderer = function () {
+	  function Renderer() {
+	    _classCallCheck(this, Renderer);
+	
+	    this.prepareStage();
+	    this.animate();
+	  }
+	
+	  _createClass(Renderer, [{
+	    key: 'animate',
+	    value: function animate() {
+	      var _this = this;
+	
+	      requestAnimationFrame(function () {
+	        return _this.animate();
+	      });
+	      this.render();
+	    }
+	  }, {
+	    key: 'prepareStage',
+	    value: function prepareStage() {
+	      this.pixiRenderer = PIXI.autoDetectRenderer(800, 600);
+	      document.body.appendChild(this.pixiRenderer.view);
+	      this.stage = new PIXI.Container();
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      this.pixiRenderer.render(this.stage);
+	    }
+	  }]);
+	
+	  return Renderer;
+	}();
+	
+	exports.default = Renderer;
 
 /***/ }
 /******/ ]);

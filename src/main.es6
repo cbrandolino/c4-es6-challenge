@@ -1,7 +1,12 @@
-import * as Board from './lib/board.es6';
-import * as Pixi from 'pixi.js';
+import Board from './lib/board.es6';
+import Renderer from './lib/renderer.es6';
 
+window.Renderer = Renderer;
+class App {
+  constructor() {
+    this.board = new Board();
+    this.renderer = new Renderer();
+  }
+}
 
-const app = {}
-
-export default app;
+window.app = new App();
