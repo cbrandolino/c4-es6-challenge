@@ -1,66 +1,51 @@
 import 'pixi.js';
+import TileSprite from './TileSprite.es6';
 
 class Renderer {
 
-  constructor(board) {
-    this.board = board;
-    this.tileWidth = 60;
-    this.boardHeight = this.tileWidth * this.board.state.length;
-    this.initialisePixi();
-    this.initialiseBoard();
+  constructor(boardModel) {
+    this.boardModel = boardModel;
+    this.board = new PIXI.Stage();
+    this.pixiRenderer = PIXI.autoDetectRenderer(800, 600);
+    this.view = this.pixiRenderer.view;
+    this.renderCells();
     this.animate();
   }
 
-  initialisePixi() {
-    this.pixiRenderer = PIXI.autoDetectRenderer(800, 600);
-    document.body.appendChild(this.pixiRenderer.view);
-    this.stage = new PIXI.Container();
-    this.textures = {
-      cell: PIXI.Texture.fromImage(require('../../img/cell.png')),
-      marble: PIXI.Texture.fromImage(require('../../img/marble.png')),
-    };
+  renderCells() {
+    this.boardModel.loop(({ row, col }) => {
+      const cell = new TileSprite('cell', this.board, row, col);
+      cell.interactive = true;
+      cell.on('click', () => {
+        console.log('click')
+        this.boardModel.play(cell.col)
+      });
+      cell.placeOnBoard();
+    });
   }
 
-  initialiseBoard() {
-    this.board.loop(({ row, col }) => {
-      this.addSpriteOnTile('cell', row, col);
+  addMarbles() {
+    this.boardModel.loop(({ row, col, value }) => {
+      if (value === 0) {
+        return;
+      }
+      const marble = new TileSprite('marble', this.board, row, col);
+      marble.tint = (value === 1) ? 0xff0000 : 0x00ff00;
+      marble.placeOnBoard();
     });
   }
 
   animate() {
     requestAnimationFrame(() => this.animate());
     this.addMarbles();
-    this.pixiRenderer.render(this.stage);
-  }
-
-  addSpriteOnTile(spriteId, row, col, unique = false) {
-    const sprite = new PIXI.Sprite(this.textures[spriteId]);
-    sprite.name = `${spriteId}-${row}-${col}`;
-    sprite.x = this.tileWidth * col;
-    sprite.y = this.boardHeight - this.tileWidth * row;
-    if (unique) {
-      this.removeSprite(sprite.name);
-    }
-    this.stage.addChild(sprite);
-    return sprite;
+    this.pixiRenderer.render(this.board);
   }
 
   removeSprite(spriteName) {
-    const sprite = this.stage.getChildByName(spriteName);
+    const sprite = this.board.getChildByName(spriteName);
     if (sprite) {
-      this.stage.removeChild(sprite);
+      this.board.removeChild(sprite);
     }
-  }
-
-  addMarbles() {
-    this.board.loop(({ row, col }) => {
-      const cellValue = this.board.cellValue(row, col);
-      if (cellValue === 0) {
-        return;
-      }
-      const marble = this.addSpriteOnTile('marble', row, col, true);
-      marble.tint = (cellValue === 1) ? 0xff0000 : 0x00ff00;
-    });
   }
 }
 

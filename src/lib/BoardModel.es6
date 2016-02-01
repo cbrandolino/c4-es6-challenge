@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-class Board extends EventEmitter {
+class BoardModel extends EventEmitter {
 
   constructor() {
     super();
@@ -95,7 +95,7 @@ class Board extends EventEmitter {
   loop(callback) {
     for (const [col, colRows] of this.state.entries()) {
       for (const row in colRows) {
-        callback({ row, col });
+        callback({ row, col, value: this.cellValue(row, col) });
       }
     }
   }
@@ -135,4 +135,4 @@ class Board extends EventEmitter {
   }
 }
 
-export default Board;
+export default BoardModel;
