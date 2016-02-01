@@ -6328,6 +6328,7 @@
 	
 	    this.board = board;
 	    this.tileWidth = 60;
+	    this.boardHeight = this.tileWidth * this.board.state.length;
 	    this.initialisePixi();
 	    this.initialiseBoard();
 	    this.animate();
@@ -6375,7 +6376,7 @@
 	      var sprite = new PIXI.Sprite(this.textures[spriteId]);
 	      sprite.name = spriteId + '-' + row + '-' + col;
 	      sprite.x = this.tileWidth * col;
-	      sprite.y = this.tileWidth * row;
+	      sprite.y = this.boardHeight - this.tileWidth * row;
 	      if (unique) {
 	        this.removeSprite(sprite.name);
 	      }
