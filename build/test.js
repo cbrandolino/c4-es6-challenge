@@ -5781,6 +5781,10 @@
 	
 	var _BoardModel2 = _interopRequireDefault(_BoardModel);
 	
+	var _Ai = __webpack_require__(251);
+	
+	var _Ai2 = _interopRequireDefault(_Ai);
+	
 	var _board = __webpack_require__(249);
 	
 	var _board2 = _interopRequireDefault(_board);
@@ -5795,8 +5799,8 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	(0, _board2.default)(_tape2.default, _fixtures2.default, _BoardModel2.default);
-	(0, _ai2.default)(ai, _tape2.default, _fixtures2.default, _BoardModel2.default);
+	//boardTest(test, fixtures, BoardModel);
+	(0, _ai2.default)(_Ai2.default, _tape2.default, _fixtures2.default, _BoardModel2.default);
 
 /***/ },
 /* 193 */
@@ -12675,14 +12679,102 @@
 	});
 	var aiTest = function aiTest(Ai, test, fixtures, BoardModel) {
 	
+	  var makeBoard = function makeBoard(fixture) {
+	    var board = new BoardModel();
+	    board.state = fixtures.boards[fixture];
+	    return board;
+	  };
+	
+	  var makeTestMap = function makeTestMap() {
+	    var remove = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+	    var change = arguments.length <= 1 || arguments[1] === undefined ? new Map() : arguments[1];
+	
+	    var map = new Map([[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0]]);
+	    remove.forEach(function (item) {
+	      return map.delete(item);
+	    });
+	    change.forEach(function (item, key) {
+	      return map.set(index, item);
+	    });
+	    return map;
+	  };
+	
 	  test('Object Creation', function (t) {
-	    plan(1);
+	    t.plan(1);
 	    var ai = new Ai();
 	    t.same(ai.lookahead, 6);
+	  });
+	
+	  test('Empty scores array', function (t) {
+	    t.plan(2);
+	    t.same(ai.emptyScoresArray(makeBoard('base')), makeTestMap(), 'Create a map containing (col, 0) for each column');
+	    t.same(ai.emptyScoresArray(makeBoard('noSpaceCol2')), makeTestMap([2]), 'If a column is full, do not include it in the map');
 	  });
 	};
 	
 	exports.default = aiTest;
+
+/***/ },
+/* 251 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _BoardModel = __webpack_require__(248);
+	
+	var _BoardModel2 = _interopRequireDefault(_BoardModel);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var AI = function () {
+	  function AI() {
+	    _classCallCheck(this, AI);
+	
+	    this.lookahead = 6;
+	    this._board = null;
+	  }
+	
+	  _createClass(AI, [{
+	    key: 'play',
+	    value: function play() {
+	      this.moves = this.board.getMovesScore();
+	    }
+	  }, {
+	    key: 'getMovesScore',
+	    value: function getMovesScore() {
+	      var scores = emptyScoresArray();
+	      return scores;
+	    }
+	  }, {
+	    key: 'emptyScoresArray',
+	    value: function emptyScoresArray(board) {
+	      return new Map(board.validColumns.map(function (el) {
+	        return [el, 0];
+	      }));
+	    }
+	  }, {
+	    key: 'board',
+	    get: function get() {
+	      return this._board;
+	    },
+	    set: function set(board) {
+	      this._board = board;
+	      return board;
+	    }
+	  }]);
+	
+	  return AI;
+	}();
+	
+	exports.default = AI;
 
 /***/ }
 /******/ ]);
