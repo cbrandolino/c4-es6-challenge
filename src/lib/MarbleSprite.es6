@@ -9,13 +9,15 @@ class MarbleSprite extends Sprite {
     this.x = this.targetX;
     this.y = 0;
     this.zIndex = 1;
-    this.board.addChild(this);
+    this.board.addChildAt(this, 0);
+    this.moving = 1;
     this.fallToPlace();
   }
 
   fallToPlace() {
     this.y ++;
     if (this.y >= this.targetY) {
+      this.moving = 0;
       this.x = this.targetX;
       return;
     }

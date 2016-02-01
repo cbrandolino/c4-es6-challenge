@@ -33525,7 +33525,8 @@
 	    _this.x = _this.targetX;
 	    _this.y = 0;
 	    _this.zIndex = 1;
-	    _this.board.addChild(_this);
+	    _this.board.addChildAt(_this, 0);
+	    _this.moving = 1;
 	    _this.fallToPlace();
 	    return _this;
 	  }
@@ -33537,6 +33538,7 @@
 	
 	      this.y++;
 	      if (this.y >= this.targetY) {
+	        this.moving = 0;
 	        this.x = this.targetX;
 	        return;
 	      }
