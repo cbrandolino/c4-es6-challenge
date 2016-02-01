@@ -33535,21 +33535,28 @@
 	    _this.y = 0;
 	    _this.zIndex = 1;
 	    _this.board.addChildAt(_this, 0);
-	    _this.tween(_this);
+	    _this.startMoving(_this);
 	    return _this;
 	  }
 	
 	  _createClass(MarbleSprite, [{
-	    key: 'tween',
-	    value: function tween(marble) {
+	    key: 'startMoving',
+	    value: function startMoving() {
 	      var _this2 = this;
 	
 	      this.moving = 1;
-	      new _tween2.default.Tween({ y: 0 }).to({ y: this.targetY }, 1000).onUpdate(function () {
-	        marble.y = this.y;
-	      }).onComplete(function () {
-	        return _this2.moving = 0;
+	      new _tween2.default.Tween({ y: 0 }).to({ y: this.targetY }, 1000).onUpdate(function (marble) {
+	        return function () {
+	          marble.y = this.y;
+	        };
+	      }(this)).onComplete(function () {
+	        return _this2.movingComplete();
 	      }).start();
+	    }
+	  }, {
+	    key: 'movingComplete',
+	    value: function movingComplete() {
+	      this.moving = 0;
 	    }
 	  }, {
 	    key: 'colorize',

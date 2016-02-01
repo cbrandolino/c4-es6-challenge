@@ -11,18 +11,24 @@ class MarbleSprite extends Sprite {
     this.y = 0;
     this.zIndex = 1;
     this.board.addChildAt(this, 0);
-    this.tween(this);
+    this.startMoving(this);
   }
 
-  tween(marble) {
+  startMoving() {
     this.moving = 1;
     new TWEEN.Tween({y: 0})
       .to({ y: this.targetY }, 1000)
-      .onUpdate(function () { marble.y = this.y; })
-      .onComplete(() => this.moving = 0)
+      .onUpdate(((marble) => 
+        function() { marble.y = this.y; })(this))
+      .onComplete(() => this.movingComplete())
       .start();
   }
-      
+
+  movingComplete() {
+    this.moving = 0;
+  }
+  
+
 
   colorize() {
     this.tint = (this.player === 1) ? 0xff0000 : 0x00ff00;
