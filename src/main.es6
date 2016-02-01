@@ -1,5 +1,5 @@
 import BoardModel from './lib/BoardModel.es6';
-import TileSprite from './lib/TileSprite.es6';
+import CellSprite from './lib/CellSprite.es6';
 
 class App {
 
@@ -14,7 +14,7 @@ class App {
 
   renderCells() {
     this.boardModel.loop(({ row, col }) => {
-      const cell = new TileSprite(this.board, 'cell', row, col);
+      const cell = new CellSprite(this.board, 'cell', row, col);
       cell.interactive = true;
       cell.on('click', () => this.makeMove(col));
       cell.placeOnBoard();

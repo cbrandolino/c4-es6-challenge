@@ -5779,9 +5779,9 @@
 	
 	var _BoardModel2 = _interopRequireDefault(_BoardModel);
 	
-	var _TileSprite = __webpack_require__(332);
+	var _CellSprite = __webpack_require__(337);
 	
-	var _TileSprite2 = _interopRequireDefault(_TileSprite);
+	var _CellSprite2 = _interopRequireDefault(_CellSprite);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -5808,7 +5808,7 @@
 	        var row = _ref.row;
 	        var col = _ref.col;
 	
-	        var cell = new _TileSprite2.default(_this.board, 'cell', row, col);
+	        var cell = new _CellSprite2.default(_this.board, 'cell', row, col);
 	        cell.interactive = true;
 	        cell.on('click', function () {
 	          return _this.makeMove(col);
@@ -33110,67 +33110,7 @@
 	};
 
 /***/ },
-/* 332 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	__webpack_require__(196);
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var TileSprite = function (_PIXI$Sprite) {
-	  _inherits(TileSprite, _PIXI$Sprite);
-	
-	  function TileSprite(board, textureName, row, col) {
-	    var _ret;
-	
-	    _classCallCheck(this, TileSprite);
-	
-	    var textures = {
-	      cell: PIXI.Texture.fromImage(__webpack_require__(333)),
-	      marble: PIXI.Texture.fromImage(__webpack_require__(334))
-	    };
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TileSprite).call(this, textures[textureName]));
-	
-	    _this.board = board;
-	    _this.row = row;
-	    _this.col = col;
-	    _this.tileWidth = 60;
-	    _this.boardHeight = _this.tileWidth * 6;
-	    _this.targetX = _this.tileWidth * _this.col;
-	    _this.targetY = _this.boardHeight - _this.tileWidth * _this.row;
-	    _this.name = textureName + '-' + row + '-' + col;
-	    return _ret = _this, _possibleConstructorReturn(_this, _ret);
-	  }
-	
-	  _createClass(TileSprite, [{
-	    key: 'placeOnBoard',
-	    value: function placeOnBoard() {
-	      this.x = this.targetX;
-	      this.y = this.targetY;
-	      this.board.addChild(this);
-	      return this;
-	    }
-	  }]);
-	
-	  return TileSprite;
-	}(PIXI.Sprite);
-	
-	exports.default = TileSprite;
-
-/***/ },
+/* 332 */,
 /* 333 */
 /***/ function(module, exports) {
 
@@ -33417,6 +33357,131 @@
 	}(_events.EventEmitter);
 	
 	exports.default = BoardModel;
+
+/***/ },
+/* 336 */,
+/* 337 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(196);
+	
+	var _Sprite2 = __webpack_require__(338);
+	
+	var _Sprite3 = _interopRequireDefault(_Sprite2);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var CellSprite = function (_Sprite) {
+	  _inherits(CellSprite, _Sprite);
+	
+	  function CellSprite() {
+	    var _Object$getPrototypeO;
+	
+	    _classCallCheck(this, CellSprite);
+	
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	      args[_key] = arguments[_key];
+	    }
+	
+	    return _possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CellSprite)).call.apply(_Object$getPrototypeO, [this].concat(args)));
+	  }
+	
+	  return CellSprite;
+	}(_Sprite3.default);
+	
+	exports.default = CellSprite;
+
+/***/ },
+/* 338 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(196);
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Sprite = function (_PIXI$Sprite) {
+	  _inherits(Sprite, _PIXI$Sprite);
+	
+	  function Sprite(board, textureName, row, col) {
+	    var _ret;
+	
+	    _classCallCheck(this, Sprite);
+	
+	    var texture = PIXI.Texture.fromImage(__webpack_require__(339)("./" + textureName + '.png'));
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Sprite).call(this, texture));
+	
+	    _this.board = board;
+	    _this.row = row;
+	    _this.col = col;
+	    _this.tileWidth = 60;
+	    _this.boardHeight = _this.tileWidth * 6;
+	    _this.targetX = _this.tileWidth * _this.col;
+	    _this.targetY = _this.boardHeight - _this.tileWidth * _this.row;
+	    _this.name = textureName + '-' + row + '-' + col;
+	    return _ret = _this, _possibleConstructorReturn(_this, _ret);
+	  }
+	
+	  _createClass(Sprite, [{
+	    key: 'placeOnBoard',
+	    value: function placeOnBoard() {
+	      this.x = this.targetX;
+	      this.y = this.targetY;
+	      this.board.addChild(this);
+	      return this;
+	    }
+	  }]);
+	
+	  return Sprite;
+	}(PIXI.Sprite);
+	
+	exports.default = Sprite;
+
+/***/ },
+/* 339 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var map = {
+		"./cell.png": 333,
+		"./marble.png": 334
+	};
+	function webpackContext(req) {
+		return __webpack_require__(webpackContextResolve(req));
+	};
+	function webpackContextResolve(req) {
+		return map[req] || (function() { throw new Error("Cannot find module '" + req + "'.") }());
+	};
+	webpackContext.keys = function webpackContextKeys() {
+		return Object.keys(map);
+	};
+	webpackContext.resolve = webpackContextResolve;
+	module.exports = webpackContext;
+	webpackContext.id = 339;
+
 
 /***/ }
 /******/ ]);
