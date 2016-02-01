@@ -33090,8 +33090,10 @@
 	var TileSprite = function (_PIXI$Sprite) {
 	  _inherits(TileSprite, _PIXI$Sprite);
 	
-	  function TileSprite(textureName, board, row, col) {
+	  function TileSprite(board, textureName, row, col) {
 	    var _ret;
+	
+	    var unique = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
 	
 	    _classCallCheck(this, TileSprite);
 	
@@ -33421,42 +33423,22 @@
 	        var row = _ref.row;
 	        var col = _ref.col;
 	
-	        var cell = new _TileSprite2.default('cell', _this.board, row, col);
+	        var cell = new _TileSprite2.default(_this.board, 'cell', row, col);
 	        cell.interactive = true;
 	        cell.on('click', function () {
-	          console.log('click');
 	          _this.boardModel.play(cell.col);
 	        });
 	        cell.placeOnBoard();
 	      });
 	    }
 	  }, {
-	    key: 'addMarbles',
-	    value: function addMarbles() {
-	      var _this2 = this;
-	
-	      this.boardModel.loop(function (_ref2) {
-	        var row = _ref2.row;
-	        var col = _ref2.col;
-	        var value = _ref2.value;
-	
-	        if (value === 0) {
-	          return;
-	        }
-	        var marble = new _TileSprite2.default('marble', _this2.board, row, col);
-	        marble.tint = value === 1 ? 0xff0000 : 0x00ff00;
-	        marble.placeOnBoard();
-	      });
-	    }
-	  }, {
 	    key: 'animate',
 	    value: function animate() {
-	      var _this3 = this;
+	      var _this2 = this;
 	
 	      requestAnimationFrame(function () {
-	        return _this3.animate();
+	        return _this2.animate();
 	      });
-	      this.addMarbles();
 	      this.pixiRenderer.render(this.board);
 	    }
 	  }, {

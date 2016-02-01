@@ -14,30 +14,17 @@ class Renderer {
 
   renderCells() {
     this.boardModel.loop(({ row, col }) => {
-      const cell = new TileSprite('cell', this.board, row, col);
+      const cell = new TileSprite(this.board, 'cell', row, col);
       cell.interactive = true;
       cell.on('click', () => {
-        console.log('click')
-        this.boardModel.play(cell.col)
+        this.boardModel.play(cell.col);
       });
       cell.placeOnBoard();
     });
   }
 
-  addMarbles() {
-    this.boardModel.loop(({ row, col, value }) => {
-      if (value === 0) {
-        return;
-      }
-      const marble = new TileSprite('marble', this.board, row, col);
-      marble.tint = (value === 1) ? 0xff0000 : 0x00ff00;
-      marble.placeOnBoard();
-    });
-  }
-
   animate() {
     requestAnimationFrame(() => this.animate());
-    this.addMarbles();
     this.pixiRenderer.render(this.board);
   }
 

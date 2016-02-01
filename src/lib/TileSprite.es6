@@ -1,7 +1,7 @@
 import 'pixi.js';
 
 class TileSprite extends PIXI.Sprite {
-  constructor(textureName, board, row, col) {
+  constructor(board, textureName, row, col, unique = false) {
     const textures = {
       cell: PIXI.Texture.fromImage(require('../../img/cell.png')),
       marble: PIXI.Texture.fromImage(require('../../img/marble.png')),
