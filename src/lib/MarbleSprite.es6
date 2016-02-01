@@ -1,5 +1,6 @@
 import 'pixi.js';
 import Sprite from './Sprite.es6';
+import TWEEN from 'tween.js';
 
 class MarbleSprite extends Sprite {
   constructor(board, row, col, player) {
@@ -10,19 +11,18 @@ class MarbleSprite extends Sprite {
     this.y = 0;
     this.zIndex = 1;
     this.board.addChildAt(this, 0);
-    this.moving = 1;
-    this.fallToPlace();
+    this.tween(this);
   }
 
-  fallToPlace() {
-    this.y ++;
-    if (this.y >= this.targetY) {
-      this.moving = 0;
-      this.x = this.targetX;
-      return;
-    }
-    requestAnimationFrame(() => this.fallToPlace());
+  tween(marble) {
+    this.moving = 1;
+    new TWEEN.Tween({y: 0})
+      .to({ y: this.targetY }, 1000)
+      .onUpdate(function () { marble.y = this.y; })
+      .onComplete(() => this.moving = 0)
+      .start();
   }
+      
 
   colorize() {
     this.tint = (this.player === 1) ? 0xff0000 : 0x00ff00;

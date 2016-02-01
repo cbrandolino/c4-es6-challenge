@@ -1,6 +1,7 @@
 import BoardModel from './lib/BoardModel.es6';
 import CellSprite from './lib/CellSprite.es6';
 import MarbleSprite from './lib/MarbleSprite.es6';
+import TWEEN from 'tween.js';
 
 class App {
 
@@ -31,8 +32,9 @@ class App {
     }
   }
 
-  animate() {
-    requestAnimationFrame(() => this.animate());
+  animate(time) {
+    requestAnimationFrame((ms) => this.animate(ms));
+    TWEEN.update(time);
     this.renderer.render(this.board);
   }
 }
