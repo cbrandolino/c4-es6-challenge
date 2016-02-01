@@ -13,7 +13,7 @@ class BoardModel extends EventEmitter {
 
   exception(message) {
     this.message = message;
-    this.name = "BoardException";
+    this.name = 'BoardException';
   }
 
   initializeEmptyBoard() {

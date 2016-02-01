@@ -5785,6 +5785,10 @@
 	
 	var _board2 = _interopRequireDefault(_board);
 	
+	var _ai = __webpack_require__(250);
+	
+	var _ai2 = _interopRequireDefault(_ai);
+	
 	var _fixtures = __webpack_require__(247);
 	
 	var _fixtures2 = _interopRequireDefault(_fixtures);
@@ -5792,6 +5796,7 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	(0, _board2.default)(_tape2.default, _fixtures2.default, _BoardModel2.default);
+	(0, _ai2.default)(ai, _tape2.default, _fixtures2.default, _BoardModel2.default);
 
 /***/ },
 /* 193 */
@@ -12360,7 +12365,7 @@
 	    key: 'exception',
 	    value: function exception(message) {
 	      this.message = message;
-	      this.name = "BoardException";
+	      this.name = 'BoardException';
 	    }
 	  }, {
 	    key: 'initializeEmptyBoard',
@@ -12658,6 +12663,26 @@
 	  });
 	};
 	exports.default = boardTest;
+
+/***/ },
+/* 250 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var aiTest = function aiTest(Ai, test, fixtures, BoardModel) {
+	
+	  test('Object Creation', function (t) {
+	    plan(1);
+	    var ai = new Ai();
+	    t.same(ai.lookahead, 6);
+	  });
+	};
+	
+	exports.default = aiTest;
 
 /***/ }
 /******/ ]);
