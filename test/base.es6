@@ -1,9 +1,9 @@
 import test from 'tape';
 import fixtures from '../test/fixtures.es6';
-import Board from '../src/lib/Board.es6';
+import BoardModel from '../src/lib/BoardModel.es6';
 
-test('Board Creation', (t) => {
-  const board = new Board();
+test('BoardModel Creation', (t) => {
+  const board = new BoardModel();
   t.plan(2);
   t.ok(board);
   t.same(board.state, fixtures.boards.base);
@@ -12,7 +12,7 @@ test('Board Creation', (t) => {
 test('Player setup', (t) => {
   t.comment(`Players are indicated con 1 e -1 for flippability
     and potential in for cost/search algos`);
-  const board = new Board();
+  const board = new BoardModel();
   t.plan(4);
   t.equal(board.currentPlayer, 1);
   t.equal(board.nextPlayer, -1);
@@ -20,8 +20,8 @@ test('Player setup', (t) => {
   t.equal(board.currentPlayer, -2);
 });
 
-test('Board Update', (t) => {
-  const board = new Board();
+test('BoardModel Update', (t) => {
+  const board = new BoardModel();
   let moveResult = board.play(0);
   t.plan(5);
   t.comment('A throw is executed on a column');
@@ -37,7 +37,7 @@ test('Board Update', (t) => {
 
 test('Vector check', (t) => {
   t.plan(5);
-  const board = new Board();
+  const board = new BoardModel();
   t.comment('Vertical');
   board.state = fixtures.boards.oneWins;
   t.comment('Returns true if there are four repeated elements of a certain type');
@@ -59,7 +59,7 @@ test('Vector check', (t) => {
 
 test('Victory detection', (t) => {
   t.plan(3);
-  const board = new Board();
+  const board = new BoardModel();
   board.state = fixtures.boards.oneWins;
   t.comment('Victory');
   t.ok(board.checkVictory(5, 2));
@@ -72,7 +72,7 @@ test('Victory detection', (t) => {
 });
 
 test('Edge cases/Final states', (container) => {
-  const board = new Board();
+  const board = new BoardModel();
   container.test('Full-column edge cases', (t) => {
     t.plan(5);
     board.state = fixtures.boards.noSpaceCol2;
@@ -91,7 +91,7 @@ test('Edge cases/Final states', (container) => {
     board.state = fixtures.boards.full;
     t.plan(2);
     t.throws(board.play(1));
-    board.on('fullBoard', () =>
+    board.on('fullBoardModel', () =>
       t.pass('Emit event signaling board is full')
     );
   });

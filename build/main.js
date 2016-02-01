@@ -5783,7 +5783,7 @@
 	
 	var _CellSprite2 = _interopRequireDefault(_CellSprite);
 	
-	var _MarbleSprite = __webpack_require__(333);
+	var _MarbleSprite = __webpack_require__(336);
 	
 	var _MarbleSprite2 = _interopRequireDefault(_MarbleSprite);
 	
@@ -5813,6 +5813,9 @@
 	        var col = _ref.col;
 	
 	        var cell = new _CellSprite2.default(_this.board, row, col);
+	        cell.on('click', function (e) {
+	          return _this.makeMove(e.target.col);
+	        });
 	      });
 	    }
 	  }, {
@@ -6381,9 +6384,6 @@
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CellSprite).call(this, board, 'cell', row, col));
 	
 	    _this.interactive = true;
-	    _this.on('click', function () {
-	      return _this.makeMove(col);
-	    });
 	    _this.placeOnBoard();
 	    return _this;
 	  }
@@ -6705,7 +6705,7 @@
 	   * @constant
 	   * @property {string} VERSION
 	   */
-	  VERSION: __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"../../package.json\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).version,
+	  VERSION: __webpack_require__(204).version,
 	
 	  /**
 	   * @property {number} PI_2 - Two Pi
@@ -6915,7 +6915,117 @@
 	module.exports = CONST;
 
 /***/ },
-/* 204 */,
+/* 204 */
+/***/ function(module, exports) {
+
+	module.exports = {
+		"name": "pixi.js",
+		"version": "3.0.9",
+		"description": "Pixi.js is a fast lightweight 2D library that works across all devices.",
+		"author": {
+			"name": "Mat Groves"
+		},
+		"contributors": [
+			{
+				"name": "Chad Engler",
+				"email": "chad@pantherdev.com"
+			},
+			{
+				"name": "Richard Davey",
+				"email": "rdavey@gmail.com"
+			}
+		],
+		"main": "./src/index.js",
+		"homepage": "http://goodboydigital.com/",
+		"bugs": {
+			"url": "https://github.com/pixijs/pixi.js/issues"
+		},
+		"license": "MIT",
+		"repository": {
+			"type": "git",
+			"url": "git+https://github.com/pixijs/pixi.js.git"
+		},
+		"scripts": {
+			"start": "gulp && gulp watch",
+			"test": "gulp && testem ci",
+			"build": "gulp",
+			"docs": "jsdoc -c ./gulp/util/jsdoc.conf.json -R README.md"
+		},
+		"files": [
+			"bin/",
+			"src/",
+			"CONTRIBUTING.md",
+			"LICENSE",
+			"package.json",
+			"README.md"
+		],
+		"dependencies": {
+			"async": "^1.5.0",
+			"brfs": "^1.4.1",
+			"earcut": "^2.0.7",
+			"eventemitter3": "^1.1.1",
+			"object-assign": "^4.0.1",
+			"resource-loader": "^1.6.4"
+		},
+		"devDependencies": {
+			"browserify": "^11.1.0",
+			"chai": "^3.2.0",
+			"del": "^2.0.2",
+			"gulp": "^3.9.0",
+			"gulp-cached": "^1.1.0",
+			"gulp-concat": "^2.6.0",
+			"gulp-debug": "^2.1.0",
+			"gulp-header": "^1.7.1",
+			"gulp-jshint": "^1.11.2",
+			"gulp-mirror": "^0.4.0",
+			"gulp-plumber": "^1.0.1",
+			"gulp-rename": "^1.2.2",
+			"gulp-sourcemaps": "^1.5.2",
+			"gulp-uglify": "^1.4.1",
+			"gulp-util": "^3.0.6",
+			"jaguarjs-jsdoc": "git+https://github.com/davidshimjs/jaguarjs-jsdoc.git",
+			"jsdoc": "^3.3.2",
+			"jshint-summary": "^0.4.0",
+			"minimist": "^1.2.0",
+			"mocha": "^2.3.2",
+			"require-dir": "^0.3.0",
+			"run-sequence": "^1.1.2",
+			"testem": "^0.9.4",
+			"vinyl-buffer": "^1.0.0",
+			"vinyl-source-stream": "^1.1.0",
+			"watchify": "^3.4.0"
+		},
+		"browserify": {
+			"transform": [
+				"brfs"
+			]
+		},
+		"gitHead": "962f5bdff1ed2d96cfeaef22897ed83b7cce79bd",
+		"_id": "pixi.js@3.0.9",
+		"_shasum": "2dc18c388a7c6d329dd064defbdb2aadea70c861",
+		"_from": "pixi.js@*",
+		"_npmVersion": "2.14.7",
+		"_nodeVersion": "4.2.1",
+		"_npmUser": {
+			"name": "englercj",
+			"email": "englercj@live.com"
+		},
+		"maintainers": [
+			{
+				"name": "englercj",
+				"email": "englercj@live.com"
+			}
+		],
+		"dist": {
+			"shasum": "2dc18c388a7c6d329dd064defbdb2aadea70c861",
+			"tarball": "http://registry.npmjs.org/pixi.js/-/pixi.js-3.0.9.tgz"
+		},
+		"directories": {},
+		"_resolved": "https://registry.npmjs.org/pixi.js/-/pixi.js-3.0.9.tgz",
+		"readme": "ERROR: No README data found!"
+	};
+
+/***/ },
 /* 205 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -33291,8 +33401,6 @@
 	
 	__webpack_require__(196);
 	
-	var _events = __webpack_require__(194);
-	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -33307,7 +33415,7 @@
 	
 	    _classCallCheck(this, Sprite);
 	
-	    var texture = PIXI.Texture.fromImage(!(function webpackMissingModule() { var e = new Error("Cannot find module \"../../img\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	    var texture = PIXI.Texture.fromImage(__webpack_require__(333)("./" + textureName + '.png'));
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Sprite).call(this, texture));
 	
@@ -33335,12 +33443,44 @@
 	  return Sprite;
 	}(PIXI.Sprite);
 	
-	mixin(Sprite, _events.EventEmitter);
-	
 	exports.default = Sprite;
 
 /***/ },
 /* 333 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var map = {
+		"./cell.png": 334,
+		"./marble.png": 335
+	};
+	function webpackContext(req) {
+		return __webpack_require__(webpackContextResolve(req));
+	};
+	function webpackContextResolve(req) {
+		return map[req] || (function() { throw new Error("Cannot find module '" + req + "'.") }());
+	};
+	webpackContext.keys = function webpackContextKeys() {
+		return Object.keys(map);
+	};
+	webpackContext.resolve = webpackContextResolve;
+	module.exports = webpackContext;
+	webpackContext.id = 333;
+
+
+/***/ },
+/* 334 */
+/***/ function(module, exports) {
+
+	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfATUwaqBHdgAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAACeUlEQVRo3u2bv2rrMBTGJSPuYHDAkOGOWUuXTu379Q2ydet+s5g7dTIaDKb2Eg/FowgEJ4PBwgZDaiPdKUbxTdImkRNb6nkA4x+ffHz+fIKccw40CgNoFqjLh3POQZ7nn2marrMsi4uiCMqyfK/r+gMAABBC96ZpPlmW9Wjb9t14PP49Go1+QQg7fSmpUVUVJ4SsMMbTc98JYzwlhKyqqpL9elwaMKV04/v+TLYgvu/PKKWb3gBTSjeXqHmK6jLAwSVHNwzDt2snnTAM3y456mcBJ0lCHceZ3CrTOo4zSZKEXgU4iqKwL7+YKIrCzoAZY9zzvNe+/Vc9z3tljMkFZoxx13Wf+1pMuK77/F3obwH3Udl9SksB7tM3K+ObBl9l46HVyl9l74PNQ13XIAiCh6EBB0HwUNf16bX0LYoKmcXJSUeaUroZeht4qAzde6Tn8/nL0IEPMqio7jGV/1M4juO/qgDvZWl3QKqNdNqd1Y7Cy+VyrRpwm2kHeLFY/FENuM0Et2NazjkwDAMCBYMxxreDwUbhPM8/VR3NimwNcJqma1WBRbYGOMuyWFVgka0BLooiUBVYZGuAy7J8VxVYZDOEdvBDVWCRTbtlWgOMELpXFVJka4BN03xSFVhka4Aty3pUFVhka4Bt275TFXiHTcXG/9ggQN/mAUIIrrHnvXZgjKc7FgpxGkAIWakGTAhZHRzTajfiQQiBLnwatwrf92cItYxKuo1p924eVEheGOPpz6rl2LpUq2XaNmPf0qlzbjiOMzlma9JuIf5jedDe1KKlbUk7Y5qW1kNtzaVa2oe1NIhrewVgaJc8YJcXtfp4jadT4D6Gdsu0f5PgJio/TvWzAAAAAElFTkSuQmCC"
+
+/***/ },
+/* 335 */
+/***/ function(module, exports) {
+
+	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfAh023NjysAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAC10lEQVRo3u2bPWvqUBjH/z2IeCEgDirUSSKli/gJCoVCN+fepZ/h0k9wsri4lHs3VwtyS53iYoZCl+4VN6t0SsFkkIBwL0I9d/GIL9ErbaLxiX/IlBjOjyc+53k7R0IIhEkRP1+uaRqLRqMniqJcJBKJ81QqVchkMsfpdPobAPT7/T+mab5bltUaDAZPw+HwcTQadTRNG/u1piOvLaxpWiwej1/lcrmbYrFY+Mw7Go1Gq9vt3jqOc69p2l9PFyiE8OQqlUqntVrNEB6rVqsZpVLp1Kt1egKq6/qL8Fm6rr94Af7pH3LOY9Vq9UFsWdVq9YFzHtsqcLlcvrQs60PsSJZlfZTL5cutAFcqlV8iIJqsxR9gzjmr1+vPImCq1+vPnHPmKTDnPNJsNjsioGo2mx3OecQTYM45CzLsAjT7MnAQP+N1n/eXgIPkoLxyZGu3HrGnWrdlrQwqdrnPerFPrwpOmFt8rarqXTKZZPuaAiaTSaaq6t1GycMkXiUht9h7yYr5fP43lWTflYWqdVdZec7C2Wz2J7WSzhLTrGcWRDXrsacWjsfjV1QLd7NsU+BcLndDFXiOTSYIgrhkYsEAIBqNnlCvR0tGBgCKolxQB5aMDAASicQ5dWDJyAAglUoVqANLRgYAmUzmmDqwZGQAIHs9lCUZGUImJrt41EElIwMA0zTfqQNLRgYAlmW1qANLRgYAg8HgiTqwZGQAMBwOH6kDS0YGAKPRqEMdeMooE+NtNLV3pQnbfAGg2+3eUrXuLNsU2HGce6rAc2yzFT0/hlJ2rQmTe9Xy7e3tBzXrLjEtVuYpOa9ZZ7Wy89But79Tsa4ri1uHbRfjSH6MN23cPez1ete2bY/31bK2bY97vd61681DQzysIw9Uh1rYBp7uzDCM16D/bw3DeG2322f/ffAwmHYYPQzpcKkI6/iwCOOAuAjjEQCxp4c8QneMx3PgBXj6B7WCrn+nRjeF9WK4JgAAAABJRU5ErkJggg=="
+
+/***/ },
+/* 336 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

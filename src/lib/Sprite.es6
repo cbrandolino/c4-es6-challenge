@@ -1,5 +1,4 @@
 import 'pixi.js';
-import { EventEmitter } from 'events';
 
 class Sprite extends PIXI.Sprite {
 
@@ -24,6 +23,5 @@ class Sprite extends PIXI.Sprite {
     return this;
   }
 }
-mixin(Sprite, EventEmitter);
 
 export default Sprite;

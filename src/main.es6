@@ -12,11 +12,11 @@ class App {
     this.renderCells();
     this.animate();
   }
-  
 
   renderCells() {
     this.boardModel.loop(({ row, col }) => {
       const cell = new CellSprite(this.board, row, col);
+      cell.on('click', (e) => this.makeMove(e.target.col));
     });
   }
 
