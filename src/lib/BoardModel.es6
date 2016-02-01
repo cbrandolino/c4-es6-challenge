@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events';
 
-class BoardModel extends EventEmitter {
+class BoardModel {
 
   constructor() {
-    super();
+    Object.assign(this, new EventEmitter());
     this.initializeEmptyBoard();
     this._currentPlayer = 1;
     this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
@@ -30,7 +30,7 @@ class BoardModel extends EventEmitter {
     if (freeRow !== -1) {
       return this.completeMove(col, freeRow);
     }
-    this.emit('fullCol');
+    this.events.emit('fullCol');
     this.checkFullBoard();
     return null;
   }
@@ -42,7 +42,7 @@ class BoardModel extends EventEmitter {
       }
     }
     this.fullBoard = true;
-    this.emit('fullBoard');
+    this.events.emit('fullBoard');
     return true;
   }
 

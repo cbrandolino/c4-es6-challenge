@@ -5775,13 +5775,21 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _BoardModel = __webpack_require__(335);
+	var _BoardModel = __webpack_require__(193);
 	
 	var _BoardModel2 = _interopRequireDefault(_BoardModel);
 	
-	var _CellSprite = __webpack_require__(337);
+	var _CellSprite = __webpack_require__(195);
 	
 	var _CellSprite2 = _interopRequireDefault(_CellSprite);
+	
+	var _MarbleSprite = __webpack_require__(336);
+	
+	var _MarbleSprite2 = _interopRequireDefault(_MarbleSprite);
+	
+	var _tween = __webpack_require__(338);
+	
+	var _tween2 = _interopRequireDefault(_tween);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -5795,11 +5803,17 @@
 	    this.board = new PIXI.Stage();
 	    this.renderer = PIXI.autoDetectRenderer(800, 600);
 	    document.body.appendChild(this.renderer.view);
+	    this.bootNextPlayer();
 	    this.renderCells();
 	    this.animate();
 	  }
 	
 	  _createClass(App, [{
+	    key: 'moveComplete',
+	    value: function moveComplete() {
+	      this.bootNextPlayer();
+	    }
+	  }, {
 	    key: 'renderCells',
 	    value: function renderCells() {
 	      var _this = this;
@@ -5808,28 +5822,48 @@
 	        var row = _ref.row;
 	        var col = _ref.col;
 	
-	        var cell = new _CellSprite2.default(_this.board, 'cell', row, col);
-	        cell.interactive = true;
-	        cell.on('click', function () {
-	          return _this.makeMove(col);
+	        var cell = new _CellSprite2.default(_this.board, row, col);
+	        cell.on('click', function (e) {
+	          return _this.makeMove(e.target.col);
 	        });
-	        cell.placeOnBoard();
+	        cell.on('mouseover', function (e) {
+	          return _this.currentPlayerMarble.aim(e.target.col);
+	        });
+	      });
+	    }
+	  }, {
+	    key: 'bootNextPlayer',
+	    value: function bootNextPlayer() {
+	      var _this2 = this;
+	
+	      var player = this.boardModel.currentPlayer;
+	      this.currentPlayerMarble = new _MarbleSprite2.default(this.board, player);
+	      this.currentPlayerMarble.on('moveComplete', function () {
+	        return _this2.moveComplete();
 	      });
 	    }
 	  }, {
 	    key: 'makeMove',
 	    value: function makeMove(col) {
+	      if (this.currentPlayerMarble.moveInProgress) {
+	        return;
+	      }
+	      this.currentPlayerMarble.aim(col);
 	      var result = this.boardModel.play(col);
-	      console.log(result);
+	      if (result) {
+	        this.currentPlayerMarble.coords = result;
+	        this.currentPlayerMarble.fire();
+	      }
 	    }
 	  }, {
 	    key: 'animate',
-	    value: function animate() {
-	      var _this2 = this;
+	    value: function animate(time) {
+	      var _this3 = this;
 	
-	      requestAnimationFrame(function () {
-	        return _this2.animate();
+	      requestAnimationFrame(function (ms) {
+	        return _this3.animate(ms);
 	      });
+	      _tween2.default.update(time);
 	      this.renderer.render(this.board);
 	    }
 	  }]);
@@ -5840,7 +5874,234 @@
 	window.app = new App();
 
 /***/ },
-/* 193 */,
+/* 193 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _events = __webpack_require__(194);
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var BoardModel = function () {
+	  function BoardModel() {
+	    _classCallCheck(this, BoardModel);
+	
+	    Object.assign(this, new _events.EventEmitter());
+	    this.initializeEmptyBoard();
+	    this._currentPlayer = 1;
+	    this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+	    this._winner = 0;
+	  }
+	
+	  _createClass(BoardModel, [{
+	    key: 'initializeEmptyBoard',
+	    value: function initializeEmptyBoard() {
+	      var cols = Array.from({ length: 7 }, function () {
+	        return Array(6).fill(0);
+	      });
+	      this.state = cols;
+	    }
+	  }, {
+	    key: 'changePlayer',
+	    value: function changePlayer() {
+	      this._currentPlayer = this.nextPlayer;
+	      return this._currentPlayer;
+	    }
+	  }, {
+	    key: 'play',
+	    value: function play(col) {
+	      if (this.fullBoard) {
+	        throw new Exception('Board is full');
+	      }
+	      var column = this.state[col];
+	      var freeRow = column.findIndex(function (cell) {
+	        return cell === 0;
+	      });
+	      if (freeRow !== -1) {
+	        return this.completeMove(col, freeRow);
+	      }
+	      this.events.emit('fullCol');
+	      this.checkFullBoard();
+	      return null;
+	    }
+	  }, {
+	    key: 'checkFullBoard',
+	    value: function checkFullBoard() {
+	      for (var col in this.state) {
+	        if (col.includes(0)) {
+	          return false;
+	        }
+	      }
+	      this.fullBoard = true;
+	      this.events.emit('fullBoard');
+	      return true;
+	    }
+	  }, {
+	    key: 'checkVector',
+	    value: function checkVector(centerX, centerY, changeX, changeY) {
+	      var length = arguments.length <= 4 || arguments[4] === undefined ? 7 : arguments[4];
+	
+	      var x = centerX - changeX * 4;
+	      var y = centerY - changeY * 4;
+	      var consecutiveMarbles = 0;
+	      for (var step = 0; step < length; step++) {
+	        x += changeX;
+	        y += changeY;
+	        if (this.cellValue(x, y) !== this.currentPlayer) {
+	          consecutiveMarbles = 0;
+	          continue;
+	        }
+	        consecutiveMarbles++;
+	        if (consecutiveMarbles === 4) {
+	          return true;
+	        }
+	      }
+	      return false;
+	    }
+	  }, {
+	    key: 'checkVictory',
+	    value: function checkVictory(x, y) {
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+	
+	      try {
+	        for (var _iterator = this._possibleDirections[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var _step$value = _slicedToArray(_step.value, 2);
+	
+	          var changeX = _step$value[0];
+	          var changeY = _step$value[1];
+	
+	          if (this.checkVector(x, y, changeX, changeY)) {
+	            this.winner = this.currentPlayer;
+	            return true;
+	          }
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+	
+	      return false;
+	    }
+	  }, {
+	    key: 'completeMove',
+	    value: function completeMove(col, row) {
+	      var player = arguments.length <= 2 || arguments[2] === undefined ? this.currentPlayer : arguments[2];
+	
+	      var oldState = this.state;
+	      oldState[col][row] = player;
+	      this.state = oldState;
+	      this.checkVictory(col, row);
+	      this.changePlayer();
+	      return { col: col, row: row, player: player };
+	    }
+	  }, {
+	    key: 'cellValue',
+	    value: function cellValue(x, y) {
+	      try {
+	        return this.state[y][x];
+	      } catch (e) {
+	        return undefined;
+	      }
+	    }
+	  }, {
+	    key: 'loop',
+	    value: function loop(callback) {
+	      var _iteratorNormalCompletion2 = true;
+	      var _didIteratorError2 = false;
+	      var _iteratorError2 = undefined;
+	
+	      try {
+	        for (var _iterator2 = this.state.entries()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	          var _step2$value = _slicedToArray(_step2.value, 2);
+	
+	          var col = _step2$value[0];
+	          var colRows = _step2$value[1];
+	
+	          for (var row in colRows) {
+	            callback({ row: row, col: col, value: this.cellValue(row, col) });
+	          }
+	        }
+	      } catch (err) {
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	            _iterator2.return();
+	          }
+	        } finally {
+	          if (_didIteratorError2) {
+	            throw _iteratorError2;
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'winner',
+	    get: function get() {
+	      return this._winner;
+	    },
+	    set: function set(val) {
+	      this._winner = val;
+	      return this._winner;
+	    }
+	  }, {
+	    key: 'state',
+	    set: function set(val) {
+	      this._state = val;
+	      return this._state;
+	    },
+	    get: function get() {
+	      return this._state;
+	    }
+	  }, {
+	    key: 'fullBoard',
+	    get: function get() {
+	      return this._fullBoard;
+	    },
+	    set: function set(full) {
+	      this._fullBoard = full;
+	      return this._fullBoard;
+	    }
+	  }, {
+	    key: 'currentPlayer',
+	    get: function get() {
+	      return this._currentPlayer;
+	    }
+	  }, {
+	    key: 'nextPlayer',
+	    get: function get() {
+	      return -this.currentPlayer;
+	    }
+	  }]);
+	
+	  return BoardModel;
+	}();
+	
+	exports.default = BoardModel;
+
+/***/ },
 /* 194 */
 /***/ function(module, exports) {
 
@@ -6115,7 +6376,51 @@
 	}
 
 /***/ },
-/* 195 */,
+/* 195 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(196);
+	
+	var _Sprite2 = __webpack_require__(332);
+	
+	var _Sprite3 = _interopRequireDefault(_Sprite2);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var CellSprite = function (_Sprite) {
+	  _inherits(CellSprite, _Sprite);
+	
+	  function CellSprite(board, row, col) {
+	    _classCallCheck(this, CellSprite);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CellSprite).call(this, board, 'cell'));
+	
+	    _this.interactive = true;
+	    _this.order = 0;
+	    _this.col = col;
+	    _this.row = row;
+	    _this.placeOnTarget();
+	    return _this;
+	  }
+	
+	  return CellSprite;
+	}(_Sprite3.default);
+	
+	exports.default = CellSprite;
+
+/***/ },
 /* 196 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -33110,312 +33415,20 @@
 	};
 
 /***/ },
-/* 332 */,
-/* 333 */
-/***/ function(module, exports) {
-
-	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfATUwaqBHdgAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAACeUlEQVRo3u2bv2rrMBTGJSPuYHDAkOGOWUuXTu379Q2ydet+s5g7dTIaDKb2Eg/FowgEJ4PBwgZDaiPdKUbxTdImkRNb6nkA4x+ffHz+fIKccw40CgNoFqjLh3POQZ7nn2marrMsi4uiCMqyfK/r+gMAABBC96ZpPlmW9Wjb9t14PP49Go1+QQg7fSmpUVUVJ4SsMMbTc98JYzwlhKyqqpL9elwaMKV04/v+TLYgvu/PKKWb3gBTSjeXqHmK6jLAwSVHNwzDt2snnTAM3y456mcBJ0lCHceZ3CrTOo4zSZKEXgU4iqKwL7+YKIrCzoAZY9zzvNe+/Vc9z3tljMkFZoxx13Wf+1pMuK77/F3obwH3Udl9SksB7tM3K+ObBl9l46HVyl9l74PNQ13XIAiCh6EBB0HwUNf16bX0LYoKmcXJSUeaUroZeht4qAzde6Tn8/nL0IEPMqio7jGV/1M4juO/qgDvZWl3QKqNdNqd1Y7Cy+VyrRpwm2kHeLFY/FENuM0Et2NazjkwDAMCBYMxxreDwUbhPM8/VR3NimwNcJqma1WBRbYGOMuyWFVgka0BLooiUBVYZGuAy7J8VxVYZDOEdvBDVWCRTbtlWgOMELpXFVJka4BN03xSFVhka4Aty3pUFVhka4Bt275TFXiHTcXG/9ggQN/mAUIIrrHnvXZgjKc7FgpxGkAIWakGTAhZHRzTajfiQQiBLnwatwrf92cItYxKuo1p924eVEheGOPpz6rl2LpUq2XaNmPf0qlzbjiOMzlma9JuIf5jedDe1KKlbUk7Y5qW1kNtzaVa2oe1NIhrewVgaJc8YJcXtfp4jadT4D6Gdsu0f5PgJio/TvWzAAAAAElFTkSuQmCC"
-
-/***/ },
-/* 334 */
-/***/ function(module, exports) {
-
-	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfAh023NjysAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAC10lEQVRo3u2bPWvqUBjH/z2IeCEgDirUSSKli/gJCoVCN+fepZ/h0k9wsri4lHs3VwtyS53iYoZCl+4VN6t0SsFkkIBwL0I9d/GIL9ErbaLxiX/IlBjOjyc+53k7R0IIhEkRP1+uaRqLRqMniqJcJBKJ81QqVchkMsfpdPobAPT7/T+mab5bltUaDAZPw+HwcTQadTRNG/u1piOvLaxpWiwej1/lcrmbYrFY+Mw7Go1Gq9vt3jqOc69p2l9PFyiE8OQqlUqntVrNEB6rVqsZpVLp1Kt1egKq6/qL8Fm6rr94Af7pH3LOY9Vq9UFsWdVq9YFzHtsqcLlcvrQs60PsSJZlfZTL5cutAFcqlV8iIJqsxR9gzjmr1+vPImCq1+vPnHPmKTDnPNJsNjsioGo2mx3OecQTYM45CzLsAjT7MnAQP+N1n/eXgIPkoLxyZGu3HrGnWrdlrQwqdrnPerFPrwpOmFt8rarqXTKZZPuaAiaTSaaq6t1GycMkXiUht9h7yYr5fP43lWTflYWqdVdZec7C2Wz2J7WSzhLTrGcWRDXrsacWjsfjV1QLd7NsU+BcLndDFXiOTSYIgrhkYsEAIBqNnlCvR0tGBgCKolxQB5aMDAASicQ5dWDJyAAglUoVqANLRgYAmUzmmDqwZGQAIHs9lCUZGUImJrt41EElIwMA0zTfqQNLRgYAlmW1qANLRgYAg8HgiTqwZGQAMBwOH6kDS0YGAKPRqEMdeMooE+NtNLV3pQnbfAGg2+3eUrXuLNsU2HGce6rAc2yzFT0/hlJ2rQmTe9Xy7e3tBzXrLjEtVuYpOa9ZZ7Wy89But79Tsa4ri1uHbRfjSH6MN23cPez1ete2bY/31bK2bY97vd61681DQzysIw9Uh1rYBp7uzDCM16D/bw3DeG2322f/ffAwmHYYPQzpcKkI6/iwCOOAuAjjEQCxp4c8QneMx3PgBXj6B7WCrn+nRjeF9WK4JgAAAABJRU5ErkJggg=="
-
-/***/ },
-/* 335 */
+/* 332 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	
+	__webpack_require__(196);
 	
 	var _events = __webpack_require__(194);
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var BoardModel = function (_EventEmitter) {
-	  _inherits(BoardModel, _EventEmitter);
-	
-	  function BoardModel() {
-	    _classCallCheck(this, BoardModel);
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardModel).call(this));
-	
-	    _this.initializeEmptyBoard();
-	    _this._currentPlayer = 1;
-	    _this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
-	    _this._winner = 0;
-	    return _this;
-	  }
-	
-	  _createClass(BoardModel, [{
-	    key: 'initializeEmptyBoard',
-	    value: function initializeEmptyBoard() {
-	      var cols = Array.from({ length: 7 }, function () {
-	        return Array(6).fill(0);
-	      });
-	      this.state = cols;
-	    }
-	  }, {
-	    key: 'changePlayer',
-	    value: function changePlayer() {
-	      this._currentPlayer = this.nextPlayer;
-	      return this._currentPlayer;
-	    }
-	  }, {
-	    key: 'play',
-	    value: function play(col) {
-	      if (this.fullBoard) {
-	        throw new Exception('Board is full');
-	      }
-	      var column = this.state[col];
-	      var freeRow = column.findIndex(function (cell) {
-	        return cell === 0;
-	      });
-	      if (freeRow !== -1) {
-	        return this.completeMove(col, freeRow);
-	      }
-	      this.emit('fullCol');
-	      this.checkFullBoard();
-	      return null;
-	    }
-	  }, {
-	    key: 'checkFullBoard',
-	    value: function checkFullBoard() {
-	      for (var col in this.state) {
-	        if (col.includes(0)) {
-	          return false;
-	        }
-	      }
-	      this.fullBoard = true;
-	      this.emit('fullBoard');
-	      return true;
-	    }
-	  }, {
-	    key: 'checkVector',
-	    value: function checkVector(centerX, centerY, changeX, changeY) {
-	      var length = arguments.length <= 4 || arguments[4] === undefined ? 7 : arguments[4];
-	
-	      var x = centerX - changeX * 4;
-	      var y = centerY - changeY * 4;
-	      var consecutiveMarbles = 0;
-	      for (var step = 0; step < length; step++) {
-	        x += changeX;
-	        y += changeY;
-	        if (this.cellValue(x, y) !== this.currentPlayer) {
-	          consecutiveMarbles = 0;
-	          continue;
-	        }
-	        consecutiveMarbles++;
-	        if (consecutiveMarbles === 4) {
-	          return true;
-	        }
-	      }
-	      return false;
-	    }
-	  }, {
-	    key: 'checkVictory',
-	    value: function checkVictory(x, y) {
-	      var _iteratorNormalCompletion = true;
-	      var _didIteratorError = false;
-	      var _iteratorError = undefined;
-	
-	      try {
-	        for (var _iterator = this._possibleDirections[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var _step$value = _slicedToArray(_step.value, 2);
-	
-	          var changeX = _step$value[0];
-	          var changeY = _step$value[1];
-	
-	          if (this.checkVector(x, y, changeX, changeY)) {
-	            this.winner = this.currentPlayer;
-	            return true;
-	          }
-	        }
-	      } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion && _iterator.return) {
-	            _iterator.return();
-	          }
-	        } finally {
-	          if (_didIteratorError) {
-	            throw _iteratorError;
-	          }
-	        }
-	      }
-	
-	      return false;
-	    }
-	  }, {
-	    key: 'completeMove',
-	    value: function completeMove(col, row) {
-	      var player = arguments.length <= 2 || arguments[2] === undefined ? this.currentPlayer : arguments[2];
-	
-	      var oldState = this.state;
-	      oldState[col][row] = player;
-	      this.state = oldState;
-	      this.checkVictory(col, row);
-	      this.changePlayer();
-	      return { col: col, row: row, player: player };
-	    }
-	  }, {
-	    key: 'cellValue',
-	    value: function cellValue(x, y) {
-	      try {
-	        return this.state[y][x];
-	      } catch (e) {
-	        return undefined;
-	      }
-	    }
-	  }, {
-	    key: 'loop',
-	    value: function loop(callback) {
-	      var _iteratorNormalCompletion2 = true;
-	      var _didIteratorError2 = false;
-	      var _iteratorError2 = undefined;
-	
-	      try {
-	        for (var _iterator2 = this.state.entries()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	          var _step2$value = _slicedToArray(_step2.value, 2);
-	
-	          var col = _step2$value[0];
-	          var colRows = _step2$value[1];
-	
-	          for (var row in colRows) {
-	            callback({ row: row, col: col, value: this.cellValue(row, col) });
-	          }
-	        }
-	      } catch (err) {
-	        _didIteratorError2 = true;
-	        _iteratorError2 = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	            _iterator2.return();
-	          }
-	        } finally {
-	          if (_didIteratorError2) {
-	            throw _iteratorError2;
-	          }
-	        }
-	      }
-	    }
-	  }, {
-	    key: 'winner',
-	    get: function get() {
-	      return this._winner;
-	    },
-	    set: function set(val) {
-	      this._winner = val;
-	      return this._winner;
-	    }
-	  }, {
-	    key: 'state',
-	    set: function set(val) {
-	      this._state = val;
-	      return this._state;
-	    },
-	    get: function get() {
-	      return this._state;
-	    }
-	  }, {
-	    key: 'fullBoard',
-	    get: function get() {
-	      return this._fullBoard;
-	    },
-	    set: function set(full) {
-	      this._fullBoard = full;
-	      return this._fullBoard;
-	    }
-	  }, {
-	    key: 'currentPlayer',
-	    get: function get() {
-	      return this._currentPlayer;
-	    }
-	  }, {
-	    key: 'nextPlayer',
-	    get: function get() {
-	      return -this.currentPlayer;
-	    }
-	  }]);
-	
-	  return BoardModel;
-	}(_events.EventEmitter);
-	
-	exports.default = BoardModel;
-
-/***/ },
-/* 336 */,
-/* 337 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	__webpack_require__(196);
-	
-	var _Sprite2 = __webpack_require__(338);
-	
-	var _Sprite3 = _interopRequireDefault(_Sprite2);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var CellSprite = function (_Sprite) {
-	  _inherits(CellSprite, _Sprite);
-	
-	  function CellSprite() {
-	    var _Object$getPrototypeO;
-	
-	    _classCallCheck(this, CellSprite);
-	
-	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	      args[_key] = arguments[_key];
-	    }
-	
-	    return _possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CellSprite)).call.apply(_Object$getPrototypeO, [this].concat(args)));
-	  }
-	
-	  return CellSprite;
-	}(_Sprite3.default);
-	
-	exports.default = CellSprite;
-
-/***/ },
-/* 338 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	__webpack_require__(196);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -33426,33 +33439,70 @@
 	var Sprite = function (_PIXI$Sprite) {
 	  _inherits(Sprite, _PIXI$Sprite);
 	
-	  function Sprite(board, textureName, row, col) {
+	  function Sprite(board, textureName) {
 	    var _ret;
 	
 	    _classCallCheck(this, Sprite);
 	
-	    var texture = PIXI.Texture.fromImage(__webpack_require__(339)("./" + textureName + '.png'));
+	    var texture = PIXI.Texture.fromImage(__webpack_require__(333)("./" + textureName + '.png'));
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Sprite).call(this, texture));
 	
+	    Object.assign(_this, new _events.EventEmitter());
 	    _this.board = board;
-	    _this.row = row;
-	    _this.col = col;
 	    _this.tileWidth = 60;
 	    _this.boardHeight = _this.tileWidth * 6;
-	    _this.targetX = _this.tileWidth * _this.col;
-	    _this.targetY = _this.boardHeight - _this.tileWidth * _this.row;
-	    _this.name = textureName + '-' + row + '-' + col;
+	    _this._row = null;
+	    _this._col = null;
+	    _this._targetX = null;
+	    _this._targetY = null;
 	    return _ret = _this, _possibleConstructorReturn(_this, _ret);
 	  }
 	
 	  _createClass(Sprite, [{
-	    key: 'placeOnBoard',
-	    value: function placeOnBoard() {
+	    key: 'placeOnTarget',
+	    value: function placeOnTarget() {
 	      this.x = this.targetX;
 	      this.y = this.targetY;
-	      this.board.addChild(this);
+	      this.board.addChildAt(this, this.order);
 	      return this;
+	    }
+	  }, {
+	    key: 'targetX',
+	    get: function get() {
+	      return this._targetX;
+	    }
+	  }, {
+	    key: 'targetY',
+	    get: function get() {
+	      return this._targetY;
+	    }
+	  }, {
+	    key: 'row',
+	    get: function get() {
+	      return this._row;
+	    },
+	    set: function set(row) {
+	      this._row = row;
+	      this._targetY = this.boardHeight - this.tileWidth * row;
+	    }
+	  }, {
+	    key: 'coords',
+	    set: function set(_ref) {
+	      var row = _ref.row;
+	      var col = _ref.col;
+	
+	      this.row = row;
+	      this.col = col;
+	    }
+	  }, {
+	    key: 'col',
+	    get: function get() {
+	      return this._col;
+	    },
+	    set: function set(col) {
+	      this._col = col;
+	      this._targetX = this.tileWidth * col;
 	    }
 	  }]);
 	
@@ -33462,12 +33512,12 @@
 	exports.default = Sprite;
 
 /***/ },
-/* 339 */
+/* 333 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./cell.png": 333,
-		"./marble.png": 334
+		"./cell.png": 334,
+		"./marble.png": 335
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -33480,8 +33530,923 @@
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 339;
+	webpackContext.id = 333;
 
+
+/***/ },
+/* 334 */
+/***/ function(module, exports) {
+
+	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfATUwaqBHdgAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAACeUlEQVRo3u2bv2rrMBTGJSPuYHDAkOGOWUuXTu379Q2ydet+s5g7dTIaDKb2Eg/FowgEJ4PBwgZDaiPdKUbxTdImkRNb6nkA4x+ffHz+fIKccw40CgNoFqjLh3POQZ7nn2marrMsi4uiCMqyfK/r+gMAABBC96ZpPlmW9Wjb9t14PP49Go1+QQg7fSmpUVUVJ4SsMMbTc98JYzwlhKyqqpL9elwaMKV04/v+TLYgvu/PKKWb3gBTSjeXqHmK6jLAwSVHNwzDt2snnTAM3y456mcBJ0lCHceZ3CrTOo4zSZKEXgU4iqKwL7+YKIrCzoAZY9zzvNe+/Vc9z3tljMkFZoxx13Wf+1pMuK77/F3obwH3Udl9SksB7tM3K+ObBl9l46HVyl9l74PNQ13XIAiCh6EBB0HwUNf16bX0LYoKmcXJSUeaUroZeht4qAzde6Tn8/nL0IEPMqio7jGV/1M4juO/qgDvZWl3QKqNdNqd1Y7Cy+VyrRpwm2kHeLFY/FENuM0Et2NazjkwDAMCBYMxxreDwUbhPM8/VR3NimwNcJqma1WBRbYGOMuyWFVgka0BLooiUBVYZGuAy7J8VxVYZDOEdvBDVWCRTbtlWgOMELpXFVJka4BN03xSFVhka4Aty3pUFVhka4Bt275TFXiHTcXG/9ggQN/mAUIIrrHnvXZgjKc7FgpxGkAIWakGTAhZHRzTajfiQQiBLnwatwrf92cItYxKuo1p924eVEheGOPpz6rl2LpUq2XaNmPf0qlzbjiOMzlma9JuIf5jedDe1KKlbUk7Y5qW1kNtzaVa2oe1NIhrewVgaJc8YJcXtfp4jadT4D6Gdsu0f5PgJio/TvWzAAAAAElFTkSuQmCC"
+
+/***/ },
+/* 335 */
+/***/ function(module, exports) {
+
+	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfAh023NjysAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAC10lEQVRo3u2bPWvqUBjH/z2IeCEgDirUSSKli/gJCoVCN+fepZ/h0k9wsri4lHs3VwtyS53iYoZCl+4VN6t0SsFkkIBwL0I9d/GIL9ErbaLxiX/IlBjOjyc+53k7R0IIhEkRP1+uaRqLRqMniqJcJBKJ81QqVchkMsfpdPobAPT7/T+mab5bltUaDAZPw+HwcTQadTRNG/u1piOvLaxpWiwej1/lcrmbYrFY+Mw7Go1Gq9vt3jqOc69p2l9PFyiE8OQqlUqntVrNEB6rVqsZpVLp1Kt1egKq6/qL8Fm6rr94Af7pH3LOY9Vq9UFsWdVq9YFzHtsqcLlcvrQs60PsSJZlfZTL5cutAFcqlV8iIJqsxR9gzjmr1+vPImCq1+vPnHPmKTDnPNJsNjsioGo2mx3OecQTYM45CzLsAjT7MnAQP+N1n/eXgIPkoLxyZGu3HrGnWrdlrQwqdrnPerFPrwpOmFt8rarqXTKZZPuaAiaTSaaq6t1GycMkXiUht9h7yYr5fP43lWTflYWqdVdZec7C2Wz2J7WSzhLTrGcWRDXrsacWjsfjV1QLd7NsU+BcLndDFXiOTSYIgrhkYsEAIBqNnlCvR0tGBgCKolxQB5aMDAASicQ5dWDJyAAglUoVqANLRgYAmUzmmDqwZGQAIHs9lCUZGUImJrt41EElIwMA0zTfqQNLRgYAlmW1qANLRgYAg8HgiTqwZGQAMBwOH6kDS0YGAKPRqEMdeMooE+NtNLV3pQnbfAGg2+3eUrXuLNsU2HGce6rAc2yzFT0/hlJ2rQmTe9Xy7e3tBzXrLjEtVuYpOa9ZZ7Wy89But79Tsa4ri1uHbRfjSH6MN23cPez1ete2bY/31bK2bY97vd61681DQzysIw9Uh1rYBp7uzDCM16D/bw3DeG2322f/ffAwmHYYPQzpcKkI6/iwCOOAuAjjEQCxp4c8QneMx3PgBXj6B7WCrn+nRjeF9WK4JgAAAABJRU5ErkJggg=="
+
+/***/ },
+/* 336 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(196);
+	
+	var _Sprite2 = __webpack_require__(332);
+	
+	var _Sprite3 = _interopRequireDefault(_Sprite2);
+	
+	var _tween = __webpack_require__(338);
+	
+	var _tween2 = _interopRequireDefault(_tween);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var MarbleSprite = function (_Sprite) {
+	  _inherits(MarbleSprite, _Sprite);
+	
+	  function MarbleSprite(board, player) {
+	    _classCallCheck(this, MarbleSprite);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MarbleSprite).call(this, board, 'marble'));
+	
+	    _this.player = player;
+	    _this.colorize();
+	    _this.order = 0;
+	    _this.placeOnTarget();
+	    _this.moveInProgress = false;
+	    _this.aim(0);
+	    _this.on('moveComplete', function () {
+	      return _this.moveInProgress = false;
+	    });
+	    return _this;
+	  }
+	
+	  _createClass(MarbleSprite, [{
+	    key: 'aim',
+	    value: function aim(col) {
+	      if (this.moveInProgress) {
+	        return;
+	      }
+	      this.col = col;
+	      this.placeOnTarget();
+	    }
+	  }, {
+	    key: 'fire',
+	    value: function fire() {
+	      var _this2 = this;
+	
+	      this.moveInProgress = true;
+	      new _tween2.default.Tween({ y: 0 }).to({ y: this.targetY }, 1000).easing(_tween2.default.Easing.Exponential.In).onUpdate(function (marble) {
+	        return function ass() {
+	          marble.y = this.y;
+	        };
+	      }(this)).onComplete(function () {
+	        _this2.emit('moveComplete');
+	      }).start();
+	    }
+	  }, {
+	    key: 'colorize',
+	    value: function colorize() {
+	      this.tint = this.player === 1 ? 0xff0000 : 0x00ff00;
+	    }
+	  }]);
+	
+	  return MarbleSprite;
+	}(_Sprite3.default);
+	
+	exports.default = MarbleSprite;
+
+/***/ },
+/* 337 */,
+/* 338 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;'use strict';
+	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	
+	/**
+	 * Tween.js - Licensed under the MIT license
+	 * https://github.com/tweenjs/tween.js
+	 * ----------------------------------------------
+	 *
+	 * See https://github.com/tweenjs/tween.js/graphs/contributors for the full list of contributors.
+	 * Thank you all, you're awesome!
+	 */
+	
+	// Include a performance.now polyfill
+	(function () {
+	
+		if ('performance' in window === false) {
+			window.performance = {};
+		}
+	
+		// IE 8
+		Date.now = Date.now || function () {
+			return new Date().getTime();
+		};
+	
+		if ('now' in window.performance === false) {
+			var offset = window.performance.timing && window.performance.timing.navigationStart ? window.performance.timing.navigationStart : Date.now();
+	
+			window.performance.now = function () {
+				return Date.now() - offset;
+			};
+		}
+	})();
+	
+	var TWEEN = TWEEN || function () {
+	
+		var _tweens = [];
+	
+		return {
+	
+			getAll: function getAll() {
+	
+				return _tweens;
+			},
+	
+			removeAll: function removeAll() {
+	
+				_tweens = [];
+			},
+	
+			add: function add(tween) {
+	
+				_tweens.push(tween);
+			},
+	
+			remove: function remove(tween) {
+	
+				var i = _tweens.indexOf(tween);
+	
+				if (i !== -1) {
+					_tweens.splice(i, 1);
+				}
+			},
+	
+			update: function update(time) {
+	
+				if (_tweens.length === 0) {
+					return false;
+				}
+	
+				var i = 0;
+	
+				time = time !== undefined ? time : window.performance.now();
+	
+				while (i < _tweens.length) {
+	
+					if (_tweens[i].update(time)) {
+						i++;
+					} else {
+						_tweens.splice(i, 1);
+					}
+				}
+	
+				return true;
+			}
+		};
+	}();
+	
+	TWEEN.Tween = function (object) {
+	
+		var _object = object;
+		var _valuesStart = {};
+		var _valuesEnd = {};
+		var _valuesStartRepeat = {};
+		var _duration = 1000;
+		var _repeat = 0;
+		var _yoyo = false;
+		var _isPlaying = false;
+		var _reversed = false;
+		var _delayTime = 0;
+		var _startTime = null;
+		var _easingFunction = TWEEN.Easing.Linear.None;
+		var _interpolationFunction = TWEEN.Interpolation.Linear;
+		var _chainedTweens = [];
+		var _onStartCallback = null;
+		var _onStartCallbackFired = false;
+		var _onUpdateCallback = null;
+		var _onCompleteCallback = null;
+		var _onStopCallback = null;
+	
+		// Set all starting values present on the target object
+		for (var field in object) {
+			_valuesStart[field] = parseFloat(object[field], 10);
+		}
+	
+		this.to = function (properties, duration) {
+	
+			if (duration !== undefined) {
+				_duration = duration;
+			}
+	
+			_valuesEnd = properties;
+	
+			return this;
+		};
+	
+		this.start = function (time) {
+	
+			TWEEN.add(this);
+	
+			_isPlaying = true;
+	
+			_onStartCallbackFired = false;
+	
+			_startTime = time !== undefined ? time : window.performance.now();
+			_startTime += _delayTime;
+	
+			for (var property in _valuesEnd) {
+	
+				// Check if an Array was provided as property value
+				if (_valuesEnd[property] instanceof Array) {
+	
+					if (_valuesEnd[property].length === 0) {
+						continue;
+					}
+	
+					// Create a local copy of the Array with the start value at the front
+					_valuesEnd[property] = [_object[property]].concat(_valuesEnd[property]);
+				}
+	
+				// If `to()` specifies a property that doesn't exist in the source object,
+				// we should not set that property in the object
+				if (_valuesStart[property] === undefined) {
+					continue;
+				}
+	
+				_valuesStart[property] = _object[property];
+	
+				if (_valuesStart[property] instanceof Array === false) {
+					_valuesStart[property] *= 1.0; // Ensures we're using numbers, not strings
+				}
+	
+				_valuesStartRepeat[property] = _valuesStart[property] || 0;
+			}
+	
+			return this;
+		};
+	
+		this.stop = function () {
+	
+			if (!_isPlaying) {
+				return this;
+			}
+	
+			TWEEN.remove(this);
+			_isPlaying = false;
+	
+			if (_onStopCallback !== null) {
+				_onStopCallback.call(_object);
+			}
+	
+			this.stopChainedTweens();
+			return this;
+		};
+	
+		this.stopChainedTweens = function () {
+	
+			for (var i = 0, numChainedTweens = _chainedTweens.length; i < numChainedTweens; i++) {
+				_chainedTweens[i].stop();
+			}
+		};
+	
+		this.delay = function (amount) {
+	
+			_delayTime = amount;
+			return this;
+		};
+	
+		this.repeat = function (times) {
+	
+			_repeat = times;
+			return this;
+		};
+	
+		this.yoyo = function (yoyo) {
+	
+			_yoyo = yoyo;
+			return this;
+		};
+	
+		this.easing = function (easing) {
+	
+			_easingFunction = easing;
+			return this;
+		};
+	
+		this.interpolation = function (interpolation) {
+	
+			_interpolationFunction = interpolation;
+			return this;
+		};
+	
+		this.chain = function () {
+	
+			_chainedTweens = arguments;
+			return this;
+		};
+	
+		this.onStart = function (callback) {
+	
+			_onStartCallback = callback;
+			return this;
+		};
+	
+		this.onUpdate = function (callback) {
+	
+			_onUpdateCallback = callback;
+			return this;
+		};
+	
+		this.onComplete = function (callback) {
+	
+			_onCompleteCallback = callback;
+			return this;
+		};
+	
+		this.onStop = function (callback) {
+	
+			_onStopCallback = callback;
+			return this;
+		};
+	
+		this.update = function (time) {
+	
+			var property;
+			var elapsed;
+			var value;
+	
+			if (time < _startTime) {
+				return true;
+			}
+	
+			if (_onStartCallbackFired === false) {
+	
+				if (_onStartCallback !== null) {
+					_onStartCallback.call(_object);
+				}
+	
+				_onStartCallbackFired = true;
+			}
+	
+			elapsed = (time - _startTime) / _duration;
+			elapsed = elapsed > 1 ? 1 : elapsed;
+	
+			value = _easingFunction(elapsed);
+	
+			for (property in _valuesEnd) {
+	
+				// Don't update properties that do not exist in the source object
+				if (_valuesStart[property] === undefined) {
+					continue;
+				}
+	
+				var start = _valuesStart[property] || 0;
+				var end = _valuesEnd[property];
+	
+				if (end instanceof Array) {
+	
+					_object[property] = _interpolationFunction(end, value);
+				} else {
+	
+					// Parses relative end values with start as base (e.g.: +10, -3)
+					if (typeof end === 'string') {
+	
+						if (end.startsWith('+') || end.startsWith('-')) {
+							end = start + parseFloat(end, 10);
+						} else {
+							end = parseFloat(end, 10);
+						}
+					}
+	
+					// Protect against non numeric properties.
+					if (typeof end === 'number') {
+						_object[property] = start + (end - start) * value;
+					}
+				}
+			}
+	
+			if (_onUpdateCallback !== null) {
+				_onUpdateCallback.call(_object, value);
+			}
+	
+			if (elapsed === 1) {
+	
+				if (_repeat > 0) {
+	
+					if (isFinite(_repeat)) {
+						_repeat--;
+					}
+	
+					// Reassign starting values, restart by making startTime = now
+					for (property in _valuesStartRepeat) {
+	
+						if (typeof _valuesEnd[property] === 'string') {
+							_valuesStartRepeat[property] = _valuesStartRepeat[property] + parseFloat(_valuesEnd[property], 10);
+						}
+	
+						if (_yoyo) {
+							var tmp = _valuesStartRepeat[property];
+	
+							_valuesStartRepeat[property] = _valuesEnd[property];
+							_valuesEnd[property] = tmp;
+						}
+	
+						_valuesStart[property] = _valuesStartRepeat[property];
+					}
+	
+					if (_yoyo) {
+						_reversed = !_reversed;
+					}
+	
+					_startTime = time + _delayTime;
+	
+					return true;
+				} else {
+	
+					if (_onCompleteCallback !== null) {
+						_onCompleteCallback.call(_object);
+					}
+	
+					for (var i = 0, numChainedTweens = _chainedTweens.length; i < numChainedTweens; i++) {
+						// Make the chained tweens start exactly at the time they should,
+						// even if the `update()` method was called way past the duration of the tween
+						_chainedTweens[i].start(_startTime + _duration);
+					}
+	
+					return false;
+				}
+			}
+	
+			return true;
+		};
+	};
+	
+	TWEEN.Easing = {
+	
+		Linear: {
+	
+			None: function None(k) {
+	
+				return k;
+			}
+	
+		},
+	
+		Quadratic: {
+	
+			In: function In(k) {
+	
+				return k * k;
+			},
+	
+			Out: function Out(k) {
+	
+				return k * (2 - k);
+			},
+	
+			InOut: function InOut(k) {
+	
+				if ((k *= 2) < 1) {
+					return 0.5 * k * k;
+				}
+	
+				return -0.5 * (--k * (k - 2) - 1);
+			}
+	
+		},
+	
+		Cubic: {
+	
+			In: function In(k) {
+	
+				return k * k * k;
+			},
+	
+			Out: function Out(k) {
+	
+				return --k * k * k + 1;
+			},
+	
+			InOut: function InOut(k) {
+	
+				if ((k *= 2) < 1) {
+					return 0.5 * k * k * k;
+				}
+	
+				return 0.5 * ((k -= 2) * k * k + 2);
+			}
+	
+		},
+	
+		Quartic: {
+	
+			In: function In(k) {
+	
+				return k * k * k * k;
+			},
+	
+			Out: function Out(k) {
+	
+				return 1 - --k * k * k * k;
+			},
+	
+			InOut: function InOut(k) {
+	
+				if ((k *= 2) < 1) {
+					return 0.5 * k * k * k * k;
+				}
+	
+				return -0.5 * ((k -= 2) * k * k * k - 2);
+			}
+	
+		},
+	
+		Quintic: {
+	
+			In: function In(k) {
+	
+				return k * k * k * k * k;
+			},
+	
+			Out: function Out(k) {
+	
+				return --k * k * k * k * k + 1;
+			},
+	
+			InOut: function InOut(k) {
+	
+				if ((k *= 2) < 1) {
+					return 0.5 * k * k * k * k * k;
+				}
+	
+				return 0.5 * ((k -= 2) * k * k * k * k + 2);
+			}
+	
+		},
+	
+		Sinusoidal: {
+	
+			In: function In(k) {
+	
+				return 1 - Math.cos(k * Math.PI / 2);
+			},
+	
+			Out: function Out(k) {
+	
+				return Math.sin(k * Math.PI / 2);
+			},
+	
+			InOut: function InOut(k) {
+	
+				return 0.5 * (1 - Math.cos(Math.PI * k));
+			}
+	
+		},
+	
+		Exponential: {
+	
+			In: function In(k) {
+	
+				return k === 0 ? 0 : Math.pow(1024, k - 1);
+			},
+	
+			Out: function Out(k) {
+	
+				return k === 1 ? 1 : 1 - Math.pow(2, -10 * k);
+			},
+	
+			InOut: function InOut(k) {
+	
+				if (k === 0) {
+					return 0;
+				}
+	
+				if (k === 1) {
+					return 1;
+				}
+	
+				if ((k *= 2) < 1) {
+					return 0.5 * Math.pow(1024, k - 1);
+				}
+	
+				return 0.5 * (-Math.pow(2, -10 * (k - 1)) + 2);
+			}
+	
+		},
+	
+		Circular: {
+	
+			In: function In(k) {
+	
+				return 1 - Math.sqrt(1 - k * k);
+			},
+	
+			Out: function Out(k) {
+	
+				return Math.sqrt(1 - --k * k);
+			},
+	
+			InOut: function InOut(k) {
+	
+				if ((k *= 2) < 1) {
+					return -0.5 * (Math.sqrt(1 - k * k) - 1);
+				}
+	
+				return 0.5 * (Math.sqrt(1 - (k -= 2) * k) + 1);
+			}
+	
+		},
+	
+		Elastic: {
+	
+			In: function In(k) {
+	
+				var s;
+				var a = 0.1;
+				var p = 0.4;
+	
+				if (k === 0) {
+					return 0;
+				}
+	
+				if (k === 1) {
+					return 1;
+				}
+	
+				if (!a || a < 1) {
+					a = 1;
+					s = p / 4;
+				} else {
+					s = p * Math.asin(1 / a) / (2 * Math.PI);
+				}
+	
+				return -(a * Math.pow(2, 10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p));
+			},
+	
+			Out: function Out(k) {
+	
+				var s;
+				var a = 0.1;
+				var p = 0.4;
+	
+				if (k === 0) {
+					return 0;
+				}
+	
+				if (k === 1) {
+					return 1;
+				}
+	
+				if (!a || a < 1) {
+					a = 1;
+					s = p / 4;
+				} else {
+					s = p * Math.asin(1 / a) / (2 * Math.PI);
+				}
+	
+				return a * Math.pow(2, -10 * k) * Math.sin((k - s) * (2 * Math.PI) / p) + 1;
+			},
+	
+			InOut: function InOut(k) {
+	
+				var s;
+				var a = 0.1;
+				var p = 0.4;
+	
+				if (k === 0) {
+					return 0;
+				}
+	
+				if (k === 1) {
+					return 1;
+				}
+	
+				if (!a || a < 1) {
+					a = 1;
+					s = p / 4;
+				} else {
+					s = p * Math.asin(1 / a) / (2 * Math.PI);
+				}
+	
+				if ((k *= 2) < 1) {
+					return -0.5 * (a * Math.pow(2, 10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p));
+				}
+	
+				return a * Math.pow(2, -10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p) * 0.5 + 1;
+			}
+	
+		},
+	
+		Back: {
+	
+			In: function In(k) {
+	
+				var s = 1.70158;
+	
+				return k * k * ((s + 1) * k - s);
+			},
+	
+			Out: function Out(k) {
+	
+				var s = 1.70158;
+	
+				return --k * k * ((s + 1) * k + s) + 1;
+			},
+	
+			InOut: function InOut(k) {
+	
+				var s = 1.70158 * 1.525;
+	
+				if ((k *= 2) < 1) {
+					return 0.5 * (k * k * ((s + 1) * k - s));
+				}
+	
+				return 0.5 * ((k -= 2) * k * ((s + 1) * k + s) + 2);
+			}
+	
+		},
+	
+		Bounce: {
+	
+			In: function In(k) {
+	
+				return 1 - TWEEN.Easing.Bounce.Out(1 - k);
+			},
+	
+			Out: function Out(k) {
+	
+				if (k < 1 / 2.75) {
+					return 7.5625 * k * k;
+				} else if (k < 2 / 2.75) {
+					return 7.5625 * (k -= 1.5 / 2.75) * k + 0.75;
+				} else if (k < 2.5 / 2.75) {
+					return 7.5625 * (k -= 2.25 / 2.75) * k + 0.9375;
+				} else {
+					return 7.5625 * (k -= 2.625 / 2.75) * k + 0.984375;
+				}
+			},
+	
+			InOut: function InOut(k) {
+	
+				if (k < 0.5) {
+					return TWEEN.Easing.Bounce.In(k * 2) * 0.5;
+				}
+	
+				return TWEEN.Easing.Bounce.Out(k * 2 - 1) * 0.5 + 0.5;
+			}
+	
+		}
+	
+	};
+	
+	TWEEN.Interpolation = {
+	
+		Linear: function Linear(v, k) {
+	
+			var m = v.length - 1;
+			var f = m * k;
+			var i = Math.floor(f);
+			var fn = TWEEN.Interpolation.Utils.Linear;
+	
+			if (k < 0) {
+				return fn(v[0], v[1], f);
+			}
+	
+			if (k > 1) {
+				return fn(v[m], v[m - 1], m - f);
+			}
+	
+			return fn(v[i], v[i + 1 > m ? m : i + 1], f - i);
+		},
+	
+		Bezier: function Bezier(v, k) {
+	
+			var b = 0;
+			var n = v.length - 1;
+			var pw = Math.pow;
+			var bn = TWEEN.Interpolation.Utils.Bernstein;
+	
+			for (var i = 0; i <= n; i++) {
+				b += pw(1 - k, n - i) * pw(k, i) * v[i] * bn(n, i);
+			}
+	
+			return b;
+		},
+	
+		CatmullRom: function CatmullRom(v, k) {
+	
+			var m = v.length - 1;
+			var f = m * k;
+			var i = Math.floor(f);
+			var fn = TWEEN.Interpolation.Utils.CatmullRom;
+	
+			if (v[0] === v[m]) {
+	
+				if (k < 0) {
+					i = Math.floor(f = m * (1 + k));
+				}
+	
+				return fn(v[(i - 1 + m) % m], v[i], v[(i + 1) % m], v[(i + 2) % m], f - i);
+			} else {
+	
+				if (k < 0) {
+					return v[0] - (fn(v[0], v[0], v[1], v[1], -f) - v[0]);
+				}
+	
+				if (k > 1) {
+					return v[m] - (fn(v[m], v[m], v[m - 1], v[m - 1], f - m) - v[m]);
+				}
+	
+				return fn(v[i ? i - 1 : 0], v[i], v[m < i + 1 ? m : i + 1], v[m < i + 2 ? m : i + 2], f - i);
+			}
+		},
+	
+		Utils: {
+	
+			Linear: function Linear(p0, p1, t) {
+	
+				return (p1 - p0) * t + p0;
+			},
+	
+			Bernstein: function Bernstein(n, i) {
+	
+				var fc = TWEEN.Interpolation.Utils.Factorial;
+	
+				return fc(n) / fc(i) / fc(n - i);
+			},
+	
+			Factorial: function () {
+	
+				var a = [1];
+	
+				return function (n) {
+	
+					var s = 1;
+	
+					if (a[n]) {
+						return a[n];
+					}
+	
+					for (var i = n; i > 1; i--) {
+						s *= i;
+					}
+	
+					a[n] = s;
+					return s;
+				};
+			}(),
+	
+			CatmullRom: function CatmullRom(p0, p1, p2, p3, t) {
+	
+				var v0 = (p2 - p0) * 0.5;
+				var v1 = (p3 - p1) * 0.5;
+				var t2 = t * t;
+				var t3 = t * t2;
+	
+				return (2 * p1 - 2 * p2 + v0 + v1) * t3 + (-3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 + v0 * t + p1;
+			}
+	
+		}
+	
+	};
+	
+	// UMD (Universal Module Definition)
+	(function (root) {
+	
+		if (true) {
+	
+			// AMD
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+				return TWEEN;
+			}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+		} else if (typeof module !== 'undefined' && (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object') {
+	
+			// Node.js
+			module.exports = TWEEN;
+		} else if (root !== undefined) {
+	
+			// Global variable
+			root.TWEEN = TWEEN;
+		}
+	})(undefined);
 
 /***/ }
 /******/ ]);
