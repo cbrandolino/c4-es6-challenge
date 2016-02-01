@@ -56,6 +56,4 @@ class Sprite extends PIXI.Sprite {
   }
 }
 
-
-
 export default Sprite;
