@@ -1,12 +1,11 @@
 import { EventEmitter } from 'events';
 
-class BoardModel {
+class BoardModel extends EventEmitter {
 
   constructor(state = null) {
-    Object.assign(this, new EventEmitter());
+    super();
     this.state = state || this.initializeEmptyBoard();
     this.validColumns = [...this.state.keys()];
-    console.log(this.validColumns);
     this._currentPlayer = 1;
     this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
     this._winner = 0;
@@ -31,9 +30,6 @@ class BoardModel {
     if (this.fullBoard) {
       throw this.exception('Board is full');
     }
-    console.log(this.validColumns);
-    console.log(col);
-
     if (this.validColumns.indexOf(col) === -1) {
       throw this.exception('Column is full');
     }
