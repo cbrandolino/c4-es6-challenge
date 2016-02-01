@@ -92,6 +92,14 @@ class Board extends EventEmitter {
     }
   }
 
+  loop(callback) {
+    for (const [col, colRows] of this.state.entries()) {
+      for (const row in colRows) {
+        callback({ row, col });
+      }
+    }
+  }
+
   get winner() {
     return this._winner;
   }

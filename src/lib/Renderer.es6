@@ -21,7 +21,7 @@ class Renderer {
   }
 
   initialiseBoard() {
-    this.loopBoard(({ row, col }) => {
+    this.board.loop(({ row, col }) => {
       this.addSpriteOnTile('cell', row, col);
     });
   }
@@ -30,14 +30,6 @@ class Renderer {
     requestAnimationFrame(() => this.animate());
     this.addMarbles();
     this.pixiRenderer.render(this.stage);
-  }
-
-  loopBoard(callback) {
-    for (const [col, colRows] of this.board.state.entries()) {
-      for (const row in colRows) {
-        callback({ row, col });
-      }
-    }
   }
 
   addSpriteOnTile(spriteId, row, col, unique = false) {
@@ -60,12 +52,12 @@ class Renderer {
   }
 
   addMarbles() {
-    this.loopBoard(({ row, col }) => {
+    this.board.loop(({ row, col }) => {
       const cellValue = this.board.cellValue(row, col);
       if (cellValue === 0) {
         return;
       }
-      const marble = this.addSpriteOnTile( 'marble', row, col, true);
+      const marble = this.addSpriteOnTile('marble', row, col, true);
       marble.tint = (cellValue === 1) ? 0xff0000 : 0x00ff00;
     });
   }
