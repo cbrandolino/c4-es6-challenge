@@ -27,7 +27,7 @@ class App {
     const currentPlayer = this.boardModel.currentPlayer;
     const result = this.boardModel.play(col);
     if (result) {
-      this.movingMarble = new MarbleSprite(this.board, result.row, result.col, currentPlayer);
+      this.marble = new MarbleSprite(this.board, result.row, result.col, currentPlayer);
     }
   }
 

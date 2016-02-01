@@ -6,7 +6,20 @@ class MarbleSprite extends Sprite {
     super(board, 'marble', row, col);
     this.player = player;
     this.colorize();
-    this.placeOnBoard();
+    this.x = this.targetX;
+    this.y = 0;
+    this.zIndex = 1;
+    this.board.addChild(this);
+    this.fallToPlace();
+  }
+
+  fallToPlace() {
+    this.y ++;
+    if (this.y >= this.targetY) {
+      this.x = this.targetX;
+      return;
+    }
+    requestAnimationFrame(() => this.fallToPlace());
   }
 
   colorize() {

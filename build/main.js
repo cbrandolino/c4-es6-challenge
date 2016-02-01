@@ -5827,7 +5827,7 @@
 	      var currentPlayer = this.boardModel.currentPlayer;
 	      var result = this.boardModel.play(col);
 	      if (result) {
-	        this.movingMarble = new _MarbleSprite2.default(this.board, result.row, result.col, currentPlayer);
+	        this.marble = new _MarbleSprite2.default(this.board, result.row, result.col, currentPlayer);
 	      }
 	    }
 	  }, {
@@ -6390,6 +6390,7 @@
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CellSprite).call(this, board, 'cell', row, col));
 	
 	    _this.interactive = true;
+	    _this.zIndex = 2;
 	    _this.placeOnBoard();
 	    return _this;
 	  }
@@ -33521,11 +33522,29 @@
 	
 	    _this.player = player;
 	    _this.colorize();
-	    _this.placeOnBoard();
+	    _this.x = _this.targetX;
+	    _this.y = 0;
+	    _this.zIndex = 1;
+	    _this.board.addChild(_this);
+	    _this.fallToPlace();
 	    return _this;
 	  }
 	
 	  _createClass(MarbleSprite, [{
+	    key: 'fallToPlace',
+	    value: function fallToPlace() {
+	      var _this2 = this;
+	
+	      this.y++;
+	      if (this.y >= this.targetY) {
+	        this.x = this.targetX;
+	        return;
+	      }
+	      requestAnimationFrame(function () {
+	        return _this2.fallToPlace();
+	      });
+	    }
+	  }, {
 	    key: 'colorize',
 	    value: function colorize() {
 	      this.tint = this.player === 1 ? 0xff0000 : 0x00ff00;
