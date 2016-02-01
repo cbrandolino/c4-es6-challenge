@@ -8,31 +8,33 @@ class MarbleSprite extends Sprite {
     this.player = player;
     this.colorize();
     this.order = 0;
-    this.placeOnTarget()
+    this.placeOnTarget();
+    this.moveInProgress = false;
+    this.aim(0);
+    this.on('moveComplete', () => this.moveInProgress = false);
   }
 
   aim(col) {
-    if (this.moving) {
+    if (this.moveInProgress) {
       return;
     }
     this.col = col;
     this.placeOnTarget();
   }
 
-  startMoving() {
-    this.moving = 1;
-    new TWEEN.Tween({y: 0})
+  fire() {
+    this.moveInProgress = true;
+    new TWEEN.Tween({ y: 0 })
       .to({ y: this.targetY }, 1000)
-      .onUpdate(((marble) => 
-        function() { marble.y = this.y; })(this))
-      .onComplete(() => this.movingComplete())
+      .easing(TWEEN.Easing.Exponential.In)
+      .onUpdate(((marble) =>
+        function ass() { marble.y = this.y; })(this))
+      .onComplete(() => { 
+        this.emit('moveComplete')
+      })
       .start();
   }
 
-  movingComplete() {
-    this.moving = 0;
-  }
-  
   colorize() {
     this.tint = (this.player === 1) ? 0xff0000 : 0x00ff00;
   }

@@ -1,10 +1,12 @@
 import 'pixi.js';
+import { EventEmitter } from 'events';
 
 class Sprite extends PIXI.Sprite {
 
   constructor(board, textureName) {
     const texture = PIXI.Texture.fromImage(require(`../../img/${textureName}.png`));
     super(texture);
+    Object.assign(this, new EventEmitter());
     this.board = board;
     this.tileWidth = 60;
     this.boardHeight = this.tileWidth * 6;
@@ -52,7 +54,8 @@ class Sprite extends PIXI.Sprite {
     this._col = col;
     this._targetX = this.tileWidth * col;
   }
-
 }
+
+
 
 export default Sprite;

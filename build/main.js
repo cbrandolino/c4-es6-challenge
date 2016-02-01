@@ -5791,8 +5791,6 @@
 	
 	var _tween2 = _interopRequireDefault(_tween);
 	
-	var _events = __webpack_require__(194);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -5805,12 +5803,17 @@
 	    this.board = new PIXI.Stage();
 	    this.renderer = PIXI.autoDetectRenderer(800, 600);
 	    document.body.appendChild(this.renderer.view);
+	    this.bootNextPlayer();
 	    this.renderCells();
-	    this.bootCurrentPlayer();
 	    this.animate();
 	  }
 	
 	  _createClass(App, [{
+	    key: 'moveComplete',
+	    value: function moveComplete() {
+	      this.bootNextPlayer();
+	    }
+	  }, {
 	    key: 'renderCells',
 	    value: function renderCells() {
 	      var _this = this;
@@ -5829,31 +5832,36 @@
 	      });
 	    }
 	  }, {
-	    key: 'bootCurrentPlayer',
-	    value: function bootCurrentPlayer() {
+	    key: 'bootNextPlayer',
+	    value: function bootNextPlayer() {
+	      var _this2 = this;
+	
 	      var player = this.boardModel.currentPlayer;
 	      this.currentPlayerMarble = new _MarbleSprite2.default(this.board, player);
+	      this.currentPlayerMarble.on('moveComplete', function () {
+	        return _this2.moveComplete();
+	      });
 	    }
 	  }, {
 	    key: 'makeMove',
 	    value: function makeMove(col) {
-	      if (this.currentPlayerMarble.moving) {
+	      if (this.currentPlayerMarble.moveInProgress) {
 	        return;
 	      }
+	      this.currentPlayerMarble.aim(col);
 	      var result = this.boardModel.play(col);
 	      if (result) {
 	        this.currentPlayerMarble.coords = result;
-	        this.currentPlayerMarble.startMoving();
-	        this.bootCurrentPlayer();
+	        this.currentPlayerMarble.fire();
 	      }
 	    }
 	  }, {
 	    key: 'animate',
 	    value: function animate(time) {
-	      var _this2 = this;
+	      var _this3 = this;
 	
 	      requestAnimationFrame(function (ms) {
-	        return _this2.animate(ms);
+	        return _this3.animate(ms);
 	      });
 	      _tween2.default.update(time);
 	      this.renderer.render(this.board);
@@ -5883,23 +5891,15 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var BoardModel = function (_EventEmitter) {
-	  _inherits(BoardModel, _EventEmitter);
-	
+	var BoardModel = function () {
 	  function BoardModel() {
 	    _classCallCheck(this, BoardModel);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardModel).call(this));
-	
-	    _this.initializeEmptyBoard();
-	    _this._currentPlayer = 1;
-	    _this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
-	    _this._winner = 0;
-	    return _this;
+	    Object.assign(this, new _events.EventEmitter());
+	    this.initializeEmptyBoard();
+	    this._currentPlayer = 1;
+	    this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+	    this._winner = 0;
 	  }
 	
 	  _createClass(BoardModel, [{
@@ -5929,7 +5929,7 @@
 	      if (freeRow !== -1) {
 	        return this.completeMove(col, freeRow);
 	      }
-	      this.emit('fullCol');
+	      this.events.emit('fullCol');
 	      this.checkFullBoard();
 	      return null;
 	    }
@@ -5942,7 +5942,7 @@
 	        }
 	      }
 	      this.fullBoard = true;
-	      this.emit('fullBoard');
+	      this.events.emit('fullBoard');
 	      return true;
 	    }
 	  }, {
@@ -6097,7 +6097,7 @@
 	  }]);
 	
 	  return BoardModel;
-	}(_events.EventEmitter);
+	}();
 	
 	exports.default = BoardModel;
 
@@ -33428,6 +33428,8 @@
 	
 	__webpack_require__(196);
 	
+	var _events = __webpack_require__(194);
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -33446,6 +33448,7 @@
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Sprite).call(this, texture));
 	
+	    Object.assign(_this, new _events.EventEmitter());
 	    _this.board = board;
 	    _this.tileWidth = 60;
 	    _this.boardHeight = _this.tileWidth * 6;
@@ -33584,36 +33587,36 @@
 	    _this.colorize();
 	    _this.order = 0;
 	    _this.placeOnTarget();
+	    _this.moveInProgress = false;
+	    _this.aim(0);
+	    _this.on('moveComplete', function () {
+	      return _this.moveInProgress = false;
+	    });
 	    return _this;
 	  }
 	
 	  _createClass(MarbleSprite, [{
 	    key: 'aim',
 	    value: function aim(col) {
-	      if (this.moving) {
+	      if (this.moveInProgress) {
 	        return;
 	      }
 	      this.col = col;
 	      this.placeOnTarget();
 	    }
 	  }, {
-	    key: 'startMoving',
-	    value: function startMoving() {
+	    key: 'fire',
+	    value: function fire() {
 	      var _this2 = this;
 	
-	      this.moving = 1;
-	      new _tween2.default.Tween({ y: 0 }).to({ y: this.targetY }, 1000).onUpdate(function (marble) {
-	        return function () {
+	      this.moveInProgress = true;
+	      new _tween2.default.Tween({ y: 0 }).to({ y: this.targetY }, 1000).easing(_tween2.default.Easing.Exponential.In).onUpdate(function (marble) {
+	        return function ass() {
 	          marble.y = this.y;
 	        };
 	      }(this)).onComplete(function () {
-	        return _this2.movingComplete();
+	        _this2.emit('moveComplete');
 	      }).start();
-	    }
-	  }, {
-	    key: 'movingComplete',
-	    value: function movingComplete() {
-	      this.moving = 0;
 	    }
 	  }, {
 	    key: 'colorize',
