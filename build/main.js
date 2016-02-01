@@ -5773,27 +5773,69 @@
 
 	'use strict';
 	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
 	var _BoardModel = __webpack_require__(335);
 	
 	var _BoardModel2 = _interopRequireDefault(_BoardModel);
 	
-	var _Renderer = __webpack_require__(336);
+	var _TileSprite = __webpack_require__(332);
 	
-	var _Renderer2 = _interopRequireDefault(_Renderer);
+	var _TileSprite2 = _interopRequireDefault(_TileSprite);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	window.Renderer = _Renderer2.default;
+	var App = function () {
+	  function App() {
+	    _classCallCheck(this, App);
 	
-	var App = function App() {
-	  _classCallCheck(this, App);
+	    this.boardModel = new _BoardModel2.default();
+	    this.board = new PIXI.Stage();
+	    this.renderer = PIXI.autoDetectRenderer(800, 600);
+	    document.body.appendChild(this.renderer.view);
+	    this.renderCells();
+	    this.animate();
+	  }
 	
-	  this.boardModel = new _BoardModel2.default();
-	  this.renderer = new _Renderer2.default(this.boardModel);
-	  document.body.appendChild(this.renderer.view);
-	};
+	  _createClass(App, [{
+	    key: 'renderCells',
+	    value: function renderCells() {
+	      var _this = this;
+	
+	      this.boardModel.loop(function (_ref) {
+	        var row = _ref.row;
+	        var col = _ref.col;
+	
+	        var cell = new _TileSprite2.default(_this.board, 'cell', row, col);
+	        cell.interactive = true;
+	        cell.on('click', function () {
+	          return _this.makeMove(col);
+	        });
+	        cell.placeOnBoard();
+	      });
+	    }
+	  }, {
+	    key: 'makeMove',
+	    value: function makeMove(col) {
+	      var result = this.boardModel.play(col);
+	      console.log(result);
+	    }
+	  }, {
+	    key: 'animate',
+	    value: function animate() {
+	      var _this2 = this;
+	
+	      requestAnimationFrame(function () {
+	        return _this2.animate();
+	      });
+	      this.renderer.render(this.board);
+	    }
+	  }]);
+	
+	  return App;
+	}();
 	
 	window.app = new App();
 
@@ -33093,8 +33135,6 @@
 	  function TileSprite(board, textureName, row, col) {
 	    var _ret;
 	
-	    var unique = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
-	
 	    _classCallCheck(this, TileSprite);
 	
 	    var textures = {
@@ -33127,8 +33167,6 @@
 	
 	  return TileSprite;
 	}(PIXI.Sprite);
-	
-	window.TileSprite = TileSprite;
 	
 	exports.default = TileSprite;
 
@@ -33379,82 +33417,6 @@
 	}(_events.EventEmitter);
 	
 	exports.default = BoardModel;
-
-/***/ },
-/* 336 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	__webpack_require__(196);
-	
-	var _TileSprite = __webpack_require__(332);
-	
-	var _TileSprite2 = _interopRequireDefault(_TileSprite);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var Renderer = function () {
-	  function Renderer(boardModel) {
-	    _classCallCheck(this, Renderer);
-	
-	    this.boardModel = boardModel;
-	    this.board = new PIXI.Stage();
-	    this.pixiRenderer = PIXI.autoDetectRenderer(800, 600);
-	    this.view = this.pixiRenderer.view;
-	    this.renderCells();
-	    this.animate();
-	  }
-	
-	  _createClass(Renderer, [{
-	    key: 'renderCells',
-	    value: function renderCells() {
-	      var _this = this;
-	
-	      this.boardModel.loop(function (_ref) {
-	        var row = _ref.row;
-	        var col = _ref.col;
-	
-	        var cell = new _TileSprite2.default(_this.board, 'cell', row, col);
-	        cell.interactive = true;
-	        cell.on('click', function () {
-	          _this.boardModel.play(cell.col);
-	        });
-	        cell.placeOnBoard();
-	      });
-	    }
-	  }, {
-	    key: 'animate',
-	    value: function animate() {
-	      var _this2 = this;
-	
-	      requestAnimationFrame(function () {
-	        return _this2.animate();
-	      });
-	      this.pixiRenderer.render(this.board);
-	    }
-	  }, {
-	    key: 'removeSprite',
-	    value: function removeSprite(spriteName) {
-	      var sprite = this.board.getChildByName(spriteName);
-	      if (sprite) {
-	        this.board.removeChild(sprite);
-	      }
-	    }
-	  }]);
-	
-	  return Renderer;
-	}();
-	
-	exports.default = Renderer;
 
 /***/ }
 /******/ ]);
