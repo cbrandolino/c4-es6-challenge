@@ -33,10 +33,14 @@
     "eslint-config-airbnb": "^4.0.0",
     "eslint-plugin-react": "^3.16.1",
     "faucet": "0.0.1",
+    "file-loader": "^0.8.5",
     "fs": "0.0.2",
     "http-server": "^0.8.5",
+    "json-loader": "^0.5.4",
     "phantomjs": "^2.1.2",
+    "pixi.js": "^3.0.9",
     "tape": "^4.4.0",
+    "url-loader": "^0.5.7",
     "webpack": "^1.12.12"
   }
 }
