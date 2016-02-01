@@ -3,15 +3,20 @@ import Sprite from './Sprite.es6';
 import TWEEN from 'tween.js';
 
 class MarbleSprite extends Sprite {
-  constructor(board, row, col, player) {
-    super(board, 'marble', row, col);
+  constructor(board, player) {
+    super(board, 'marble');
     this.player = player;
     this.colorize();
-    this.x = this.targetX;
-    this.y = 0;
-    this.zIndex = 1;
-    this.board.addChildAt(this, 0);
-    this.startMoving(this);
+    this.order = 0;
+    this.placeOnTarget()
+  }
+
+  aim(col) {
+    if (this.moving) {
+      return;
+    }
+    this.col = col;
+    this.placeOnTarget();
   }
 
   startMoving() {
@@ -28,8 +33,6 @@ class MarbleSprite extends Sprite {
     this.moving = 0;
   }
   
-
-
   colorize() {
     this.tint = (this.player === 1) ? 0xff0000 : 0x00ff00;
   }

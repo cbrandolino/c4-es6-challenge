@@ -3,10 +3,12 @@ import Sprite from './Sprite.es6';
 
 class CellSprite extends Sprite {
   constructor(board, row, col) {
-    super(board, 'cell', row, col);
+    super(board, 'cell');
     this.interactive = true;
-    this.zIndex = 2;
-    this.placeOnBoard();
+    this.order = 0;
+    this.col = col;
+    this.row = row;
+    this.placeOnTarget();
   }
 }
 

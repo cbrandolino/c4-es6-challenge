@@ -5791,6 +5791,8 @@
 	
 	var _tween2 = _interopRequireDefault(_tween);
 	
+	var _events = __webpack_require__(194);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -5804,6 +5806,7 @@
 	    this.renderer = PIXI.autoDetectRenderer(800, 600);
 	    document.body.appendChild(this.renderer.view);
 	    this.renderCells();
+	    this.bootCurrentPlayer();
 	    this.animate();
 	  }
 	
@@ -5820,18 +5823,28 @@
 	        cell.on('click', function (e) {
 	          return _this.makeMove(e.target.col);
 	        });
+	        cell.on('mouseover', function (e) {
+	          return _this.currentPlayerMarble.aim(e.target.col);
+	        });
 	      });
+	    }
+	  }, {
+	    key: 'bootCurrentPlayer',
+	    value: function bootCurrentPlayer() {
+	      var player = this.boardModel.currentPlayer;
+	      this.currentPlayerMarble = new _MarbleSprite2.default(this.board, player);
 	    }
 	  }, {
 	    key: 'makeMove',
 	    value: function makeMove(col) {
-	      if (this.marble && this.marble.moving) {
+	      if (this.currentPlayerMarble.moving) {
 	        return;
 	      }
-	      var currentPlayer = this.boardModel.currentPlayer;
 	      var result = this.boardModel.play(col);
 	      if (result) {
-	        this.marble = new _MarbleSprite2.default(this.board, result.row, result.col, currentPlayer);
+	        this.currentPlayerMarble.coords = result;
+	        this.currentPlayerMarble.startMoving();
+	        this.bootCurrentPlayer();
 	      }
 	    }
 	  }, {
@@ -6392,11 +6405,13 @@
 	  function CellSprite(board, row, col) {
 	    _classCallCheck(this, CellSprite);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CellSprite).call(this, board, 'cell', row, col));
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CellSprite).call(this, board, 'cell'));
 	
 	    _this.interactive = true;
-	    _this.zIndex = 2;
-	    _this.placeOnBoard();
+	    _this.order = 0;
+	    _this.col = col;
+	    _this.row = row;
+	    _this.placeOnTarget();
 	    return _this;
 	  }
 	
@@ -33422,7 +33437,7 @@
 	var Sprite = function (_PIXI$Sprite) {
 	  _inherits(Sprite, _PIXI$Sprite);
 	
-	  function Sprite(board, textureName, row, col) {
+	  function Sprite(board, textureName) {
 	    var _ret;
 	
 	    _classCallCheck(this, Sprite);
@@ -33432,23 +33447,59 @@
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Sprite).call(this, texture));
 	
 	    _this.board = board;
-	    _this.row = row;
-	    _this.col = col;
 	    _this.tileWidth = 60;
 	    _this.boardHeight = _this.tileWidth * 6;
-	    _this.targetX = _this.tileWidth * _this.col;
-	    _this.targetY = _this.boardHeight - _this.tileWidth * _this.row;
-	    _this.name = textureName + '-' + row + '-' + col;
+	    _this._row = null;
+	    _this._col = null;
+	    _this._targetX = null;
+	    _this._targetY = null;
 	    return _ret = _this, _possibleConstructorReturn(_this, _ret);
 	  }
 	
 	  _createClass(Sprite, [{
-	    key: 'placeOnBoard',
-	    value: function placeOnBoard() {
+	    key: 'placeOnTarget',
+	    value: function placeOnTarget() {
 	      this.x = this.targetX;
 	      this.y = this.targetY;
-	      this.board.addChild(this);
+	      this.board.addChildAt(this, this.order);
 	      return this;
+	    }
+	  }, {
+	    key: 'targetX',
+	    get: function get() {
+	      return this._targetX;
+	    }
+	  }, {
+	    key: 'targetY',
+	    get: function get() {
+	      return this._targetY;
+	    }
+	  }, {
+	    key: 'row',
+	    get: function get() {
+	      return this._row;
+	    },
+	    set: function set(row) {
+	      this._row = row;
+	      this._targetY = this.boardHeight - this.tileWidth * row;
+	    }
+	  }, {
+	    key: 'coords',
+	    set: function set(_ref) {
+	      var row = _ref.row;
+	      var col = _ref.col;
+	
+	      this.row = row;
+	      this.col = col;
+	    }
+	  }, {
+	    key: 'col',
+	    get: function get() {
+	      return this._col;
+	    },
+	    set: function set(col) {
+	      this._col = col;
+	      this._targetX = this.tileWidth * col;
 	    }
 	  }]);
 	
@@ -33524,22 +33575,28 @@
 	var MarbleSprite = function (_Sprite) {
 	  _inherits(MarbleSprite, _Sprite);
 	
-	  function MarbleSprite(board, row, col, player) {
+	  function MarbleSprite(board, player) {
 	    _classCallCheck(this, MarbleSprite);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MarbleSprite).call(this, board, 'marble', row, col));
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MarbleSprite).call(this, board, 'marble'));
 	
 	    _this.player = player;
 	    _this.colorize();
-	    _this.x = _this.targetX;
-	    _this.y = 0;
-	    _this.zIndex = 1;
-	    _this.board.addChildAt(_this, 0);
-	    _this.startMoving(_this);
+	    _this.order = 0;
+	    _this.placeOnTarget();
 	    return _this;
 	  }
 	
 	  _createClass(MarbleSprite, [{
+	    key: 'aim',
+	    value: function aim(col) {
+	      if (this.moving) {
+	        return;
+	      }
+	      this.col = col;
+	      this.placeOnTarget();
+	    }
+	  }, {
 	    key: 'startMoving',
 	    value: function startMoving() {
 	      var _this2 = this;
