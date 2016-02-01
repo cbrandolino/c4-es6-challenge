@@ -5821,8 +5821,14 @@
 	  }, {
 	    key: 'makeMove',
 	    value: function makeMove(col) {
+	      if (this.readyToMove) {
+	        return;
+	      }
+	      var currentPlayer = this.boardModel.currentPlayer;
 	      var result = this.boardModel.play(col);
-	      console.log(result);
+	      if (result) {
+	        this.movingMarble = new _MarbleSprite2.default(this.board, result.row, result.col, currentPlayer);
+	      }
 	    }
 	  }, {
 	    key: 'animate',
@@ -33485,6 +33491,8 @@
 
 	'use strict';
 	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
@@ -33506,11 +33514,23 @@
 	var MarbleSprite = function (_Sprite) {
 	  _inherits(MarbleSprite, _Sprite);
 	
-	  function MarbleSprite(board, row, col) {
+	  function MarbleSprite(board, row, col, player) {
 	    _classCallCheck(this, MarbleSprite);
 	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(MarbleSprite).call(this, board, 'marble', row, col));
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MarbleSprite).call(this, board, 'marble', row, col));
+	
+	    _this.player = player;
+	    _this.colorize();
+	    _this.placeOnBoard();
+	    return _this;
 	  }
+	
+	  _createClass(MarbleSprite, [{
+	    key: 'colorize',
+	    value: function colorize() {
+	      this.tint = this.player === 1 ? 0xff0000 : 0x00ff00;
+	    }
+	  }]);
 	
 	  return MarbleSprite;
 	}(_Sprite3.default);

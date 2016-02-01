@@ -21,8 +21,14 @@ class App {
   }
 
   makeMove(col) {
+    if (this.readyToMove) {
+      return;
+    }
+    const currentPlayer = this.boardModel.currentPlayer;
     const result = this.boardModel.play(col);
-    console.log(result)
+    if (result) {
+      this.movingMarble = new MarbleSprite(this.board, result.row, result.col, currentPlayer);
+    }
   }
 
   animate() {
