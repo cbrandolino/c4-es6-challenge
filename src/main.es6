@@ -21,7 +21,7 @@ class App {
   }
 
   makeMove(col) {
-    if (this.readyToMove) {
+    if (this.marble && this.marble.moving) {
       return;
     }
     const currentPlayer = this.boardModel.currentPlayer;

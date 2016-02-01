@@ -5821,7 +5821,7 @@
 	  }, {
 	    key: 'makeMove',
 	    value: function makeMove(col) {
-	      if (this.readyToMove) {
+	      if (this.marble && this.marble.moving) {
 	        return;
 	      }
 	      var currentPlayer = this.boardModel.currentPlayer;
