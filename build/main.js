@@ -6297,40 +6297,53 @@
 	
 	    this.board = board;
 	    this.tileWidth = 60;
-	    this.prepareStage();
-	    this.prepareTextures();
-	    this.prepareBoard();
+	    this.initialisePixi();
+	    this.initialiseBoard();
 	    this.animate();
 	  }
 	
 	  _createClass(Renderer, [{
-	    key: 'prepareTextures',
-	    value: function prepareTextures() {
+	    key: 'initialisePixi',
+	    value: function initialisePixi() {
+	      this.pixiRenderer = PIXI.autoDetectRenderer(800, 600);
+	      document.body.appendChild(this.pixiRenderer.view);
+	      this.stage = new PIXI.Container();
 	      this.textures = {
 	        cell: PIXI.Texture.fromImage(__webpack_require__(332)),
 	        marble: PIXI.Texture.fromImage(__webpack_require__(333))
 	      };
 	    }
 	  }, {
-	    key: 'animate',
-	    value: function animate() {
+	    key: 'initialiseBoard',
+	    value: function initialiseBoard() {
 	      var _this = this;
 	
-	      requestAnimationFrame(function () {
-	        return _this.animate();
+	      this.loopBoard(function (_ref) {
+	        var row = _ref.row;
+	        var col = _ref.col;
+	
+	        _this.addSpriteOnTile('cell', row, col);
 	      });
-	      this.prepareMarbles();
+	    }
+	  }, {
+	    key: 'animate',
+	    value: function animate() {
+	      var _this2 = this;
+	
+	      requestAnimationFrame(function () {
+	        return _this2.animate();
+	      });
+	      this.addMarbles();
 	      this.pixiRenderer.render(this.stage);
 	    }
 	  }, {
-	    key: 'loopBoard',
-	    value: function loopBoard(callback) {
+	    key: '_loopBoard',
+	    value: function _loopBoard(callback) {
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
 	      var _iteratorError = undefined;
 	
 	      try {
-	
 	        for (var _iterator = this.board.state.entries()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	          var _step$value = _slicedToArray(_step.value, 2);
 	
@@ -6358,16 +6371,18 @@
 	    }
 	  }, {
 	    key: 'addSpriteOnTile',
-	    value: function addSpriteOnTile(sprite, baseName, row, col) {
-	      var unique = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
+	    value: function addSpriteOnTile(spriteId, row, col) {
+	      var unique = arguments.length <= 3 || arguments[3] === undefined ? false : arguments[3];
 	
-	      sprite.name = baseName + '-' + row + '-' + col;
+	      var sprite = new PIXI.Sprite(this.textures[spriteId]);
+	      sprite.name = spriteId + '-' + row + '-' + col;
 	      sprite.x = this.tileWidth * col;
 	      sprite.y = this.tileWidth * row;
 	      if (unique) {
 	        this.removeSprite(sprite.name);
 	      }
 	      this.stage.addChild(sprite);
+	      return sprite;
 	    }
 	  }, {
 	    key: 'removeSprite',
@@ -6378,48 +6393,21 @@
 	      }
 	    }
 	  }, {
-	    key: 'prepareMarbles',
-	    value: function prepareMarbles() {
-	      var _this2 = this;
-	
-	      this.loopBoard(function (_ref) {
-	        var row = _ref.row;
-	        var col = _ref.col;
-	
-	        var cellValue = _this2.board.cellValue(row, col);
-	        if (cellValue === 0) {
-	          return;
-	        }
-	        var marble = new PIXI.Sprite(_this2.textures.marble);
-	        marble.tint = _this2.getMarbleTint(cellValue);
-	        _this2.addSpriteOnTile(marble, 'marble', row, col, true);
-	      });
-	    }
-	  }, {
-	    key: 'getMarbleTint',
-	    value: function getMarbleTint(value) {
-	      return value === 1 ? 0xff0000 : 0x00ff00;
-	    }
-	  }, {
-	    key: 'prepareBoard',
-	    value: function prepareBoard() {
+	    key: 'addMarbles',
+	    value: function addMarbles() {
 	      var _this3 = this;
 	
-	      console.log('bubu');
 	      this.loopBoard(function (_ref2) {
 	        var row = _ref2.row;
 	        var col = _ref2.col;
 	
-	        var cell = new PIXI.Sprite(_this3.textures.cell);
-	        _this3.addSpriteOnTile(cell, 'cell', row, col);
+	        var cellValue = _this3.board.cellValue(row, col);
+	        if (cellValue === 0) {
+	          return;
+	        }
+	        var marble = _this3.addSpriteOnTile('marble', row, col, true);
+	        marble.tint = cellValue === 1 ? 0xff0000 : 0x00ff00;
 	      });
-	    }
-	  }, {
-	    key: 'prepareStage',
-	    value: function prepareStage() {
-	      this.pixiRenderer = PIXI.autoDetectRenderer(800, 600);
-	      document.body.appendChild(this.pixiRenderer.view);
-	      this.stage = new PIXI.Container();
 	    }
 	  }]);
 	
