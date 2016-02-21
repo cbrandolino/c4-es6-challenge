@@ -5775,11 +5775,15 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _Board = __webpack_require__(341);
+	var _Board = __webpack_require__(193);
 	
 	var _Board2 = _interopRequireDefault(_Board);
 	
-	var _tween = __webpack_require__(337);
+	var _Menu = __webpack_require__(339);
+	
+	var _Menu2 = _interopRequireDefault(_Menu);
+	
+	var _tween = __webpack_require__(338);
 	
 	var _tween2 = _interopRequireDefault(_tween);
 	
@@ -5791,19 +5795,30 @@
 	  function App() {
 	    _classCallCheck(this, App);
 	
+	    this.stages = { Board: _Board2.default, Menu: _Menu2.default };
 	    this.renderer = PIXI.autoDetectRenderer(800, 600);
 	    document.body.appendChild(this.renderer.view);
-	    this.currentStage = new _Board2.default();
+	    this.changeStage('Menu');
 	    this.animate();
 	  }
 	
 	  _createClass(App, [{
-	    key: 'animate',
-	    value: function animate(time) {
+	    key: 'changeStage',
+	    value: function changeStage(stageName) {
 	      var _this = this;
 	
+	      this.currentStage = new this.stages[stageName]();
+	      this.currentStage.once('changestage', function (stageName) {
+	        return _this.changeStage(stageName);
+	      });
+	    }
+	  }, {
+	    key: 'animate',
+	    value: function animate(time) {
+	      var _this2 = this;
+	
 	      requestAnimationFrame(function (ms) {
-	        return _this.animate(ms);
+	        return _this2.animate(ms);
 	      });
 	      _tween2.default.update(time);
 	      this.renderer.render(this.currentStage.stage);
@@ -5821,6 +5836,109 @@
 
 	'use strict';
 	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _BoardModel = __webpack_require__(194);
+	
+	var _BoardModel2 = _interopRequireDefault(_BoardModel);
+	
+	var _BoardCellSprite = __webpack_require__(196);
+	
+	var _BoardCellSprite2 = _interopRequireDefault(_BoardCellSprite);
+	
+	var _BoardMarbleSprite = __webpack_require__(337);
+	
+	var _BoardMarbleSprite2 = _interopRequireDefault(_BoardMarbleSprite);
+	
+	var _events = __webpack_require__(195);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Board = function (_EventEmitter) {
+	  _inherits(Board, _EventEmitter);
+	
+	  function Board() {
+	    _classCallCheck(this, Board);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Board).call(this));
+	
+	    _this.boardModel = new _BoardModel2.default();
+	    _this.stage = new PIXI.Container();
+	    _this.bootNextPlayer();
+	    _this.renderCells();
+	    return _this;
+	  }
+	
+	  _createClass(Board, [{
+	    key: 'moveComplete',
+	    value: function moveComplete() {
+	      this.bootNextPlayer();
+	    }
+	  }, {
+	    key: 'renderCells',
+	    value: function renderCells() {
+	      var _this2 = this;
+	
+	      this.boardModel.loop(function (_ref) {
+	        var row = _ref.row;
+	        var col = _ref.col;
+	
+	        var cell = new _BoardCellSprite2.default(_this2.stage, row, col);
+	        cell.on('click', function (e) {
+	          return _this2.makeMove(e.target.col);
+	        });
+	        cell.on('mouseover', function (e) {
+	          return _this2.currentPlayerMarble.aim(e.target.col);
+	        });
+	      });
+	    }
+	  }, {
+	    key: 'bootNextPlayer',
+	    value: function bootNextPlayer() {
+	      var _this3 = this;
+	
+	      var player = this.boardModel.currentPlayer;
+	      this.currentPlayerMarble = new _BoardMarbleSprite2.default(this.stage, player);
+	      this.currentPlayerMarble.on('moveComplete', function () {
+	        return _this3.moveComplete();
+	      });
+	    }
+	  }, {
+	    key: 'makeMove',
+	    value: function makeMove(col) {
+	      if (this.currentPlayerMarble.moveInProgress) {
+	        return;
+	      }
+	      this.currentPlayerMarble.aim(col);
+	      var result = this.boardModel.play(col);
+	      if (result) {
+	        this.currentPlayerMarble.coords = result;
+	        this.currentPlayerMarble.fire();
+	      }
+	    }
+	  }]);
+	
+	  return Board;
+	}(_events.EventEmitter);
+	
+	exports.default = Board;
+
+/***/ },
+/* 194 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -5829,7 +5947,7 @@
 	  value: true
 	});
 	
-	var _events = __webpack_require__(194);
+	var _events = __webpack_require__(195);
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
@@ -6058,7 +6176,7 @@
 	exports.default = BoardModel;
 
 /***/ },
-/* 194 */
+/* 195 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -6332,24 +6450,68 @@
 	}
 
 /***/ },
-/* 195 */,
 /* 196 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(197);
+	
+	var _BoardItemSprite2 = __webpack_require__(333);
+	
+	var _BoardItemSprite3 = _interopRequireDefault(_BoardItemSprite2);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var BoardCellSprite = function (_BoardItemSprite) {
+	  _inherits(BoardCellSprite, _BoardItemSprite);
+	
+	  function BoardCellSprite(board, row, col) {
+	    _classCallCheck(this, BoardCellSprite);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardCellSprite).call(this, board, 'cell'));
+	
+	    _this.interactive = true;
+	    _this.order = 0;
+	    _this.col = col;
+	    _this.row = row;
+	    _this.placeOnTarget();
+	    return _this;
+	  }
+	
+	  return BoardCellSprite;
+	}(_BoardItemSprite3.default);
+	
+	exports.default = BoardCellSprite;
+
+/***/ },
+/* 197 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
 	
 	// run the polyfills
-	__webpack_require__(197);
+	__webpack_require__(198);
 	
-	var core = module.exports = __webpack_require__(202);
+	var core = module.exports = __webpack_require__(203);
 	
 	// add core plugins.
-	core.extras = __webpack_require__(264);
-	core.filters = __webpack_require__(271);
-	core.interaction = __webpack_require__(299);
-	core.loaders = __webpack_require__(303);
-	core.mesh = __webpack_require__(322);
-	core.accessibility = __webpack_require__(328);
+	core.extras = __webpack_require__(265);
+	core.filters = __webpack_require__(272);
+	core.interaction = __webpack_require__(300);
+	core.loaders = __webpack_require__(304);
+	core.mesh = __webpack_require__(323);
+	core.accessibility = __webpack_require__(329);
 	
 	// export a premade loader instance
 	/**
@@ -6362,24 +6524,24 @@
 	core.loader = new core.loaders.Loader();
 	
 	// mixin the deprecation features.
-	Object.assign(core, __webpack_require__(331));
+	Object.assign(core, __webpack_require__(332));
 	
 	// Always export pixi globally.
 	global.PIXI = core;
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 197 */
+/* 198 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	__webpack_require__(198);
-	__webpack_require__(200);
+	__webpack_require__(199);
 	__webpack_require__(201);
+	__webpack_require__(202);
 
 /***/ },
-/* 198 */
+/* 199 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6389,11 +6551,11 @@
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 	
 	if (!Object.assign) {
-	    Object.assign = __webpack_require__(199);
+	    Object.assign = __webpack_require__(200);
 	}
 
 /***/ },
-/* 199 */
+/* 200 */
 /***/ function(module, exports) {
 
 	/* eslint-disable no-unused-vars */
@@ -6438,7 +6600,7 @@
 	};
 
 /***/ },
-/* 200 */
+/* 201 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
@@ -6511,7 +6673,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 201 */
+/* 202 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -6530,7 +6692,7 @@
 	}
 
 /***/ },
-/* 202 */
+/* 203 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6546,53 +6708,53 @@
 	 * @namespace PIXI
 	 */
 	// export core and const. We assign core to const so that the non-reference types in const remain in-tact
-	var core = module.exports = Object.assign(__webpack_require__(203), __webpack_require__(205), {
+	var core = module.exports = Object.assign(__webpack_require__(204), __webpack_require__(206), {
 	    // utils
-	    utils: __webpack_require__(213),
-	    ticker: __webpack_require__(218),
+	    utils: __webpack_require__(214),
+	    ticker: __webpack_require__(219),
 	
 	    // display
-	    DisplayObject: __webpack_require__(220),
-	    Container: __webpack_require__(232),
+	    DisplayObject: __webpack_require__(221),
+	    Container: __webpack_require__(233),
 	
 	    // sprites
-	    Sprite: __webpack_require__(233),
-	    ParticleContainer: __webpack_require__(235),
-	    SpriteRenderer: __webpack_require__(236),
-	    ParticleRenderer: __webpack_require__(252),
+	    Sprite: __webpack_require__(234),
+	    ParticleContainer: __webpack_require__(236),
+	    SpriteRenderer: __webpack_require__(237),
+	    ParticleRenderer: __webpack_require__(253),
 	
 	    // text
-	    Text: __webpack_require__(255),
+	    Text: __webpack_require__(256),
 	
 	    // primitives
-	    Graphics: __webpack_require__(256),
-	    GraphicsData: __webpack_require__(258),
-	    GraphicsRenderer: __webpack_require__(259),
+	    Graphics: __webpack_require__(257),
+	    GraphicsData: __webpack_require__(259),
+	    GraphicsRenderer: __webpack_require__(260),
 	
 	    // textures
-	    Texture: __webpack_require__(223),
-	    BaseTexture: __webpack_require__(222),
-	    RenderTexture: __webpack_require__(221),
-	    VideoBaseTexture: __webpack_require__(224),
-	    TextureUvs: __webpack_require__(225),
+	    Texture: __webpack_require__(224),
+	    BaseTexture: __webpack_require__(223),
+	    RenderTexture: __webpack_require__(222),
+	    VideoBaseTexture: __webpack_require__(225),
+	    TextureUvs: __webpack_require__(226),
 	
 	    // renderers - canvas
-	    CanvasRenderer: __webpack_require__(262),
-	    CanvasGraphics: __webpack_require__(257),
-	    CanvasBuffer: __webpack_require__(231),
+	    CanvasRenderer: __webpack_require__(263),
+	    CanvasGraphics: __webpack_require__(258),
+	    CanvasBuffer: __webpack_require__(232),
 	
 	    // renderers - webgl
-	    WebGLRenderer: __webpack_require__(238),
-	    WebGLManager: __webpack_require__(229),
-	    ShaderManager: __webpack_require__(240),
-	    Shader: __webpack_require__(242),
-	    ObjectRenderer: __webpack_require__(237),
-	    RenderTarget: __webpack_require__(226),
+	    WebGLRenderer: __webpack_require__(239),
+	    WebGLManager: __webpack_require__(230),
+	    ShaderManager: __webpack_require__(241),
+	    Shader: __webpack_require__(243),
+	    ObjectRenderer: __webpack_require__(238),
+	    RenderTarget: __webpack_require__(227),
 	
 	    // filters - webgl
-	    AbstractFilter: __webpack_require__(247),
-	    FXAAFilter: __webpack_require__(251),
-	    SpriteMaskFilter: __webpack_require__(246),
+	    AbstractFilter: __webpack_require__(248),
+	    FXAAFilter: __webpack_require__(252),
+	    SpriteMaskFilter: __webpack_require__(247),
 	
 	    /**
 	     * This helper function will automatically detect which renderer you should be using.
@@ -6626,7 +6788,7 @@
 	});
 
 /***/ },
-/* 203 */
+/* 204 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6644,7 +6806,7 @@
 	   * @constant
 	   * @property {string} VERSION
 	   */
-	  VERSION: __webpack_require__(204).version,
+	  VERSION: __webpack_require__(205).version,
 	
 	  /**
 	   * @property {number} PI_2 - Two Pi
@@ -6854,7 +7016,7 @@
 	module.exports = CONST;
 
 /***/ },
-/* 204 */
+/* 205 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -6965,7 +7127,7 @@
 	};
 
 /***/ },
-/* 205 */
+/* 206 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6981,18 +7143,18 @@
 	    // to avoid circular dependencies and cut down on
 	    // internal module requires.
 	
-	    Point: __webpack_require__(206),
-	    Matrix: __webpack_require__(207),
+	    Point: __webpack_require__(207),
+	    Matrix: __webpack_require__(208),
 	
-	    Circle: __webpack_require__(208),
-	    Ellipse: __webpack_require__(210),
-	    Polygon: __webpack_require__(211),
-	    Rectangle: __webpack_require__(209),
-	    RoundedRectangle: __webpack_require__(212)
+	    Circle: __webpack_require__(209),
+	    Ellipse: __webpack_require__(211),
+	    Polygon: __webpack_require__(212),
+	    Rectangle: __webpack_require__(210),
+	    RoundedRectangle: __webpack_require__(213)
 	};
 
 /***/ },
-/* 206 */
+/* 207 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -7064,7 +7226,7 @@
 	};
 
 /***/ },
-/* 207 */
+/* 208 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7073,7 +7235,7 @@
 	// should either fix it or change the jshint config
 	// jshint -W072
 	
-	var Point = __webpack_require__(206);
+	var Point = __webpack_require__(207);
 	
 	/**
 	 * The pixi Matrix class as an object, which makes it a lot faster,
@@ -7484,13 +7646,13 @@
 	Matrix.TEMP_MATRIX = new Matrix();
 
 /***/ },
-/* 208 */
+/* 209 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Rectangle = __webpack_require__(209),
-	    CONST = __webpack_require__(203);
+	var Rectangle = __webpack_require__(210),
+	    CONST = __webpack_require__(204);
 	
 	/**
 	 * The Circle object can be used to specify a hit area for displayObjects
@@ -7572,12 +7734,12 @@
 	};
 
 /***/ },
-/* 209 */
+/* 210 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var CONST = __webpack_require__(203);
+	var CONST = __webpack_require__(204);
 	
 	/**
 	 * the Rectangle object is an area defined by its position, as indicated by its top-left corner point (x, y) and by its width and its height.
@@ -7664,13 +7826,13 @@
 	};
 
 /***/ },
-/* 210 */
+/* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Rectangle = __webpack_require__(209),
-	    CONST = __webpack_require__(203);
+	var Rectangle = __webpack_require__(210),
+	    CONST = __webpack_require__(204);
 	
 	/**
 	 * The Ellipse object can be used to specify a hit area for displayObjects
@@ -7759,13 +7921,13 @@
 	};
 
 /***/ },
-/* 211 */
+/* 212 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Point = __webpack_require__(206),
-	    CONST = __webpack_require__(203);
+	var Point = __webpack_require__(207),
+	    CONST = __webpack_require__(204);
 	
 	/**
 	 * @class
@@ -7861,12 +8023,12 @@
 	};
 
 /***/ },
-/* 212 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var CONST = __webpack_require__(203);
+	var CONST = __webpack_require__(204);
 	
 	/**
 	 * The Rounded Rectangle object is an area that has nice rounded corners, as indicated by its top-left corner point (x, y) and by its width and its height and its radius.
@@ -7952,12 +8114,12 @@
 	};
 
 /***/ },
-/* 213 */
+/* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var CONST = __webpack_require__(203);
+	var CONST = __webpack_require__(204);
 	
 	/**
 	 * @namespace PIXI.utils
@@ -7966,9 +8128,9 @@
 	    _uid: 0,
 	    _saidHello: false,
 	
-	    EventEmitter: __webpack_require__(214),
-	    pluginTarget: __webpack_require__(215),
-	    async: __webpack_require__(216),
+	    EventEmitter: __webpack_require__(215),
+	    pluginTarget: __webpack_require__(216),
+	    async: __webpack_require__(217),
 	
 	    /**
 	     * Gets the next unique identifier
@@ -8195,7 +8357,7 @@
 	};
 
 /***/ },
-/* 214 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8455,7 +8617,7 @@
 	}
 
 /***/ },
-/* 215 */
+/* 216 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -8522,7 +8684,7 @@
 	};
 
 /***/ },
-/* 216 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, setImmediate, process, module) {'use strict';
@@ -9752,10 +9914,10 @@
 	                root.async = async;
 	            }
 	})();
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(217).setImmediate, __webpack_require__(191), __webpack_require__(190)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(218).setImmediate, __webpack_require__(191), __webpack_require__(190)(module)))
 
 /***/ },
-/* 217 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {"use strict";
@@ -9836,15 +9998,15 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function (id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(217).setImmediate, __webpack_require__(217).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(218).setImmediate, __webpack_require__(218).clearImmediate))
 
 /***/ },
-/* 218 */
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Ticker = __webpack_require__(219);
+	var Ticker = __webpack_require__(220);
 	
 	/**
 	 * The shared ticker instance used by {@link PIXI.extras.MovieClip}.
@@ -9900,13 +10062,13 @@
 	};
 
 /***/ },
-/* 219 */
+/* 220 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var CONST = __webpack_require__(203),
-	    EventEmitter = __webpack_require__(214),
+	var CONST = __webpack_require__(204),
+	    EventEmitter = __webpack_require__(215),
 	
 	// Internal event used by composed emitter
 	TICK = 'tick';
@@ -10237,15 +10399,15 @@
 	module.exports = Ticker;
 
 /***/ },
-/* 220 */
+/* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var math = __webpack_require__(205),
-	    RenderTexture = __webpack_require__(221),
-	    EventEmitter = __webpack_require__(214),
-	    CONST = __webpack_require__(203),
+	var math = __webpack_require__(206),
+	    RenderTexture = __webpack_require__(222),
+	    EventEmitter = __webpack_require__(215),
+	    CONST = __webpack_require__(204),
 	    _tempMatrix = new math.Matrix(),
 	    _tempDisplayObjectParent = { worldTransform: new math.Matrix(), worldAlpha: 1, children: [] };
 	
@@ -10758,18 +10920,18 @@
 	};
 
 /***/ },
-/* 221 */
+/* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var BaseTexture = __webpack_require__(222),
-	    Texture = __webpack_require__(223),
-	    RenderTarget = __webpack_require__(226),
-	    FilterManager = __webpack_require__(228),
-	    CanvasBuffer = __webpack_require__(231),
-	    math = __webpack_require__(205),
-	    CONST = __webpack_require__(203),
+	var BaseTexture = __webpack_require__(223),
+	    Texture = __webpack_require__(224),
+	    RenderTarget = __webpack_require__(227),
+	    FilterManager = __webpack_require__(229),
+	    CanvasBuffer = __webpack_require__(232),
+	    math = __webpack_require__(206),
+	    CONST = __webpack_require__(204),
 	    tempMatrix = new math.Matrix();
 	
 	/**
@@ -11194,14 +11356,14 @@
 	};
 
 /***/ },
-/* 222 */
+/* 223 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(213),
-	    CONST = __webpack_require__(203),
-	    EventEmitter = __webpack_require__(214);
+	var utils = __webpack_require__(214),
+	    CONST = __webpack_require__(204),
+	    EventEmitter = __webpack_require__(215);
 	
 	/**
 	 * A texture stores the information that represents an image. All textures have a base texture.
@@ -11601,17 +11763,17 @@
 	};
 
 /***/ },
-/* 223 */
+/* 224 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var BaseTexture = __webpack_require__(222),
-	    VideoBaseTexture = __webpack_require__(224),
-	    TextureUvs = __webpack_require__(225),
-	    EventEmitter = __webpack_require__(214),
-	    math = __webpack_require__(205),
-	    utils = __webpack_require__(213);
+	var BaseTexture = __webpack_require__(223),
+	    VideoBaseTexture = __webpack_require__(225),
+	    TextureUvs = __webpack_require__(226),
+	    EventEmitter = __webpack_require__(215),
+	    math = __webpack_require__(206),
+	    utils = __webpack_require__(214);
 	
 	/**
 	 * A texture stores the information that represents an image or part of an image. It cannot be added
@@ -11994,13 +12156,13 @@
 	Texture.EMPTY = new Texture(new BaseTexture());
 
 /***/ },
-/* 224 */
+/* 225 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var BaseTexture = __webpack_require__(222),
-	    utils = __webpack_require__(213);
+	var BaseTexture = __webpack_require__(223),
+	    utils = __webpack_require__(214);
 	
 	/**
 	 * A texture of a [playing] Video.
@@ -12213,7 +12375,7 @@
 	}
 
 /***/ },
-/* 225 */
+/* 226 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -12281,17 +12443,17 @@
 	};
 
 /***/ },
-/* 226 */
+/* 227 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var math = __webpack_require__(205),
-	    utils = __webpack_require__(213),
-	    CONST = __webpack_require__(203),
+	var math = __webpack_require__(206),
+	    utils = __webpack_require__(214),
+	    CONST = __webpack_require__(204),
 	
 	//StencilManager = require('../managers/StencilManager'),
-	StencilMaskStack = __webpack_require__(227);
+	StencilMaskStack = __webpack_require__(228);
 	
 	/**
 	 * @author Mat Groves http://matgroves.com/ @Doormat23
@@ -12585,7 +12747,7 @@
 	};
 
 /***/ },
-/* 227 */
+/* 228 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -12622,16 +12784,16 @@
 	module.exports = StencilMaskStack;
 
 /***/ },
-/* 228 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var WebGLManager = __webpack_require__(229),
-	    RenderTarget = __webpack_require__(226),
-	    CONST = __webpack_require__(203),
-	    Quad = __webpack_require__(230),
-	    math = __webpack_require__(205);
+	var WebGLManager = __webpack_require__(230),
+	    RenderTarget = __webpack_require__(227),
+	    CONST = __webpack_require__(204),
+	    Quad = __webpack_require__(231),
+	    math = __webpack_require__(206);
 	
 	/**
 	 * @class
@@ -13036,7 +13198,7 @@
 	};
 
 /***/ },
-/* 229 */
+/* 230 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -13079,7 +13241,7 @@
 	};
 
 /***/ },
-/* 230 */
+/* 231 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -13216,7 +13378,7 @@
 	module.exports = Quad;
 
 /***/ },
-/* 231 */
+/* 232 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -13313,15 +13475,15 @@
 	};
 
 /***/ },
-/* 232 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var math = __webpack_require__(205),
-	    utils = __webpack_require__(213),
-	    DisplayObject = __webpack_require__(220),
-	    RenderTexture = __webpack_require__(221),
+	var math = __webpack_require__(206),
+	    utils = __webpack_require__(214),
+	    DisplayObject = __webpack_require__(221),
+	    RenderTexture = __webpack_require__(222),
 	    _tempMatrix = new math.Matrix();
 	
 	/**
@@ -13882,17 +14044,17 @@
 	};
 
 /***/ },
-/* 233 */
+/* 234 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var math = __webpack_require__(205),
-	    Texture = __webpack_require__(223),
-	    Container = __webpack_require__(232),
-	    CanvasTinter = __webpack_require__(234),
-	    utils = __webpack_require__(213),
-	    CONST = __webpack_require__(203),
+	var math = __webpack_require__(206),
+	    Texture = __webpack_require__(224),
+	    Container = __webpack_require__(233),
+	    CanvasTinter = __webpack_require__(235),
+	    utils = __webpack_require__(214),
+	    CONST = __webpack_require__(204),
 	    tempPoint = new math.Point();
 	
 	/**
@@ -14383,12 +14545,12 @@
 	};
 
 /***/ },
-/* 234 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(213);
+	var utils = __webpack_require__(214);
 	
 	/**
 	 * Utility methods for Sprite/Texture tinting.
@@ -14592,13 +14754,13 @@
 	CanvasTinter.tintMethod = CanvasTinter.canUseMultiply ? CanvasTinter.tintWithMultiply : CanvasTinter.tintWithPerPixel;
 
 /***/ },
-/* 235 */
+/* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Container = __webpack_require__(232),
-	    CONST = __webpack_require__(203);
+	var Container = __webpack_require__(233),
+	    CONST = __webpack_require__(204);
 	
 	/**
 	 * The ParticleContainer class is a really fast version of the Container built solely for speed,
@@ -14865,14 +15027,14 @@
 	};
 
 /***/ },
-/* 236 */
+/* 237 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var ObjectRenderer = __webpack_require__(237),
-	    WebGLRenderer = __webpack_require__(238),
-	    CONST = __webpack_require__(203);
+	var ObjectRenderer = __webpack_require__(238),
+	    WebGLRenderer = __webpack_require__(239),
+	    CONST = __webpack_require__(204);
 	
 	/**
 	 * @author Mat Groves
@@ -15307,12 +15469,12 @@
 	};
 
 /***/ },
-/* 237 */
+/* 238 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var WebGLManager = __webpack_require__(229);
+	var WebGLManager = __webpack_require__(230);
 	
 	/**
 	 * Base for a common object renderer that can be used as a system renderer plugin.
@@ -15365,22 +15527,22 @@
 	};
 
 /***/ },
-/* 238 */
+/* 239 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var SystemRenderer = __webpack_require__(239),
-	    ShaderManager = __webpack_require__(240),
-	    MaskManager = __webpack_require__(245),
-	    StencilManager = __webpack_require__(249),
-	    FilterManager = __webpack_require__(228),
-	    BlendModeManager = __webpack_require__(250),
-	    RenderTarget = __webpack_require__(226),
-	    ObjectRenderer = __webpack_require__(237),
-	    FXAAFilter = __webpack_require__(251),
-	    utils = __webpack_require__(213),
-	    CONST = __webpack_require__(203);
+	var SystemRenderer = __webpack_require__(240),
+	    ShaderManager = __webpack_require__(241),
+	    MaskManager = __webpack_require__(246),
+	    StencilManager = __webpack_require__(250),
+	    FilterManager = __webpack_require__(229),
+	    BlendModeManager = __webpack_require__(251),
+	    RenderTarget = __webpack_require__(227),
+	    ObjectRenderer = __webpack_require__(238),
+	    FXAAFilter = __webpack_require__(252),
+	    utils = __webpack_require__(214),
+	    CONST = __webpack_require__(204);
 	
 	/**
 	 * The WebGLRenderer draws the scene and all its content onto a webGL enabled canvas. This renderer
@@ -15912,15 +16074,15 @@
 	};
 
 /***/ },
-/* 239 */
+/* 240 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(213),
-	    math = __webpack_require__(205),
-	    CONST = __webpack_require__(203),
-	    EventEmitter = __webpack_require__(214);
+	var utils = __webpack_require__(214),
+	    math = __webpack_require__(206),
+	    CONST = __webpack_require__(204),
+	    EventEmitter = __webpack_require__(215);
 	
 	/**
 	 * The CanvasRenderer draws the scene and all its content onto a 2d canvas. This renderer should be used for browsers that do not support webGL.
@@ -16167,16 +16329,16 @@
 	};
 
 /***/ },
-/* 240 */
+/* 241 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var WebGLManager = __webpack_require__(229),
-	    TextureShader = __webpack_require__(241),
-	    ComplexPrimitiveShader = __webpack_require__(243),
-	    PrimitiveShader = __webpack_require__(244),
-	    utils = __webpack_require__(213);
+	var WebGLManager = __webpack_require__(230),
+	    TextureShader = __webpack_require__(242),
+	    ComplexPrimitiveShader = __webpack_require__(244),
+	    PrimitiveShader = __webpack_require__(245),
+	    utils = __webpack_require__(214);
 	
 	/**
 	 * @class
@@ -16326,12 +16488,12 @@
 	};
 
 /***/ },
-/* 241 */
+/* 242 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Shader = __webpack_require__(242);
+	var Shader = __webpack_require__(243);
 	
 	/**
 	 * @class
@@ -16407,13 +16569,13 @@
 	TextureShader.defaultFragmentSrc = ['precision lowp float;', 'varying vec2 vTextureCoord;', 'varying vec4 vColor;', 'uniform sampler2D uSampler;', 'void main(void){', '   gl_FragColor = texture2D(uSampler, vTextureCoord) * vColor ;', '}'].join('\n');
 
 /***/ },
-/* 242 */
+/* 243 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	/*global console */
-	var utils = __webpack_require__(213);
+	var utils = __webpack_require__(214);
 	
 	/**
 	 * Base shader class for PIXI managed shaders.
@@ -16941,12 +17103,12 @@
 	};
 
 /***/ },
-/* 243 */
+/* 244 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Shader = __webpack_require__(242);
+	var Shader = __webpack_require__(243);
 	
 	/**
 	 * This shader is used to draw complex primitive shapes for {@link PIXI.Graphics}.
@@ -16982,12 +17144,12 @@
 	module.exports = ComplexPrimitiveShader;
 
 /***/ },
-/* 244 */
+/* 245 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Shader = __webpack_require__(242);
+	var Shader = __webpack_require__(243);
 	
 	/**
 	 * This shader is used to draw simple primitive shapes for {@link PIXI.Graphics}.
@@ -17022,13 +17184,13 @@
 	module.exports = PrimitiveShader;
 
 /***/ },
-/* 245 */
+/* 246 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var WebGLManager = __webpack_require__(229),
-	    AlphaMaskFilter = __webpack_require__(246);
+	var WebGLManager = __webpack_require__(230),
+	    AlphaMaskFilter = __webpack_require__(247);
 	
 	/**
 	 * @class
@@ -17125,16 +17287,16 @@
 	};
 
 /***/ },
-/* 246 */
+/* 247 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var AbstractFilter = __webpack_require__(247),
-	    math = __webpack_require__(205);
+	var AbstractFilter = __webpack_require__(248),
+	    math = __webpack_require__(206);
 	
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * The SpriteMaskFilter class
@@ -17217,12 +17379,12 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 247 */
+/* 248 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var DefaultShader = __webpack_require__(241);
+	var DefaultShader = __webpack_require__(242);
 	
 	/**
 	 * This is the base class for creating a PIXI filter. Currently only WebGL supports filters.
@@ -17321,7 +17483,7 @@
 	};
 
 /***/ },
-/* 248 */
+/* 249 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -17329,13 +17491,13 @@
 	console.log("I'm `fs` modules");
 
 /***/ },
-/* 249 */
+/* 250 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var WebGLManager = __webpack_require__(229),
-	    utils = __webpack_require__(213);
+	var WebGLManager = __webpack_require__(230),
+	    utils = __webpack_require__(214);
 	
 	/**
 	 * @class
@@ -17623,12 +17785,12 @@
 	};
 
 /***/ },
-/* 250 */
+/* 251 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var WebGLManager = __webpack_require__(229);
+	var WebGLManager = __webpack_require__(230);
 	
 	/**
 	 * @class
@@ -17669,14 +17831,14 @@
 	};
 
 /***/ },
-/* 251 */
+/* 252 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var AbstractFilter = __webpack_require__(247);
+	var AbstractFilter = __webpack_require__(248);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 *
@@ -17726,16 +17888,16 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 252 */
+/* 253 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var ObjectRenderer = __webpack_require__(237),
-	    WebGLRenderer = __webpack_require__(238),
-	    ParticleShader = __webpack_require__(253),
-	    ParticleBuffer = __webpack_require__(254),
-	    math = __webpack_require__(205);
+	var ObjectRenderer = __webpack_require__(238),
+	    WebGLRenderer = __webpack_require__(239),
+	    ParticleShader = __webpack_require__(254),
+	    ParticleBuffer = __webpack_require__(255),
+	    math = __webpack_require__(206);
 	
 	/**
 	 * @author Mat Groves
@@ -18160,12 +18322,12 @@
 	};
 
 /***/ },
-/* 253 */
+/* 254 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var TextureShader = __webpack_require__(241);
+	var TextureShader = __webpack_require__(242);
 	
 	/**
 	 * @class
@@ -18199,7 +18361,7 @@
 	module.exports = ParticleShader;
 
 /***/ },
-/* 254 */
+/* 255 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -18405,16 +18567,16 @@
 	};
 
 /***/ },
-/* 255 */
+/* 256 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Sprite = __webpack_require__(233),
-	    Texture = __webpack_require__(223),
-	    math = __webpack_require__(205),
-	    utils = __webpack_require__(213),
-	    CONST = __webpack_require__(203);
+	var Sprite = __webpack_require__(234),
+	    Texture = __webpack_require__(224),
+	    math = __webpack_require__(206),
+	    utils = __webpack_require__(214),
+	    CONST = __webpack_require__(204);
 	
 	/**
 	 * A Text Object will create a line or multiple lines of text. To split a line you can use '\n' in your text string,
@@ -18972,18 +19134,18 @@
 	};
 
 /***/ },
-/* 256 */
+/* 257 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Container = __webpack_require__(232),
-	    Texture = __webpack_require__(223),
-	    CanvasBuffer = __webpack_require__(231),
-	    CanvasGraphics = __webpack_require__(257),
-	    GraphicsData = __webpack_require__(258),
-	    math = __webpack_require__(205),
-	    CONST = __webpack_require__(203),
+	var Container = __webpack_require__(233),
+	    Texture = __webpack_require__(224),
+	    CanvasBuffer = __webpack_require__(232),
+	    CanvasGraphics = __webpack_require__(258),
+	    GraphicsData = __webpack_require__(259),
+	    math = __webpack_require__(206),
+	    CONST = __webpack_require__(204),
 	    tempPoint = new math.Point();
 	
 	/**
@@ -20052,12 +20214,12 @@
 	};
 
 /***/ },
-/* 257 */
+/* 258 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var CONST = __webpack_require__(203);
+	var CONST = __webpack_require__(204);
 	
 	/**
 	 * A set of functions used by the canvas renderer to draw the primitive graphics data.
@@ -20369,7 +20531,7 @@
 	};
 
 /***/ },
-/* 258 */
+/* 259 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -20457,18 +20619,18 @@
 	};
 
 /***/ },
-/* 259 */
+/* 260 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(213),
-	    math = __webpack_require__(205),
-	    CONST = __webpack_require__(203),
-	    ObjectRenderer = __webpack_require__(237),
-	    WebGLRenderer = __webpack_require__(238),
-	    WebGLGraphicsData = __webpack_require__(260),
-	    earcut = __webpack_require__(261);
+	var utils = __webpack_require__(214),
+	    math = __webpack_require__(206),
+	    CONST = __webpack_require__(204),
+	    ObjectRenderer = __webpack_require__(238),
+	    WebGLRenderer = __webpack_require__(239),
+	    WebGLGraphicsData = __webpack_require__(261),
+	    earcut = __webpack_require__(262);
 	
 	/**
 	 * Renders the graphics object.
@@ -21273,7 +21435,7 @@
 	};
 
 /***/ },
-/* 260 */
+/* 261 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -21396,7 +21558,7 @@
 	};
 
 /***/ },
-/* 261 */
+/* 262 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -21985,16 +22147,16 @@
 	}
 
 /***/ },
-/* 262 */
+/* 263 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var SystemRenderer = __webpack_require__(239),
-	    CanvasMaskManager = __webpack_require__(263),
-	    utils = __webpack_require__(213),
-	    math = __webpack_require__(205),
-	    CONST = __webpack_require__(203);
+	var SystemRenderer = __webpack_require__(240),
+	    CanvasMaskManager = __webpack_require__(264),
+	    utils = __webpack_require__(214),
+	    math = __webpack_require__(206),
+	    CONST = __webpack_require__(204);
 	
 	/**
 	 * The CanvasRenderer draws the scene and all its content onto a 2d canvas. This renderer should be used for browsers that do not support webGL.
@@ -22232,12 +22394,12 @@
 	};
 
 /***/ },
-/* 263 */
+/* 264 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var CanvasGraphics = __webpack_require__(257);
+	var CanvasGraphics = __webpack_require__(258);
 	
 	/**
 	 * A set of functions used to handle masking.
@@ -22288,7 +22450,7 @@
 	CanvasMaskManager.prototype.destroy = function () {};
 
 /***/ },
-/* 264 */
+/* 265 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22300,26 +22462,26 @@
 	 * @license     {@link https://github.com/pixijs/pixi.js/blob/master/LICENSE|MIT License}
 	 */
 	
-	__webpack_require__(265);
 	__webpack_require__(266);
 	__webpack_require__(267);
+	__webpack_require__(268);
 	
 	/**
 	 * @namespace PIXI.extras
 	 */
 	module.exports = {
-	  MovieClip: __webpack_require__(268),
-	  TilingSprite: __webpack_require__(269),
-	  BitmapText: __webpack_require__(270)
+	  MovieClip: __webpack_require__(269),
+	  TilingSprite: __webpack_require__(270),
+	  BitmapText: __webpack_require__(271)
 	};
 
 /***/ },
-/* 265 */
+/* 266 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202),
+	var core = __webpack_require__(203),
 	    DisplayObject = core.DisplayObject,
 	    _tempMatrix = new core.Matrix();
 	
@@ -22567,12 +22729,12 @@
 	};
 
 /***/ },
-/* 266 */
+/* 267 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	
 	/**
 	 * The instance name of the object.
@@ -22599,12 +22761,12 @@
 	};
 
 /***/ },
-/* 267 */
+/* 268 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	
 	/**
 	* Returns the global position of the displayObject
@@ -22630,12 +22792,12 @@
 	};
 
 /***/ },
-/* 268 */
+/* 269 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	
 	/**
 	 * A MovieClip is a simple way to display an animation depicted by a list of textures.
@@ -22921,16 +23083,16 @@
 	};
 
 /***/ },
-/* 269 */
+/* 270 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202),
+	var core = __webpack_require__(203),
 	
 	// a sprite use dfor rendering textures..
 	tempPoint = new core.Point(),
-	    CanvasTinter = __webpack_require__(234);
+	    CanvasTinter = __webpack_require__(235);
 	
 	/**
 	 * A tiling sprite is a fast way of rendering a tiling image
@@ -23293,12 +23455,12 @@
 	};
 
 /***/ },
-/* 270 */
+/* 271 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	
 	/**
 	 * A BitmapText object will create a line or multiple lines of text using bitmap font. To
@@ -23655,7 +23817,7 @@
 	BitmapText.fonts = {};
 
 /***/ },
-/* 271 */
+/* 272 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -23671,42 +23833,42 @@
 	 * @namespace PIXI.filters
 	 */
 	module.exports = {
-	  AsciiFilter: __webpack_require__(272),
-	  BloomFilter: __webpack_require__(273),
-	  BlurFilter: __webpack_require__(276),
-	  BlurXFilter: __webpack_require__(274),
-	  BlurYFilter: __webpack_require__(275),
-	  BlurDirFilter: __webpack_require__(277),
-	  ColorMatrixFilter: __webpack_require__(278),
-	  ColorStepFilter: __webpack_require__(279),
-	  ConvolutionFilter: __webpack_require__(280),
-	  CrossHatchFilter: __webpack_require__(281),
-	  DisplacementFilter: __webpack_require__(282),
-	  DotScreenFilter: __webpack_require__(283),
-	  GrayFilter: __webpack_require__(284),
-	  DropShadowFilter: __webpack_require__(285),
-	  InvertFilter: __webpack_require__(287),
-	  NoiseFilter: __webpack_require__(288),
-	  PixelateFilter: __webpack_require__(289),
-	  RGBSplitFilter: __webpack_require__(290),
-	  ShockwaveFilter: __webpack_require__(291),
-	  SepiaFilter: __webpack_require__(292),
-	  SmartBlurFilter: __webpack_require__(293),
-	  TiltShiftFilter: __webpack_require__(294),
-	  TiltShiftXFilter: __webpack_require__(295),
-	  TiltShiftYFilter: __webpack_require__(297),
-	  TwistFilter: __webpack_require__(298)
+	  AsciiFilter: __webpack_require__(273),
+	  BloomFilter: __webpack_require__(274),
+	  BlurFilter: __webpack_require__(277),
+	  BlurXFilter: __webpack_require__(275),
+	  BlurYFilter: __webpack_require__(276),
+	  BlurDirFilter: __webpack_require__(278),
+	  ColorMatrixFilter: __webpack_require__(279),
+	  ColorStepFilter: __webpack_require__(280),
+	  ConvolutionFilter: __webpack_require__(281),
+	  CrossHatchFilter: __webpack_require__(282),
+	  DisplacementFilter: __webpack_require__(283),
+	  DotScreenFilter: __webpack_require__(284),
+	  GrayFilter: __webpack_require__(285),
+	  DropShadowFilter: __webpack_require__(286),
+	  InvertFilter: __webpack_require__(288),
+	  NoiseFilter: __webpack_require__(289),
+	  PixelateFilter: __webpack_require__(290),
+	  RGBSplitFilter: __webpack_require__(291),
+	  ShockwaveFilter: __webpack_require__(292),
+	  SepiaFilter: __webpack_require__(293),
+	  SmartBlurFilter: __webpack_require__(294),
+	  TiltShiftFilter: __webpack_require__(295),
+	  TiltShiftXFilter: __webpack_require__(296),
+	  TiltShiftYFilter: __webpack_require__(298),
+	  TwistFilter: __webpack_require__(299)
 	};
 
 /***/ },
-/* 272 */
+/* 273 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	// TODO (cengler) - The Y is flipped in this shader for some reason.
 	
@@ -23758,14 +23920,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 273 */
+/* 274 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202),
-	    BlurXFilter = __webpack_require__(274),
-	    BlurYFilter = __webpack_require__(275);
+	var core = __webpack_require__(203),
+	    BlurXFilter = __webpack_require__(275),
+	    BlurYFilter = __webpack_require__(276);
 	
 	/**
 	 * The BloomFilter applies a Gaussian blur to an object.
@@ -23856,14 +24018,14 @@
 	});
 
 /***/ },
-/* 274 */
+/* 275 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * The BlurXFilter applies a horizontal Gaussian blur to an object.
@@ -23945,14 +24107,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 275 */
+/* 276 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * The BlurYFilter applies a horizontal Gaussian blur to an object.
@@ -24027,14 +24189,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 276 */
+/* 277 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202),
-	    BlurXFilter = __webpack_require__(274),
-	    BlurYFilter = __webpack_require__(275);
+	var core = __webpack_require__(203),
+	    BlurXFilter = __webpack_require__(275),
+	    BlurYFilter = __webpack_require__(276);
 	
 	/**
 	 * The BlurFilter applies a Gaussian blur to an object.
@@ -24132,13 +24294,13 @@
 	});
 
 /***/ },
-/* 277 */
+/* 278 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
-	var fs = __webpack_require__(248);
+	var core = __webpack_require__(203);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * The BlurDirFilter applies a Gaussian blur toward a direction to an object.
@@ -24270,14 +24432,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 278 */
+/* 279 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * The ColorMatrixFilter class lets you apply a 5x4 matrix transformation on the RGBA
@@ -24684,14 +24846,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 279 */
+/* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * This lowers the color depth of your image by the given amount, producing an image with a smaller palette.
@@ -24735,14 +24897,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 280 */
+/* 281 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * The ConvolutionFilter class applies a matrix convolution filter effect.
@@ -24824,14 +24986,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 281 */
+/* 282 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * A Cross Hatch effect filter.
@@ -24854,14 +25016,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 282 */
+/* 283 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * The DisplacementFilter class uses the pixel values from the specified texture (called the displacement map) to perform a displacement of an object.
@@ -24936,14 +25098,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 283 */
+/* 284 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * @author Mat Groves http://matgroves.com/ @Doormat23
@@ -25008,14 +25170,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 284 */
+/* 285 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * This greyscales the palette of your Display Objects.
@@ -25059,14 +25221,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 285 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202),
-	    BlurXFilter = __webpack_require__(274),
-	    BlurYTintFilter = __webpack_require__(286);
+	var core = __webpack_require__(203),
+	    BlurXFilter = __webpack_require__(275),
+	    BlurYTintFilter = __webpack_require__(287);
 	
 	/**
 	 * The DropShadowFilter applies a Gaussian blur to an object.
@@ -25238,15 +25400,15 @@
 	});
 
 /***/ },
-/* 286 */
+/* 287 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * The BlurYTintFilter applies a vertical Gaussian blur to an object.
@@ -25325,14 +25487,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 287 */
+/* 288 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * This inverts your Display Objects colors.
@@ -25377,14 +25539,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 288 */
+/* 289 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * @author Vico @vicocotea
@@ -25434,14 +25596,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 289 */
+/* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * This filter applies a pixelate effect making display objects appear 'blocky'.
@@ -25487,14 +25649,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 290 */
+/* 291 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * An RGB Split Filter.
@@ -25571,14 +25733,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 291 */
+/* 292 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * The ColorMatrixFilter class lets you apply a 4x4 matrix transformation on the RGBA
@@ -25657,14 +25819,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 292 */
+/* 293 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * This applies a sepia effect to your Display Objects.
@@ -25709,14 +25871,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 293 */
+/* 294 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * A Smart Blur Filter.
@@ -25743,14 +25905,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 294 */
+/* 295 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202),
-	    TiltShiftXFilter = __webpack_require__(295),
-	    TiltShiftYFilter = __webpack_require__(297);
+	var core = __webpack_require__(203),
+	    TiltShiftXFilter = __webpack_require__(296),
+	    TiltShiftYFilter = __webpack_require__(298);
 	
 	/**
 	 * @author Vico @vicocotea
@@ -25848,12 +26010,12 @@
 	});
 
 /***/ },
-/* 295 */
+/* 296 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var TiltShiftAxisFilter = __webpack_require__(296);
+	var TiltShiftAxisFilter = __webpack_require__(297);
 	
 	/**
 	 * @author Vico @vicocotea
@@ -25889,14 +26051,14 @@
 	};
 
 /***/ },
-/* 296 */
+/* 297 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * @author Vico @vicocotea
@@ -26009,12 +26171,12 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 297 */
+/* 298 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var TiltShiftAxisFilter = __webpack_require__(296);
+	var TiltShiftAxisFilter = __webpack_require__(297);
 	
 	/**
 	 * @author Vico @vicocotea
@@ -26050,14 +26212,14 @@
 	};
 
 /***/ },
-/* 298 */
+/* 299 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(__dirname) {'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	// @see https://github.com/substack/brfs/issues/25
-	var fs = __webpack_require__(248);
+	var fs = __webpack_require__(249);
 	
 	/**
 	 * This filter applies a twist effect making display objects appear twisted in the given direction.
@@ -26133,7 +26295,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
 
 /***/ },
-/* 299 */
+/* 300 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26149,18 +26311,18 @@
 	 * @namespace PIXI.interaction
 	 */
 	module.exports = {
-	  InteractionData: __webpack_require__(300),
-	  InteractionManager: __webpack_require__(301),
-	  interactiveTarget: __webpack_require__(302)
+	  InteractionData: __webpack_require__(301),
+	  InteractionManager: __webpack_require__(302),
+	  interactiveTarget: __webpack_require__(303)
 	};
 
 /***/ },
-/* 300 */
+/* 301 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	
 	/**
 	 * Holds all information related to an Interaction event
@@ -26207,16 +26369,16 @@
 	};
 
 /***/ },
-/* 301 */
+/* 302 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202),
-	    InteractionData = __webpack_require__(300);
+	var core = __webpack_require__(203),
+	    InteractionData = __webpack_require__(301);
 	
 	// Mix interactiveTarget into core.DisplayObject.prototype
-	Object.assign(core.DisplayObject.prototype, __webpack_require__(302));
+	Object.assign(core.DisplayObject.prototype, __webpack_require__(303));
 	
 	/**
 	 * The interaction manager deals with mouse and touch events. Any DisplayObject can be interactive
@@ -26998,7 +27160,7 @@
 	core.CanvasRenderer.registerPlugin('interaction', InteractionManager);
 
 /***/ },
-/* 302 */
+/* 303 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -27052,7 +27214,7 @@
 	module.exports = interactiveTarget;
 
 /***/ },
-/* 303 */
+/* 304 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27068,25 +27230,25 @@
 	 * @namespace PIXI.loaders
 	 */
 	module.exports = {
-	  Loader: __webpack_require__(304),
+	  Loader: __webpack_require__(305),
 	
 	  // parsers
-	  bitmapFontParser: __webpack_require__(321),
-	  spritesheetParser: __webpack_require__(319),
-	  textureParser: __webpack_require__(318),
-	  Resource: __webpack_require__(305).Resource
+	  bitmapFontParser: __webpack_require__(322),
+	  spritesheetParser: __webpack_require__(320),
+	  textureParser: __webpack_require__(319),
+	  Resource: __webpack_require__(306).Resource
 	};
 
 /***/ },
-/* 304 */
+/* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var ResourceLoader = __webpack_require__(305),
-	    textureParser = __webpack_require__(318),
-	    spritesheetParser = __webpack_require__(319),
-	    bitmapFontParser = __webpack_require__(321);
+	var ResourceLoader = __webpack_require__(306),
+	    textureParser = __webpack_require__(319),
+	    spritesheetParser = __webpack_require__(320),
+	    bitmapFontParser = __webpack_require__(322);
 	
 	/**
 	 *
@@ -27143,36 +27305,36 @@
 	Resource.setExtensionXhrType('fnt', Resource.XHR_RESPONSE_TYPE.DOCUMENT);
 
 /***/ },
-/* 305 */
+/* 306 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	module.exports = __webpack_require__(306);
+	module.exports = __webpack_require__(307);
 	
-	module.exports.Resource = __webpack_require__(314);
+	module.exports.Resource = __webpack_require__(315);
 	
 	module.exports.middleware = {
 	    caching: {
-	        memory: __webpack_require__(315)
+	        memory: __webpack_require__(316)
 	    },
 	    parsing: {
-	        blob: __webpack_require__(316)
+	        blob: __webpack_require__(317)
 	    }
 	};
 
 /***/ },
-/* 306 */
+/* 307 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 	
-	var async = __webpack_require__(307),
-	    urlParser = __webpack_require__(308),
-	    Resource = __webpack_require__(314),
-	    EventEmitter = __webpack_require__(214);
+	var async = __webpack_require__(308),
+	    urlParser = __webpack_require__(309),
+	    Resource = __webpack_require__(315),
+	    EventEmitter = __webpack_require__(215);
 	
 	/**
 	 * Manages the state and loading of multiple resources to load.
@@ -27618,7 +27780,7 @@
 	Loader.XHR_RESPONSE_TYPE = Resource.XHR_RESPONSE_TYPE;
 
 /***/ },
-/* 307 */
+/* 308 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, setImmediate) {'use strict';
@@ -28717,10 +28879,10 @@
 	                root.async = async;
 	            }
 	})();
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(191), __webpack_require__(217).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(191), __webpack_require__(218).setImmediate))
 
 /***/ },
-/* 308 */
+/* 309 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -28748,7 +28910,7 @@
 	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 	// USE OR OTHER DEALINGS IN THE SOFTWARE.
 	
-	var punycode = __webpack_require__(309);
+	var punycode = __webpack_require__(310);
 	
 	exports.parse = urlParse;
 	exports.resolve = urlResolve;
@@ -28824,7 +28986,7 @@
 	  'gopher:': true,
 	  'file:': true
 	},
-	    querystring = __webpack_require__(311);
+	    querystring = __webpack_require__(312);
 	
 	function urlParse(url, parseQueryString, slashesDenoteHost) {
 	  if (url && isObject(url) && url instanceof Url) return url;
@@ -29408,7 +29570,7 @@
 	}
 
 /***/ },
-/* 309 */
+/* 310 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {'use strict';
@@ -29921,7 +30083,7 @@
 		/** Expose `punycode` */
 		// Some AMD build optimizers, like r.js, check for specific condition patterns
 		// like the following:
-		if ("function" == 'function' && _typeof(__webpack_require__(310)) == 'object' && __webpack_require__(310)) {
+		if ("function" == 'function' && _typeof(__webpack_require__(311)) == 'object' && __webpack_require__(311)) {
 			!(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
 				return punycode;
 			}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -29943,7 +30105,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(190)(module), (function() { return this; }())))
 
 /***/ },
-/* 310 */
+/* 311 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {module.exports = __webpack_amd_options__;
@@ -29951,16 +30113,16 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, {}))
 
 /***/ },
-/* 311 */
+/* 312 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	exports.decode = exports.parse = __webpack_require__(312);
-	exports.encode = exports.stringify = __webpack_require__(313);
+	exports.decode = exports.parse = __webpack_require__(313);
+	exports.encode = exports.stringify = __webpack_require__(314);
 
 /***/ },
-/* 312 */
+/* 313 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -30049,7 +30211,7 @@
 	};
 
 /***/ },
-/* 313 */
+/* 314 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -30118,13 +30280,13 @@
 	};
 
 /***/ },
-/* 314 */
+/* 315 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var EventEmitter = __webpack_require__(214),
-	    _url = __webpack_require__(308),
+	var EventEmitter = __webpack_require__(215),
+	    _url = __webpack_require__(309),
 	
 	// tests is CORS is supported in XHR, if not we need to use XDR
 	useXdr = !!(window.XDomainRequest && !('withCredentials' in new XMLHttpRequest())),
@@ -30914,7 +31076,7 @@
 	}
 
 /***/ },
-/* 315 */
+/* 316 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -30941,13 +31103,13 @@
 	};
 
 /***/ },
-/* 316 */
+/* 317 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Resource = __webpack_require__(314),
-	    b64 = __webpack_require__(317);
+	var Resource = __webpack_require__(315),
+	    b64 = __webpack_require__(318);
 	
 	window.URL = window.URL || window.webkitURL;
 	
@@ -31005,7 +31167,7 @@
 	};
 
 /***/ },
-/* 317 */
+/* 318 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -31075,12 +31237,12 @@
 	};
 
 /***/ },
-/* 318 */
+/* 319 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	
 	module.exports = function () {
 	    return function (resource, next) {
@@ -31099,14 +31261,14 @@
 	};
 
 /***/ },
-/* 319 */
+/* 320 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Resource = __webpack_require__(305).Resource,
-	    path = __webpack_require__(320),
-	    core = __webpack_require__(202);
+	var Resource = __webpack_require__(306).Resource,
+	    path = __webpack_require__(321),
+	    core = __webpack_require__(203);
 	
 	module.exports = function () {
 	    return function (resource, next) {
@@ -31174,7 +31336,7 @@
 	};
 
 /***/ },
-/* 320 */
+/* 321 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -31401,15 +31563,15 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(191)))
 
 /***/ },
-/* 321 */
+/* 322 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Resource = __webpack_require__(305).Resource,
-	    core = __webpack_require__(202),
-	    extras = __webpack_require__(264),
-	    path = __webpack_require__(320);
+	var Resource = __webpack_require__(306).Resource,
+	    core = __webpack_require__(203),
+	    extras = __webpack_require__(265),
+	    path = __webpack_require__(321);
 	
 	function parse(resource, texture) {
 	    var data = {};
@@ -31509,7 +31671,7 @@
 	};
 
 /***/ },
-/* 322 */
+/* 323 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31525,20 +31687,20 @@
 	 * @namespace PIXI.mesh
 	 */
 	module.exports = {
-	  Mesh: __webpack_require__(323),
-	  Plane: __webpack_require__(324),
-	  Rope: __webpack_require__(325),
-	  MeshRenderer: __webpack_require__(326),
-	  MeshShader: __webpack_require__(327)
+	  Mesh: __webpack_require__(324),
+	  Plane: __webpack_require__(325),
+	  Rope: __webpack_require__(326),
+	  MeshRenderer: __webpack_require__(327),
+	  MeshShader: __webpack_require__(328)
 	};
 
 /***/ },
-/* 323 */
+/* 324 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202),
+	var core = __webpack_require__(203),
 	    tempPoint = new core.Point(),
 	    tempPolygon = new core.Polygon();
 	
@@ -31994,12 +32156,12 @@
 	};
 
 /***/ },
-/* 324 */
+/* 325 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Mesh = __webpack_require__(323);
+	var Mesh = __webpack_require__(324);
 	
 	/**
 	 * The Plane allows you to draw a texture across several points and them manipulate these points
@@ -32116,13 +32278,13 @@
 	};
 
 /***/ },
-/* 325 */
+/* 326 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Mesh = __webpack_require__(323);
-	var core = __webpack_require__(202);
+	var Mesh = __webpack_require__(324);
+	var core = __webpack_require__(203);
 	
 	/**
 	 * The rope allows you to draw a texture across several points and them manipulate these points
@@ -32327,13 +32489,13 @@
 	};
 
 /***/ },
-/* 326 */
+/* 327 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202),
-	    Mesh = __webpack_require__(323);
+	var core = __webpack_require__(203),
+	    Mesh = __webpack_require__(324);
 	
 	/**
 	 * @author Mat Groves
@@ -32528,12 +32690,12 @@
 	};
 
 /***/ },
-/* 327 */
+/* 328 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	
 	/**
 	 * @class
@@ -32565,7 +32727,7 @@
 	core.ShaderManager.registerPlugin('meshShader', MeshShader);
 
 /***/ },
-/* 328 */
+/* 329 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32581,12 +32743,12 @@
 	 * @namespace PIXI.interaction
 	 */
 	module.exports = {
-	  accessibleTarget: __webpack_require__(329),
-	  AccessibilityManager: __webpack_require__(330)
+	  accessibleTarget: __webpack_require__(330),
+	  AccessibilityManager: __webpack_require__(331)
 	};
 
 /***/ },
-/* 329 */
+/* 330 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -32637,15 +32799,15 @@
 	module.exports = accessibleTarget;
 
 /***/ },
-/* 330 */
+/* 331 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var core = __webpack_require__(202);
+	var core = __webpack_require__(203);
 	
 	// add some extra variables to the container..
-	Object.assign(core.DisplayObject.prototype, __webpack_require__(329));
+	Object.assign(core.DisplayObject.prototype, __webpack_require__(330));
 	
 	/**
 	 * The Accessibility manager reacreates the ability to tab and and have content read by screen readers. This is very important as it can possibly help people with disabilities access pixi content.
@@ -32994,16 +33156,16 @@
 	core.CanvasRenderer.registerPlugin('accessibility', AccessibilityManager);
 
 /***/ },
-/* 331 */
+/* 332 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	/*global console */
-	var core = __webpack_require__(202),
-	    mesh = __webpack_require__(322),
-	    extras = __webpack_require__(264),
-	    filters = __webpack_require__(271);
+	var core = __webpack_require__(203),
+	    mesh = __webpack_require__(323),
+	    extras = __webpack_require__(265),
+	    filters = __webpack_require__(272);
 	
 	/**
 	 * @class
@@ -33327,13 +33489,106 @@
 	};
 
 /***/ },
-/* 332 */,
 /* 333 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(197);
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var BoardItemSprite = function (_PIXI$Sprite) {
+	  _inherits(BoardItemSprite, _PIXI$Sprite);
+	
+	  function BoardItemSprite(board, textureName) {
+	    var _ret;
+	
+	    _classCallCheck(this, BoardItemSprite);
+	
+	    var texture = PIXI.Texture.fromImage(__webpack_require__(334)("./" + textureName + '.png'));
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardItemSprite).call(this, texture));
+	
+	    _this.board = board;
+	    _this.tileWidth = 60;
+	    _this.boardHeight = _this.tileWidth * 6;
+	    _this._row = null;
+	    _this._col = null;
+	    _this._targetX = null;
+	    _this._targetY = null;
+	    return _ret = _this, _possibleConstructorReturn(_this, _ret);
+	  }
+	
+	  _createClass(BoardItemSprite, [{
+	    key: 'placeOnTarget',
+	    value: function placeOnTarget() {
+	      this.x = this.targetX;
+	      this.y = this.targetY;
+	      this.board.addChildAt(this, this.order);
+	      return this;
+	    }
+	  }, {
+	    key: 'targetX',
+	    get: function get() {
+	      return this._targetX;
+	    }
+	  }, {
+	    key: 'targetY',
+	    get: function get() {
+	      return this._targetY;
+	    }
+	  }, {
+	    key: 'row',
+	    get: function get() {
+	      return this._row;
+	    },
+	    set: function set(row) {
+	      this._row = row;
+	      this._targetY = this.boardHeight - this.tileWidth * row;
+	    }
+	  }, {
+	    key: 'coords',
+	    set: function set(_ref) {
+	      var row = _ref.row;
+	      var col = _ref.col;
+	
+	      this.row = row;
+	      this.col = col;
+	    }
+	  }, {
+	    key: 'col',
+	    get: function get() {
+	      return this._col;
+	    },
+	    set: function set(col) {
+	      this._col = col;
+	      this._targetX = this.tileWidth * col;
+	    }
+	  }]);
+	
+	  return BoardItemSprite;
+	}(PIXI.Sprite);
+	
+	exports.default = BoardItemSprite;
+
+/***/ },
+/* 334 */
+/***/ function(module, exports, __webpack_require__) {
+
 	var map = {
-		"./cell.png": 334,
-		"./marble.png": 335
+		"./cell.png": 335,
+		"./marble.png": 336
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -33346,24 +33601,108 @@
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 333;
+	webpackContext.id = 334;
 
-
-/***/ },
-/* 334 */
-/***/ function(module, exports) {
-
-	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfATUwaqBHdgAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAACeUlEQVRo3u2bv2rrMBTGJSPuYHDAkOGOWUuXTu379Q2ydet+s5g7dTIaDKb2Eg/FowgEJ4PBwgZDaiPdKUbxTdImkRNb6nkA4x+ffHz+fIKccw40CgNoFqjLh3POQZ7nn2marrMsi4uiCMqyfK/r+gMAABBC96ZpPlmW9Wjb9t14PP49Go1+QQg7fSmpUVUVJ4SsMMbTc98JYzwlhKyqqpL9elwaMKV04/v+TLYgvu/PKKWb3gBTSjeXqHmK6jLAwSVHNwzDt2snnTAM3y456mcBJ0lCHceZ3CrTOo4zSZKEXgU4iqKwL7+YKIrCzoAZY9zzvNe+/Vc9z3tljMkFZoxx13Wf+1pMuK77/F3obwH3Udl9SksB7tM3K+ObBl9l46HVyl9l74PNQ13XIAiCh6EBB0HwUNf16bX0LYoKmcXJSUeaUroZeht4qAzde6Tn8/nL0IEPMqio7jGV/1M4juO/qgDvZWl3QKqNdNqd1Y7Cy+VyrRpwm2kHeLFY/FENuM0Et2NazjkwDAMCBYMxxreDwUbhPM8/VR3NimwNcJqma1WBRbYGOMuyWFVgka0BLooiUBVYZGuAy7J8VxVYZDOEdvBDVWCRTbtlWgOMELpXFVJka4BN03xSFVhka4Aty3pUFVhka4Bt275TFXiHTcXG/9ggQN/mAUIIrrHnvXZgjKc7FgpxGkAIWakGTAhZHRzTajfiQQiBLnwatwrf92cItYxKuo1p924eVEheGOPpz6rl2LpUq2XaNmPf0qlzbjiOMzlma9JuIf5jedDe1KKlbUk7Y5qW1kNtzaVa2oe1NIhrewVgaJc8YJcXtfp4jadT4D6Gdsu0f5PgJio/TvWzAAAAAElFTkSuQmCC"
 
 /***/ },
 /* 335 */
 /***/ function(module, exports) {
 
+	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfATUwaqBHdgAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAACeUlEQVRo3u2bv2rrMBTGJSPuYHDAkOGOWUuXTu379Q2ydet+s5g7dTIaDKb2Eg/FowgEJ4PBwgZDaiPdKUbxTdImkRNb6nkA4x+ffHz+fIKccw40CgNoFqjLh3POQZ7nn2marrMsi4uiCMqyfK/r+gMAABBC96ZpPlmW9Wjb9t14PP49Go1+QQg7fSmpUVUVJ4SsMMbTc98JYzwlhKyqqpL9elwaMKV04/v+TLYgvu/PKKWb3gBTSjeXqHmK6jLAwSVHNwzDt2snnTAM3y456mcBJ0lCHceZ3CrTOo4zSZKEXgU4iqKwL7+YKIrCzoAZY9zzvNe+/Vc9z3tljMkFZoxx13Wf+1pMuK77/F3obwH3Udl9SksB7tM3K+ObBl9l46HVyl9l74PNQ13XIAiCh6EBB0HwUNf16bX0LYoKmcXJSUeaUroZeht4qAzde6Tn8/nL0IEPMqio7jGV/1M4juO/qgDvZWl3QKqNdNqd1Y7Cy+VyrRpwm2kHeLFY/FENuM0Et2NazjkwDAMCBYMxxreDwUbhPM8/VR3NimwNcJqma1WBRbYGOMuyWFVgka0BLooiUBVYZGuAy7J8VxVYZDOEdvBDVWCRTbtlWgOMELpXFVJka4BN03xSFVhka4Aty3pUFVhka4Bt275TFXiHTcXG/9ggQN/mAUIIrrHnvXZgjKc7FgpxGkAIWakGTAhZHRzTajfiQQiBLnwatwrf92cItYxKuo1p924eVEheGOPpz6rl2LpUq2XaNmPf0qlzbjiOMzlma9JuIf5jedDe1KKlbUk7Y5qW1kNtzaVa2oe1NIhrewVgaJc8YJcXtfp4jadT4D6Gdsu0f5PgJio/TvWzAAAAAElFTkSuQmCC"
+
+/***/ },
+/* 336 */
+/***/ function(module, exports) {
+
 	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfAh023NjysAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAC10lEQVRo3u2bPWvqUBjH/z2IeCEgDirUSSKli/gJCoVCN+fepZ/h0k9wsri4lHs3VwtyS53iYoZCl+4VN6t0SsFkkIBwL0I9d/GIL9ErbaLxiX/IlBjOjyc+53k7R0IIhEkRP1+uaRqLRqMniqJcJBKJ81QqVchkMsfpdPobAPT7/T+mab5bltUaDAZPw+HwcTQadTRNG/u1piOvLaxpWiwej1/lcrmbYrFY+Mw7Go1Gq9vt3jqOc69p2l9PFyiE8OQqlUqntVrNEB6rVqsZpVLp1Kt1egKq6/qL8Fm6rr94Af7pH3LOY9Vq9UFsWdVq9YFzHtsqcLlcvrQs60PsSJZlfZTL5cutAFcqlV8iIJqsxR9gzjmr1+vPImCq1+vPnHPmKTDnPNJsNjsioGo2mx3OecQTYM45CzLsAjT7MnAQP+N1n/eXgIPkoLxyZGu3HrGnWrdlrQwqdrnPerFPrwpOmFt8rarqXTKZZPuaAiaTSaaq6t1GycMkXiUht9h7yYr5fP43lWTflYWqdVdZec7C2Wz2J7WSzhLTrGcWRDXrsacWjsfjV1QLd7NsU+BcLndDFXiOTSYIgrhkYsEAIBqNnlCvR0tGBgCKolxQB5aMDAASicQ5dWDJyAAglUoVqANLRgYAmUzmmDqwZGQAIHs9lCUZGUImJrt41EElIwMA0zTfqQNLRgYAlmW1qANLRgYAg8HgiTqwZGQAMBwOH6kDS0YGAKPRqEMdeMooE+NtNLV3pQnbfAGg2+3eUrXuLNsU2HGce6rAc2yzFT0/hlJ2rQmTe9Xy7e3tBzXrLjEtVuYpOa9ZZ7Wy89But79Tsa4ri1uHbRfjSH6MN23cPez1ete2bY/31bK2bY97vd61681DQzysIw9Uh1rYBp7uzDCM16D/bw3DeG2322f/ffAwmHYYPQzpcKkI6/iwCOOAuAjjEQCxp4c8QneMx3PgBXj6B7WCrn+nRjeF9WK4JgAAAABJRU5ErkJggg=="
 
 /***/ },
-/* 336 */,
 /* 337 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(197);
+	
+	var _BoardItemSprite2 = __webpack_require__(333);
+	
+	var _BoardItemSprite3 = _interopRequireDefault(_BoardItemSprite2);
+	
+	var _tween = __webpack_require__(338);
+	
+	var _tween2 = _interopRequireDefault(_tween);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var BoardMarbleSprite = function (_BoardItemSprite) {
+	  _inherits(BoardMarbleSprite, _BoardItemSprite);
+	
+	  function BoardMarbleSprite(board, player) {
+	    _classCallCheck(this, BoardMarbleSprite);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardMarbleSprite).call(this, board, 'marble'));
+	
+	    _this.player = player;
+	    _this.colorize();
+	    _this.order = 0;
+	    _this.placeOnTarget();
+	    _this.moveInProgress = false;
+	    _this.aim(0);
+	    _this.on('moveComplete', function () {
+	      return _this.moveInProgress = false;
+	    });
+	    return _this;
+	  }
+	
+	  _createClass(BoardMarbleSprite, [{
+	    key: 'aim',
+	    value: function aim(col) {
+	      if (this.moveInProgress) {
+	        return;
+	      }
+	      this.col = col;
+	      this.placeOnTarget();
+	    }
+	  }, {
+	    key: 'fire',
+	    value: function fire() {
+	      var _this2 = this;
+	
+	      this.moveInProgress = true;
+	      new _tween2.default.Tween({ y: 0 }).to({ y: this.targetY }, 1000).easing(_tween2.default.Easing.Exponential.In).onUpdate(function (marble) {
+	        return function ass() {
+	          marble.y = this.y;
+	        };
+	      }(this)).onComplete(function () {
+	        _this2.emit('moveComplete');
+	      }).start();
+	    }
+	  }, {
+	    key: 'colorize',
+	    value: function colorize() {
+	      this.tint = this.player === 1 ? 0xff0000 : 0x00ff00;
+	    }
+	  }]);
+	
+	  return BoardMarbleSprite;
+	}(_BoardItemSprite3.default);
+	
+	exports.default = BoardMarbleSprite;
+
+/***/ },
+/* 338 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;'use strict';
@@ -34180,63 +34519,16 @@
 	})(undefined);
 
 /***/ },
-/* 338 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	__webpack_require__(196);
-	
-	var _BoardItemSprite2 = __webpack_require__(339);
-	
-	var _BoardItemSprite3 = _interopRequireDefault(_BoardItemSprite2);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var BoardCellSprite = function (_BoardItemSprite) {
-	  _inherits(BoardCellSprite, _BoardItemSprite);
-	
-	  function BoardCellSprite(board, row, col) {
-	    _classCallCheck(this, BoardCellSprite);
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardCellSprite).call(this, board, 'cell'));
-	
-	    _this.interactive = true;
-	    _this.order = 0;
-	    _this.col = col;
-	    _this.row = row;
-	    _this.placeOnTarget();
-	    return _this;
-	  }
-	
-	  return BoardCellSprite;
-	}(_BoardItemSprite3.default);
-	
-	exports.default = BoardCellSprite;
-
-/***/ },
 /* 339 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	
-	__webpack_require__(196);
+	var _events = __webpack_require__(195);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -34244,256 +34536,25 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var BoardItemSprite = function (_PIXI$Sprite) {
-	  _inherits(BoardItemSprite, _PIXI$Sprite);
+	var Menu = function (_EventEmitter) {
+	  _inherits(Menu, _EventEmitter);
 	
-	  function BoardItemSprite(board, textureName) {
-	    var _ret;
+	  function Menu() {
+	    _classCallCheck(this, Menu);
 	
-	    _classCallCheck(this, BoardItemSprite);
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Menu).call(this));
 	
-	    var texture = PIXI.Texture.fromImage(__webpack_require__(333)("./" + textureName + '.png'));
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardItemSprite).call(this, texture));
-	
-	    _this.board = board;
-	    _this.tileWidth = 60;
-	    _this.boardHeight = _this.tileWidth * 6;
-	    _this._row = null;
-	    _this._col = null;
-	    _this._targetX = null;
-	    _this._targetY = null;
-	    return _ret = _this, _possibleConstructorReturn(_this, _ret);
-	  }
-	
-	  _createClass(BoardItemSprite, [{
-	    key: 'placeOnTarget',
-	    value: function placeOnTarget() {
-	      this.x = this.targetX;
-	      this.y = this.targetY;
-	      this.board.addChildAt(this, this.order);
-	      return this;
-	    }
-	  }, {
-	    key: 'targetX',
-	    get: function get() {
-	      return this._targetX;
-	    }
-	  }, {
-	    key: 'targetY',
-	    get: function get() {
-	      return this._targetY;
-	    }
-	  }, {
-	    key: 'row',
-	    get: function get() {
-	      return this._row;
-	    },
-	    set: function set(row) {
-	      this._row = row;
-	      this._targetY = this.boardHeight - this.tileWidth * row;
-	    }
-	  }, {
-	    key: 'coords',
-	    set: function set(_ref) {
-	      var row = _ref.row;
-	      var col = _ref.col;
-	
-	      this.row = row;
-	      this.col = col;
-	    }
-	  }, {
-	    key: 'col',
-	    get: function get() {
-	      return this._col;
-	    },
-	    set: function set(col) {
-	      this._col = col;
-	      this._targetX = this.tileWidth * col;
-	    }
-	  }]);
-	
-	  return BoardItemSprite;
-	}(PIXI.Sprite);
-	
-	exports.default = BoardItemSprite;
-
-/***/ },
-/* 340 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	__webpack_require__(196);
-	
-	var _BoardItemSprite2 = __webpack_require__(339);
-	
-	var _BoardItemSprite3 = _interopRequireDefault(_BoardItemSprite2);
-	
-	var _tween = __webpack_require__(337);
-	
-	var _tween2 = _interopRequireDefault(_tween);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var BoardMarbleSprite = function (_BoardItemSprite) {
-	  _inherits(BoardMarbleSprite, _BoardItemSprite);
-	
-	  function BoardMarbleSprite(board, player) {
-	    _classCallCheck(this, BoardMarbleSprite);
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardMarbleSprite).call(this, board, 'marble'));
-	
-	    _this.player = player;
-	    _this.colorize();
-	    _this.order = 0;
-	    _this.placeOnTarget();
-	    _this.moveInProgress = false;
-	    _this.aim(0);
-	    _this.on('moveComplete', function () {
-	      return _this.moveInProgress = false;
-	    });
+	    _this.stage = new PIXI.Container();
+	    document.onclick = function () {
+	      return _this.emit('changestage', 'Board');
+	    };
 	    return _this;
 	  }
 	
-	  _createClass(BoardMarbleSprite, [{
-	    key: 'aim',
-	    value: function aim(col) {
-	      if (this.moveInProgress) {
-	        return;
-	      }
-	      this.col = col;
-	      this.placeOnTarget();
-	    }
-	  }, {
-	    key: 'fire',
-	    value: function fire() {
-	      var _this2 = this;
+	  return Menu;
+	}(_events.EventEmitter);
 	
-	      this.moveInProgress = true;
-	      new _tween2.default.Tween({ y: 0 }).to({ y: this.targetY }, 1000).easing(_tween2.default.Easing.Exponential.In).onUpdate(function (marble) {
-	        return function ass() {
-	          marble.y = this.y;
-	        };
-	      }(this)).onComplete(function () {
-	        _this2.emit('moveComplete');
-	      }).start();
-	    }
-	  }, {
-	    key: 'colorize',
-	    value: function colorize() {
-	      this.tint = this.player === 1 ? 0xff0000 : 0x00ff00;
-	    }
-	  }]);
-	
-	  return BoardMarbleSprite;
-	}(_BoardItemSprite3.default);
-	
-	exports.default = BoardMarbleSprite;
-
-/***/ },
-/* 341 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _BoardModel = __webpack_require__(193);
-	
-	var _BoardModel2 = _interopRequireDefault(_BoardModel);
-	
-	var _BoardCellSprite = __webpack_require__(338);
-	
-	var _BoardCellSprite2 = _interopRequireDefault(_BoardCellSprite);
-	
-	var _BoardMarbleSprite = __webpack_require__(340);
-	
-	var _BoardMarbleSprite2 = _interopRequireDefault(_BoardMarbleSprite);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var Board = function () {
-	  function Board() {
-	    _classCallCheck(this, Board);
-	
-	    this.boardModel = new _BoardModel2.default();
-	    this.stage = new PIXI.Stage();
-	    this.bootNextPlayer();
-	    this.renderCells();
-	  }
-	
-	  _createClass(Board, [{
-	    key: 'moveComplete',
-	    value: function moveComplete() {
-	      this.bootNextPlayer();
-	    }
-	  }, {
-	    key: 'renderCells',
-	    value: function renderCells() {
-	      var _this = this;
-	
-	      this.boardModel.loop(function (_ref) {
-	        var row = _ref.row;
-	        var col = _ref.col;
-	
-	        var cell = new _BoardCellSprite2.default(_this.stage, row, col);
-	        cell.on('click', function (e) {
-	          return _this.makeMove(e.target.col);
-	        });
-	        cell.on('mouseover', function (e) {
-	          return _this.currentPlayerMarble.aim(e.target.col);
-	        });
-	      });
-	    }
-	  }, {
-	    key: 'bootNextPlayer',
-	    value: function bootNextPlayer() {
-	      var _this2 = this;
-	
-	      var player = this.boardModel.currentPlayer;
-	      this.currentPlayerMarble = new _BoardMarbleSprite2.default(this.stage, player);
-	      this.currentPlayerMarble.on('moveComplete', function () {
-	        return _this2.moveComplete();
-	      });
-	    }
-	  }, {
-	    key: 'makeMove',
-	    value: function makeMove(col) {
-	      if (this.currentPlayerMarble.moveInProgress) {
-	        return;
-	      }
-	      this.currentPlayerMarble.aim(col);
-	      var result = this.boardModel.play(col);
-	      if (result) {
-	        this.currentPlayerMarble.coords = result;
-	        this.currentPlayerMarble.fire();
-	      }
-	    }
-	  }]);
-	
-	  return Board;
-	}();
-	
-	exports.default = Board;
+	exports.default = Menu;
 
 /***/ }
 /******/ ]);
