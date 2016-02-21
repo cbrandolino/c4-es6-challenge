@@ -1,5 +1,12 @@
 import { EventEmitter } from 'events';
 
+function BoardException(message) {
+  this.message = message;
+  this.name = 'BoardException';
+  this.toString = () =>
+    `#{this.name}: #{this.message}`;
+}
+
 class BoardModel extends EventEmitter {
 
   constructor(state = null, player = 1) {
@@ -9,11 +16,6 @@ class BoardModel extends EventEmitter {
     this._currentPlayer = player;
     this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
     this._winner = 0;
-  }
-
-  exception(message) {
-    this.message = message;
-    this.name = 'BoardException';
   }
 
   initializeEmptyBoard() {
@@ -28,10 +30,10 @@ class BoardModel extends EventEmitter {
 
   play(col) {
     if (this.fullBoard) {
-      throw this.exception('Board is full');
+      throw new BoardException('Board is full');
     }
     if (this.validColumns.indexOf(col) === -1) {
-      throw this.exception('Column is full');
+      throw new BoardException('Column is full');
     }
     const player = this.currentPlayer;
     const row = this.firstEmptyRow(col);
