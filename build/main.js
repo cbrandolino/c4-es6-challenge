@@ -5775,17 +5775,9 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _BoardModel = __webpack_require__(193);
+	var _Board = __webpack_require__(341);
 	
-	var _BoardModel2 = _interopRequireDefault(_BoardModel);
-	
-	var _BoardCellSprite = __webpack_require__(338);
-	
-	var _BoardCellSprite2 = _interopRequireDefault(_BoardCellSprite);
-	
-	var _BoardMarbleSprite = __webpack_require__(340);
-	
-	var _BoardMarbleSprite2 = _interopRequireDefault(_BoardMarbleSprite);
+	var _Board2 = _interopRequireDefault(_Board);
 	
 	var _tween = __webpack_require__(337);
 	
@@ -5799,72 +5791,22 @@
 	  function App() {
 	    _classCallCheck(this, App);
 	
-	    this.boardModel = new _BoardModel2.default();
-	    this.board = new PIXI.Stage();
 	    this.renderer = PIXI.autoDetectRenderer(800, 600);
 	    document.body.appendChild(this.renderer.view);
-	    this.bootNextPlayer();
-	    this.renderCells();
+	    this.currentStage = new _Board2.default();
 	    this.animate();
 	  }
 	
 	  _createClass(App, [{
-	    key: 'moveComplete',
-	    value: function moveComplete() {
-	      this.bootNextPlayer();
-	    }
-	  }, {
-	    key: 'renderCells',
-	    value: function renderCells() {
-	      var _this = this;
-	
-	      this.boardModel.loop(function (_ref) {
-	        var row = _ref.row;
-	        var col = _ref.col;
-	
-	        var cell = new _BoardCellSprite2.default(_this.board, row, col);
-	        cell.on('click', function (e) {
-	          return _this.makeMove(e.target.col);
-	        });
-	        cell.on('mouseover', function (e) {
-	          return _this.currentPlayerMarble.aim(e.target.col);
-	        });
-	      });
-	    }
-	  }, {
-	    key: 'bootNextPlayer',
-	    value: function bootNextPlayer() {
-	      var _this2 = this;
-	
-	      var player = this.boardModel.currentPlayer;
-	      this.currentPlayerMarble = new _BoardMarbleSprite2.default(this.board, player);
-	      this.currentPlayerMarble.on('moveComplete', function () {
-	        return _this2.moveComplete();
-	      });
-	    }
-	  }, {
-	    key: 'makeMove',
-	    value: function makeMove(col) {
-	      if (this.currentPlayerMarble.moveInProgress) {
-	        return;
-	      }
-	      this.currentPlayerMarble.aim(col);
-	      var result = this.boardModel.play(col);
-	      if (result) {
-	        this.currentPlayerMarble.coords = result;
-	        this.currentPlayerMarble.fire();
-	      }
-	    }
-	  }, {
 	    key: 'animate',
 	    value: function animate(time) {
-	      var _this3 = this;
+	      var _this = this;
 	
 	      requestAnimationFrame(function (ms) {
-	        return _this3.animate(ms);
+	        return _this.animate(ms);
 	      });
 	      _tween2.default.update(time);
-	      this.renderer.render(this.board);
+	      this.renderer.render(this.currentStage.stage);
 	    }
 	  }]);
 	
@@ -34460,6 +34402,98 @@
 	}(_BoardItemSprite3.default);
 	
 	exports.default = BoardMarbleSprite;
+
+/***/ },
+/* 341 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _BoardModel = __webpack_require__(193);
+	
+	var _BoardModel2 = _interopRequireDefault(_BoardModel);
+	
+	var _BoardCellSprite = __webpack_require__(338);
+	
+	var _BoardCellSprite2 = _interopRequireDefault(_BoardCellSprite);
+	
+	var _BoardMarbleSprite = __webpack_require__(340);
+	
+	var _BoardMarbleSprite2 = _interopRequireDefault(_BoardMarbleSprite);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Board = function () {
+	  function Board() {
+	    _classCallCheck(this, Board);
+	
+	    this.boardModel = new _BoardModel2.default();
+	    this.stage = new PIXI.Stage();
+	    this.bootNextPlayer();
+	    this.renderCells();
+	  }
+	
+	  _createClass(Board, [{
+	    key: 'moveComplete',
+	    value: function moveComplete() {
+	      this.bootNextPlayer();
+	    }
+	  }, {
+	    key: 'renderCells',
+	    value: function renderCells() {
+	      var _this = this;
+	
+	      this.boardModel.loop(function (_ref) {
+	        var row = _ref.row;
+	        var col = _ref.col;
+	
+	        var cell = new _BoardCellSprite2.default(_this.stage, row, col);
+	        cell.on('click', function (e) {
+	          return _this.makeMove(e.target.col);
+	        });
+	        cell.on('mouseover', function (e) {
+	          return _this.currentPlayerMarble.aim(e.target.col);
+	        });
+	      });
+	    }
+	  }, {
+	    key: 'bootNextPlayer',
+	    value: function bootNextPlayer() {
+	      var _this2 = this;
+	
+	      var player = this.boardModel.currentPlayer;
+	      this.currentPlayerMarble = new _BoardMarbleSprite2.default(this.stage, player);
+	      this.currentPlayerMarble.on('moveComplete', function () {
+	        return _this2.moveComplete();
+	      });
+	    }
+	  }, {
+	    key: 'makeMove',
+	    value: function makeMove(col) {
+	      if (this.currentPlayerMarble.moveInProgress) {
+	        return;
+	      }
+	      this.currentPlayerMarble.aim(col);
+	      var result = this.boardModel.play(col);
+	      if (result) {
+	        this.currentPlayerMarble.coords = result;
+	        this.currentPlayerMarble.fire();
+	      }
+	    }
+	  }]);
+	
+	  return Board;
+	}();
+	
+	exports.default = Board;
 
 /***/ }
 /******/ ]);
