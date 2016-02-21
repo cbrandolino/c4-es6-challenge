@@ -1,6 +1,6 @@
 import 'pixi.js';
 
-class Sprite extends PIXI.Sprite {
+class BoardItemSprite extends PIXI.Sprite {
 
   constructor(board, textureName) {
     const texture = PIXI.Texture.fromImage(require(`../../img/${textureName}.png`));
@@ -54,4 +54,4 @@ class Sprite extends PIXI.Sprite {
   }
 }
 
-export default Sprite;
+export default BoardItemSprite;

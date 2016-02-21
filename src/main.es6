@@ -1,6 +1,6 @@
 import BoardModel from './lib/BoardModel.es6';
-import CellSprite from './lib/CellSprite.es6';
-import MarbleSprite from './lib/MarbleSprite.es6';
+import BoardCellSprite from './pixi/BoardCellSprite.es6';
+import BoardMarbleSprite from './pixi/BoardMarbleSprite.es6';
 import TWEEN from 'tween.js';
 
 class App {
@@ -21,7 +21,7 @@ class App {
 
   renderCells() {
     this.boardModel.loop(({ row, col }) => {
-      const cell = new CellSprite(this.board, row, col);
+      const cell = new BoardCellSprite(this.board, row, col);
       cell.on('click', (e) => this.makeMove(e.target.col));
       cell.on('mouseover', (e) => this.currentPlayerMarble.aim(e.target.col));
     });
@@ -29,7 +29,7 @@ class App {
 
   bootNextPlayer() {
     const player = this.boardModel.currentPlayer;
-    this.currentPlayerMarble = new MarbleSprite(this.board, player);
+    this.currentPlayerMarble = new BoardMarbleSprite(this.board, player);
     this.currentPlayerMarble.on('moveComplete', () => this.moveComplete());
   }
 

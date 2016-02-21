@@ -5779,15 +5779,15 @@
 	
 	var _BoardModel2 = _interopRequireDefault(_BoardModel);
 	
-	var _CellSprite = __webpack_require__(195);
+	var _BoardCellSprite = __webpack_require__(338);
 	
-	var _CellSprite2 = _interopRequireDefault(_CellSprite);
+	var _BoardCellSprite2 = _interopRequireDefault(_BoardCellSprite);
 	
-	var _MarbleSprite = __webpack_require__(336);
+	var _BoardMarbleSprite = __webpack_require__(340);
 	
-	var _MarbleSprite2 = _interopRequireDefault(_MarbleSprite);
+	var _BoardMarbleSprite2 = _interopRequireDefault(_BoardMarbleSprite);
 	
-	var _tween = __webpack_require__(338);
+	var _tween = __webpack_require__(337);
 	
 	var _tween2 = _interopRequireDefault(_tween);
 	
@@ -5822,7 +5822,7 @@
 	        var row = _ref.row;
 	        var col = _ref.col;
 	
-	        var cell = new _CellSprite2.default(_this.board, row, col);
+	        var cell = new _BoardCellSprite2.default(_this.board, row, col);
 	        cell.on('click', function (e) {
 	          return _this.makeMove(e.target.col);
 	        });
@@ -5837,7 +5837,7 @@
 	      var _this2 = this;
 	
 	      var player = this.boardModel.currentPlayer;
-	      this.currentPlayerMarble = new _MarbleSprite2.default(this.board, player);
+	      this.currentPlayerMarble = new _BoardMarbleSprite2.default(this.board, player);
 	      this.currentPlayerMarble.on('moveComplete', function () {
 	        return _this2.moveComplete();
 	      });
@@ -5893,26 +5893,33 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var BoardModel = function () {
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var BoardModel = function (_EventEmitter) {
+	  _inherits(BoardModel, _EventEmitter);
+	
 	  function BoardModel() {
 	    var state = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 	
 	    _classCallCheck(this, BoardModel);
 	
-	    Object.assign(this, new _events.EventEmitter());
-	    this.state = state || this.initializeEmptyBoard();
-	    this.validColumns = [].concat(_toConsumableArray(this.state.keys()));
-	    console.log(this.validColumns);
-	    this._currentPlayer = 1;
-	    this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
-	    this._winner = 0;
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardModel).call(this));
+	
+	    _this.state = state || _this.initializeEmptyBoard();
+	    _this.validColumns = [].concat(_toConsumableArray(_this.state.keys()));
+	    _this._currentPlayer = 1;
+	    _this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+	    _this._winner = 0;
+	    return _this;
 	  }
 	
 	  _createClass(BoardModel, [{
 	    key: 'exception',
 	    value: function exception(message) {
 	      this.message = message;
-	      this.name = "BoardException";
+	      this.name = 'BoardException';
 	    }
 	  }, {
 	    key: 'initializeEmptyBoard',
@@ -5933,18 +5940,15 @@
 	      if (this.fullBoard) {
 	        throw this.exception('Board is full');
 	      }
-	      console.log(this.validColumns);
-	      console.log(col);
-	
 	      if (this.validColumns.indexOf(col) === -1) {
 	        throw this.exception('Column is full');
 	      }
 	      var player = this.currentPlayer;
 	      var row = this.firstEmptyRow(col);
 	      this.swapCell(row, col, player);
-	      this.checkVictory(col, row);
+	      var victory = this.checkVictory(row, col);
 	      this.changePlayer();
-	      return { col: col, row: row, player: player };
+	      return { col: col, row: row, player: player, victory: victory };
 	    }
 	  }, {
 	    key: 'swapCell',
@@ -5991,7 +5995,7 @@
 	    }
 	  }, {
 	    key: 'checkVictory',
-	    value: function checkVictory(x, y) {
+	    value: function checkVictory(row, col) {
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
 	      var _iteratorError = undefined;
@@ -6000,10 +6004,10 @@
 	        for (var _iterator = this._possibleDirections[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	          var _step$value = _slicedToArray(_step.value, 2);
 	
-	          var changeX = _step$value[0];
-	          var changeY = _step$value[1];
+	          var changeRow = _step$value[0];
+	          var changeCol = _step$value[1];
 	
-	          if (this.checkVector(x, y, changeX, changeY)) {
+	          if (this.checkVector(row, col, changeRow, changeCol)) {
 	            this.winner = this.currentPlayer;
 	            return true;
 	          }
@@ -6107,7 +6111,7 @@
 	  }]);
 	
 	  return BoardModel;
-	}();
+	}(_events.EventEmitter);
 	
 	exports.default = BoardModel;
 
@@ -6386,51 +6390,7 @@
 	}
 
 /***/ },
-/* 195 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	__webpack_require__(196);
-	
-	var _Sprite2 = __webpack_require__(332);
-	
-	var _Sprite3 = _interopRequireDefault(_Sprite2);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var CellSprite = function (_Sprite) {
-	  _inherits(CellSprite, _Sprite);
-	
-	  function CellSprite(board, row, col) {
-	    _classCallCheck(this, CellSprite);
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CellSprite).call(this, board, 'cell'));
-	
-	    _this.interactive = true;
-	    _this.order = 0;
-	    _this.col = col;
-	    _this.row = row;
-	    _this.placeOnTarget();
-	    return _this;
-	  }
-	
-	  return CellSprite;
-	}(_Sprite3.default);
-	
-	exports.default = CellSprite;
-
-/***/ },
+/* 195 */,
 /* 196 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -33425,103 +33385,7 @@
 	};
 
 /***/ },
-/* 332 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	__webpack_require__(196);
-	
-	var _events = __webpack_require__(194);
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var Sprite = function (_PIXI$Sprite) {
-	  _inherits(Sprite, _PIXI$Sprite);
-	
-	  function Sprite(board, textureName) {
-	    var _ret;
-	
-	    _classCallCheck(this, Sprite);
-	
-	    var texture = PIXI.Texture.fromImage(__webpack_require__(333)("./" + textureName + '.png'));
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Sprite).call(this, texture));
-	
-	    Object.assign(_this, new _events.EventEmitter());
-	    _this.board = board;
-	    _this.tileWidth = 60;
-	    _this.boardHeight = _this.tileWidth * 6;
-	    _this._row = null;
-	    _this._col = null;
-	    _this._targetX = null;
-	    _this._targetY = null;
-	    return _ret = _this, _possibleConstructorReturn(_this, _ret);
-	  }
-	
-	  _createClass(Sprite, [{
-	    key: 'placeOnTarget',
-	    value: function placeOnTarget() {
-	      this.x = this.targetX;
-	      this.y = this.targetY;
-	      this.board.addChildAt(this, this.order);
-	      return this;
-	    }
-	  }, {
-	    key: 'targetX',
-	    get: function get() {
-	      return this._targetX;
-	    }
-	  }, {
-	    key: 'targetY',
-	    get: function get() {
-	      return this._targetY;
-	    }
-	  }, {
-	    key: 'row',
-	    get: function get() {
-	      return this._row;
-	    },
-	    set: function set(row) {
-	      this._row = row;
-	      this._targetY = this.boardHeight - this.tileWidth * row;
-	    }
-	  }, {
-	    key: 'coords',
-	    set: function set(_ref) {
-	      var row = _ref.row;
-	      var col = _ref.col;
-	
-	      this.row = row;
-	      this.col = col;
-	    }
-	  }, {
-	    key: 'col',
-	    get: function get() {
-	      return this._col;
-	    },
-	    set: function set(col) {
-	      this._col = col;
-	      this._targetX = this.tileWidth * col;
-	    }
-	  }]);
-	
-	  return Sprite;
-	}(PIXI.Sprite);
-	
-	exports.default = Sprite;
-
-/***/ },
+/* 332 */,
 /* 333 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -33556,93 +33420,8 @@
 	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAABmJLR0QAKwCFAP+FrpOMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEfAh023NjysAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAC10lEQVRo3u2bPWvqUBjH/z2IeCEgDirUSSKli/gJCoVCN+fepZ/h0k9wsri4lHs3VwtyS53iYoZCl+4VN6t0SsFkkIBwL0I9d/GIL9ErbaLxiX/IlBjOjyc+53k7R0IIhEkRP1+uaRqLRqMniqJcJBKJ81QqVchkMsfpdPobAPT7/T+mab5bltUaDAZPw+HwcTQadTRNG/u1piOvLaxpWiwej1/lcrmbYrFY+Mw7Go1Gq9vt3jqOc69p2l9PFyiE8OQqlUqntVrNEB6rVqsZpVLp1Kt1egKq6/qL8Fm6rr94Af7pH3LOY9Vq9UFsWdVq9YFzHtsqcLlcvrQs60PsSJZlfZTL5cutAFcqlV8iIJqsxR9gzjmr1+vPImCq1+vPnHPmKTDnPNJsNjsioGo2mx3OecQTYM45CzLsAjT7MnAQP+N1n/eXgIPkoLxyZGu3HrGnWrdlrQwqdrnPerFPrwpOmFt8rarqXTKZZPuaAiaTSaaq6t1GycMkXiUht9h7yYr5fP43lWTflYWqdVdZec7C2Wz2J7WSzhLTrGcWRDXrsacWjsfjV1QLd7NsU+BcLndDFXiOTSYIgrhkYsEAIBqNnlCvR0tGBgCKolxQB5aMDAASicQ5dWDJyAAglUoVqANLRgYAmUzmmDqwZGQAIHs9lCUZGUImJrt41EElIwMA0zTfqQNLRgYAlmW1qANLRgYAg8HgiTqwZGQAMBwOH6kDS0YGAKPRqEMdeMooE+NtNLV3pQnbfAGg2+3eUrXuLNsU2HGce6rAc2yzFT0/hlJ2rQmTe9Xy7e3tBzXrLjEtVuYpOa9ZZ7Wy89But79Tsa4ri1uHbRfjSH6MN23cPez1ete2bY/31bK2bY97vd61681DQzysIw9Uh1rYBp7uzDCM16D/bw3DeG2322f/ffAwmHYYPQzpcKkI6/iwCOOAuAjjEQCxp4c8QneMx3PgBXj6B7WCrn+nRjeF9WK4JgAAAABJRU5ErkJggg=="
 
 /***/ },
-/* 336 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	__webpack_require__(196);
-	
-	var _Sprite2 = __webpack_require__(332);
-	
-	var _Sprite3 = _interopRequireDefault(_Sprite2);
-	
-	var _tween = __webpack_require__(338);
-	
-	var _tween2 = _interopRequireDefault(_tween);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var MarbleSprite = function (_Sprite) {
-	  _inherits(MarbleSprite, _Sprite);
-	
-	  function MarbleSprite(board, player) {
-	    _classCallCheck(this, MarbleSprite);
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MarbleSprite).call(this, board, 'marble'));
-	
-	    _this.player = player;
-	    _this.colorize();
-	    _this.order = 0;
-	    _this.placeOnTarget();
-	    _this.moveInProgress = false;
-	    _this.aim(0);
-	    _this.on('moveComplete', function () {
-	      return _this.moveInProgress = false;
-	    });
-	    return _this;
-	  }
-	
-	  _createClass(MarbleSprite, [{
-	    key: 'aim',
-	    value: function aim(col) {
-	      if (this.moveInProgress) {
-	        return;
-	      }
-	      this.col = col;
-	      this.placeOnTarget();
-	    }
-	  }, {
-	    key: 'fire',
-	    value: function fire() {
-	      var _this2 = this;
-	
-	      this.moveInProgress = true;
-	      new _tween2.default.Tween({ y: 0 }).to({ y: this.targetY }, 1000).easing(_tween2.default.Easing.Exponential.In).onUpdate(function (marble) {
-	        return function ass() {
-	          marble.y = this.y;
-	        };
-	      }(this)).onComplete(function () {
-	        _this2.emit('moveComplete');
-	      }).start();
-	    }
-	  }, {
-	    key: 'colorize',
-	    value: function colorize() {
-	      this.tint = this.player === 1 ? 0xff0000 : 0x00ff00;
-	    }
-	  }]);
-	
-	  return MarbleSprite;
-	}(_Sprite3.default);
-	
-	exports.default = MarbleSprite;
-
-/***/ },
-/* 337 */,
-/* 338 */
+/* 336 */,
+/* 337 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;'use strict';
@@ -34457,6 +34236,230 @@
 			root.TWEEN = TWEEN;
 		}
 	})(undefined);
+
+/***/ },
+/* 338 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(196);
+	
+	var _BoardItemSprite2 = __webpack_require__(339);
+	
+	var _BoardItemSprite3 = _interopRequireDefault(_BoardItemSprite2);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var BoardCellSprite = function (_BoardItemSprite) {
+	  _inherits(BoardCellSprite, _BoardItemSprite);
+	
+	  function BoardCellSprite(board, row, col) {
+	    _classCallCheck(this, BoardCellSprite);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardCellSprite).call(this, board, 'cell'));
+	
+	    _this.interactive = true;
+	    _this.order = 0;
+	    _this.col = col;
+	    _this.row = row;
+	    _this.placeOnTarget();
+	    return _this;
+	  }
+	
+	  return BoardCellSprite;
+	}(_BoardItemSprite3.default);
+	
+	exports.default = BoardCellSprite;
+
+/***/ },
+/* 339 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(196);
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var BoardItemSprite = function (_PIXI$Sprite) {
+	  _inherits(BoardItemSprite, _PIXI$Sprite);
+	
+	  function BoardItemSprite(board, textureName) {
+	    var _ret;
+	
+	    _classCallCheck(this, BoardItemSprite);
+	
+	    var texture = PIXI.Texture.fromImage(__webpack_require__(333)("./" + textureName + '.png'));
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardItemSprite).call(this, texture));
+	
+	    _this.board = board;
+	    _this.tileWidth = 60;
+	    _this.boardHeight = _this.tileWidth * 6;
+	    _this._row = null;
+	    _this._col = null;
+	    _this._targetX = null;
+	    _this._targetY = null;
+	    return _ret = _this, _possibleConstructorReturn(_this, _ret);
+	  }
+	
+	  _createClass(BoardItemSprite, [{
+	    key: 'placeOnTarget',
+	    value: function placeOnTarget() {
+	      this.x = this.targetX;
+	      this.y = this.targetY;
+	      this.board.addChildAt(this, this.order);
+	      return this;
+	    }
+	  }, {
+	    key: 'targetX',
+	    get: function get() {
+	      return this._targetX;
+	    }
+	  }, {
+	    key: 'targetY',
+	    get: function get() {
+	      return this._targetY;
+	    }
+	  }, {
+	    key: 'row',
+	    get: function get() {
+	      return this._row;
+	    },
+	    set: function set(row) {
+	      this._row = row;
+	      this._targetY = this.boardHeight - this.tileWidth * row;
+	    }
+	  }, {
+	    key: 'coords',
+	    set: function set(_ref) {
+	      var row = _ref.row;
+	      var col = _ref.col;
+	
+	      this.row = row;
+	      this.col = col;
+	    }
+	  }, {
+	    key: 'col',
+	    get: function get() {
+	      return this._col;
+	    },
+	    set: function set(col) {
+	      this._col = col;
+	      this._targetX = this.tileWidth * col;
+	    }
+	  }]);
+	
+	  return BoardItemSprite;
+	}(PIXI.Sprite);
+	
+	exports.default = BoardItemSprite;
+
+/***/ },
+/* 340 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	__webpack_require__(196);
+	
+	var _BoardItemSprite2 = __webpack_require__(339);
+	
+	var _BoardItemSprite3 = _interopRequireDefault(_BoardItemSprite2);
+	
+	var _tween = __webpack_require__(337);
+	
+	var _tween2 = _interopRequireDefault(_tween);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var BoardMarbleSprite = function (_BoardItemSprite) {
+	  _inherits(BoardMarbleSprite, _BoardItemSprite);
+	
+	  function BoardMarbleSprite(board, player) {
+	    _classCallCheck(this, BoardMarbleSprite);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardMarbleSprite).call(this, board, 'marble'));
+	
+	    _this.player = player;
+	    _this.colorize();
+	    _this.order = 0;
+	    _this.placeOnTarget();
+	    _this.moveInProgress = false;
+	    _this.aim(0);
+	    _this.on('moveComplete', function () {
+	      return _this.moveInProgress = false;
+	    });
+	    return _this;
+	  }
+	
+	  _createClass(BoardMarbleSprite, [{
+	    key: 'aim',
+	    value: function aim(col) {
+	      if (this.moveInProgress) {
+	        return;
+	      }
+	      this.col = col;
+	      this.placeOnTarget();
+	    }
+	  }, {
+	    key: 'fire',
+	    value: function fire() {
+	      var _this2 = this;
+	
+	      this.moveInProgress = true;
+	      new _tween2.default.Tween({ y: 0 }).to({ y: this.targetY }, 1000).easing(_tween2.default.Easing.Exponential.In).onUpdate(function (marble) {
+	        return function ass() {
+	          marble.y = this.y;
+	        };
+	      }(this)).onComplete(function () {
+	        _this2.emit('moveComplete');
+	      }).start();
+	    }
+	  }, {
+	    key: 'colorize',
+	    value: function colorize() {
+	      this.tint = this.player === 1 ? 0xff0000 : 0x00ff00;
+	    }
+	  }]);
+	
+	  return BoardMarbleSprite;
+	}(_BoardItemSprite3.default);
+	
+	exports.default = BoardMarbleSprite;
 
 /***/ }
 /******/ ]);
