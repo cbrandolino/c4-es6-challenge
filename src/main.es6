@@ -10,6 +10,7 @@ class App {
       ai1: 'Marvin',
       ai2: 'HAL',
     };
+
     this.settings = {
       players: [
         {
@@ -33,7 +34,7 @@ class App {
 
   changeStage(stageName) {
     if (this.currentStage) {
-      this.currentStage.destroy();
+      this.currentStage.stage.destroy();
     }
     this.currentStage = new this.stages[stageName]();
     this.currentStage.once('changestage', (newStageName) =>
