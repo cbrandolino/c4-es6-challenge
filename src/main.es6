@@ -1,54 +1,31 @@
-import BoardModel from './lib/BoardModel.es6';
-import CellSprite from './lib/CellSprite.es6';
-import MarbleSprite from './lib/MarbleSprite.es6';
+import Board from './pixi/Board.es6';
+import Menu from './pixi/Menu.es6';
 import TWEEN from 'tween.js';
 
 class App {
 
   constructor() {
-    this.boardModel = new BoardModel();
-    this.board = new PIXI.Stage();
-    this.renderer = PIXI.autoDetectRenderer(800, 600);
+    this.stages = { Board, Menu };
+    this.renderer = PIXI.autoDetectRenderer(600, 470);
     document.body.appendChild(this.renderer.view);
-    this.bootNextPlayer();
-    this.renderCells();
+    this.changeStage('Menu');
     this.animate();
   }
 
-  moveComplete() {
-    this.bootNextPlayer();
-  }
-
-  renderCells() {
-    this.boardModel.loop(({ row, col }) => {
-      const cell = new CellSprite(this.board, row, col);
-      cell.on('click', (e) => this.makeMove(e.target.col));
-      cell.on('mouseover', (e) => this.currentPlayerMarble.aim(e.target.col));
-    });
-  }
-
-  bootNextPlayer() {
-    const player = this.boardModel.currentPlayer;
-    this.currentPlayerMarble = new MarbleSprite(this.board, player);
-    this.currentPlayerMarble.on('moveComplete', () => this.moveComplete());
-  }
-
-  makeMove(col) {
-    if (this.currentPlayerMarble.moveInProgress) {
-      return;
+  changeStage(stageName) {
+    if (this.currentStage) {
+      this.currentStage.destroy();
     }
-    this.currentPlayerMarble.aim(col);
-    const result = this.boardModel.play(col);
-    if (result) {
-      this.currentPlayerMarble.coords = result;
-      this.currentPlayerMarble.fire();
-    }
+    this.currentStage = new this.stages[stageName]();
+    this.currentStage.once('changestage', (newStageName) =>
+      this.changeStage(newStageName)
+    );
   }
 
   animate(time) {
     requestAnimationFrame((ms) => this.animate(ms));
     TWEEN.update(time);
-    this.renderer.render(this.board);
+    this.renderer.render(this.currentStage.stage);
   }
 }
 

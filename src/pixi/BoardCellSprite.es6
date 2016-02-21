@@ -1,7 +1,7 @@
 import 'pixi.js';
-import Sprite from './Sprite.es6';
+import BoardItemSprite from './BoardItemSprite.es6';
 
-class CellSprite extends Sprite {
+class BoardCellSprite extends BoardItemSprite {
   constructor(board, row, col) {
     super(board, 'cell');
     this.interactive = true;
@@ -12,4 +12,4 @@ class CellSprite extends Sprite {
   }
 }
 
-export default CellSprite;
+export default BoardCellSprite;

@@ -1,8 +1,8 @@
 import 'pixi.js';
-import Sprite from './Sprite.es6';
+import BoardItemSprite from './BoardItemSprite.es6';
 import TWEEN from 'tween.js';
 
-class MarbleSprite extends Sprite {
+class BoardMarbleSprite extends BoardItemSprite {
   constructor(board, player) {
     super(board, 'marble');
     this.player = player;
@@ -40,4 +40,4 @@ class MarbleSprite extends Sprite {
   }
 }
 
-export default MarbleSprite;
+export default BoardMarbleSprite;
