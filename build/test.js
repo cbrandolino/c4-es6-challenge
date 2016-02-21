@@ -5777,11 +5777,11 @@
 	
 	var _tape2 = _interopRequireDefault(_tape);
 	
-	var _BoardModel = __webpack_require__(248);
+	var _BoardModel = __webpack_require__(247);
 	
 	var _BoardModel2 = _interopRequireDefault(_BoardModel);
 	
-	var _Ai = __webpack_require__(251);
+	var _Ai = __webpack_require__(248);
 	
 	var _Ai2 = _interopRequireDefault(_Ai);
 	
@@ -5793,7 +5793,7 @@
 	
 	var _ai2 = _interopRequireDefault(_ai);
 	
-	var _fixtures = __webpack_require__(247);
+	var _fixtures = __webpack_require__(251);
 	
 	var _fixtures2 = _interopRequireDefault(_fixtures);
 	
@@ -12302,29 +12302,6 @@
 
 /***/ },
 /* 247 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.default = {
-	  boards: {
-	    base: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    first: [[1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    second: [[1, 0, 0, 0, 0, 0], [-1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    noSpaceCol2: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, -1, 1, 1, -1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    oneWins: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    minusOneWins: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, 1, 1, 1, 1], [1, -1, 0, 0, 0, 0], [0, 0, -1, 0, 0, 0], [0, 0, 0, -1, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    full: [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]],
-	    oneIsJustChillin: [[1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
-	    oneWillWinWithCol4: [[0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [-1, 1, 0, 0, 0, 0], [-1, -1, 1, 0, 0, 0], [1, 1, -1, 0, 0, 0], [0, 0, 0, 0, 0, 0], [1, 1, 1, -1, 0, 0]]
-	  }
-	};
-
-/***/ },
-/* 248 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12396,9 +12373,9 @@
 	      var player = this.currentPlayer;
 	      var row = this.firstEmptyRow(col);
 	      this.swapCell(row, col, player);
-	      this.checkVictory(col, row);
+	      var victory = this.checkVictory(row, col);
 	      this.changePlayer();
-	      return { col: col, row: row, player: player };
+	      return { col: col, row: row, player: player, victory: victory };
 	    }
 	  }, {
 	    key: 'swapCell',
@@ -12445,7 +12422,7 @@
 	    }
 	  }, {
 	    key: 'checkVictory',
-	    value: function checkVictory(x, y) {
+	    value: function checkVictory(row, col) {
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
 	      var _iteratorError = undefined;
@@ -12454,10 +12431,10 @@
 	        for (var _iterator = this._possibleDirections[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	          var _step$value = _slicedToArray(_step.value, 2);
 	
-	          var changeX = _step$value[0];
-	          var changeY = _step$value[1];
+	          var changeRow = _step$value[0];
+	          var changeCol = _step$value[1];
 	
-	          if (this.checkVector(x, y, changeX, changeY)) {
+	          if (this.checkVector(row, col, changeRow, changeCol)) {
 	            this.winner = this.currentPlayer;
 	            return true;
 	          }
@@ -12564,6 +12541,110 @@
 	}(_events.EventEmitter);
 	
 	exports.default = BoardModel;
+
+/***/ },
+/* 248 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _BoardModel = __webpack_require__(247);
+	
+	var _BoardModel2 = _interopRequireDefault(_BoardModel);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var AI = function () {
+	  function AI(player) {
+	    _classCallCheck(this, AI);
+	
+	    this.player = player;
+	    this.depth = 6;
+	    this._board = null;
+	  }
+	
+	  _createClass(AI, [{
+	    key: 'play',
+	    value: function play() {
+	      this.moves = this.getPossibleScores(this.board, this.depth);
+	    }
+	  }, {
+	    key: 'getPossibleScores',
+	    value: function getPossibleScores(board, depth) {
+	      var possibleMoves = this.emptyScoresMap(tempBoard);
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+	
+	      try {
+	        for (var _iterator = possibleMoves[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var _step$value = _slicedToArray(_step.value, 2);
+	
+	          move = _step$value[0];
+	          score = _step$value[1];
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'getMoveScore',
+	    value: function getMoveScore(board, move, depth) {
+	      result = tempBoard.play(move);
+	      if (result.victory && board.winner == this.player) {
+	        return 1;
+	      }
+	      if (result.victory && board.winner != this.player) {
+	        return -1;
+	      }
+	      if (tempBoard.fullBoard) {
+	        return 0;
+	      }
+	      return this.getPossibleScores(board, depth - 1);
+	    }
+	  }, {
+	    key: 'emptyScoresMap',
+	    value: function emptyScoresMap(board) {
+	      return new Map(board.validColumns.map(function (el) {
+	        return [el, 0];
+	      }));
+	    }
+	  }, {
+	    key: 'board',
+	    get: function get() {
+	      return this._board;
+	    },
+	    set: function set(board) {
+	      this._board = board;
+	      return board;
+	    }
+	  }]);
+	
+	  return AI;
+	}();
+	
+	exports.default = AI;
 
 /***/ },
 /* 249 */
@@ -12694,7 +12775,7 @@
 	      return map.delete(item);
 	    });
 	    change.forEach(function (item, key) {
-	      return map.set(index, item);
+	      return map.set(key, item);
 	    });
 	    return map;
 	  };
@@ -12702,13 +12783,14 @@
 	  test('Object Creation', function (t) {
 	    t.plan(1);
 	    var ai = new Ai();
-	    t.same(ai.lookahead, 6);
+	    t.same(ai.depth, 6);
 	  });
 	
 	  test('Empty scores array', function (t) {
 	    t.plan(2);
-	    t.same(ai.emptyScoresArray(makeBoard('base')), makeTestMap(), 'Create a map containing (col, 0) for each column');
-	    t.same(ai.emptyScoresArray(makeBoard('noSpaceCol2')), makeTestMap([2]), 'If a column is full, do not include it in the map');
+	    var ai = new Ai();
+	    t.same(ai.emptyScoresMap(makeBoard('base')), makeTestMap(), 'Create a map containing (col, 0) for each column');
+	    t.same(ai.emptyScoresMap(makeBoard('noSpaceCol2')), makeTestMap([2]), 'If a column is full, do not include it in the map');
 	  });
 	};
 	
@@ -12716,65 +12798,26 @@
 
 /***/ },
 /* 251 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	
-	var _BoardModel = __webpack_require__(248);
-	
-	var _BoardModel2 = _interopRequireDefault(_BoardModel);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var AI = function () {
-	  function AI() {
-	    _classCallCheck(this, AI);
-	
-	    this.lookahead = 6;
-	    this._board = null;
+	exports.default = {
+	  boards: {
+	    base: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    first: [[1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    second: [[1, 0, 0, 0, 0, 0], [-1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    noSpaceCol2: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, -1, 1, 1, -1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    oneWins: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    minusOneWins: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [-1, -1, 1, 1, 1, 1], [1, -1, 0, 0, 0, 0], [0, 0, -1, 0, 0, 0], [0, 0, 0, -1, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    full: [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]],
+	    oneIsJustChillin: [[1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]],
+	    oneWillWinWithCol4: [[0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [-1, 1, 0, 0, 0, 0], [-1, -1, 1, 0, 0, 0], [1, 1, -1, 0, 0, 0], [0, 0, 0, 0, 0, 0], [1, 1, 1, -1, 0, 0]]
 	  }
-	
-	  _createClass(AI, [{
-	    key: 'play',
-	    value: function play() {
-	      this.moves = this.board.getMovesScore();
-	    }
-	  }, {
-	    key: 'getMovesScore',
-	    value: function getMovesScore() {
-	      var scores = emptyScoresArray();
-	      return scores;
-	    }
-	  }, {
-	    key: 'emptyScoresArray',
-	    value: function emptyScoresArray(board) {
-	      return new Map(board.validColumns.map(function (el) {
-	        return [el, 0];
-	      }));
-	    }
-	  }, {
-	    key: 'board',
-	    get: function get() {
-	      return this._board;
-	    },
-	    set: function set(board) {
-	      this._board = board;
-	      return board;
-	    }
-	  }]);
-	
-	  return AI;
-	}();
-	
-	exports.default = AI;
+	};
 
 /***/ }
 /******/ ]);

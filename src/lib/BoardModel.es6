@@ -36,9 +36,9 @@ class BoardModel extends EventEmitter {
     const player = this.currentPlayer;
     const row = this.firstEmptyRow(col);
     this.swapCell(row, col, player);
-    this.checkVictory(col, row);
+    const victory = this.checkVictory(row, col);
     this.changePlayer();
-    return { col, row, player };
+    return { col, row, player, victory };
   }
 
   swapCell(row, col, player) {
@@ -77,9 +77,9 @@ class BoardModel extends EventEmitter {
     return false;
   }
 
-  checkVictory(x, y) {
-    for (const [changeX, changeY] of this._possibleDirections) {
-      if (this.checkVector(x, y, changeX, changeY)) {
+  checkVictory(row, col) {
+    for (const [changeRow, changeCol] of this._possibleDirections) {
+      if (this.checkVector(row, col, changeRow, changeCol)) {
         this.winner = this.currentPlayer;
         return true;
       }

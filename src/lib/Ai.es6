@@ -2,21 +2,38 @@ import BoardModel from './BoardModel.es6';
 
 class AI {
 
-  constructor() {
-    this.lookahead = 6;
+  constructor(player) {
+    this.player = player;
+    this.depth = 6;
     this._board = null;
   }
 
   play() {
-    this.moves = this.board.getMovesScore();
+    this.moves = this.getPossibleScores(this.board, this.depth);
   }
 
-  getMovesScore() {
-    const scores = emptyScoresArray();
-    return scores;
+  getPossibleScores(board, depth) {
+    const possibleMoves = this.emptyScoresMap(tempBoard);
+    for ([move, score] of possibleMoves) {
+
+    }
   }
 
-  emptyScoresArray(board) {
+  getMoveScore(board, move, depth) {
+    result = tempBoard.play(move);
+    if (result.victory && board.winner == this.player) {
+      return 1;
+    }
+    if (result.victory && board.winner != this.player) {
+      return -1;
+    }
+    if (tempBoard.fullBoard) {
+      return 0;
+    }
+    return this.getPossibleScores(board, depth - 1);
+  }
+
+  emptyScoresMap(board) {
     return new Map(board.validColumns.map((el) => [el, 0]));
   }
 
