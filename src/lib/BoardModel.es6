@@ -4,7 +4,7 @@ function BoardException(message) {
   this.message = message;
   this.name = 'BoardException';
   this.toString = () =>
-    `#{this.name}: #{this.message}`;
+    `${this.name}: ${this.message}`;
 }
 
 class BoardModel extends EventEmitter {
@@ -12,10 +12,19 @@ class BoardModel extends EventEmitter {
   constructor(state = null, player = 1) {
     super();
     this.state = state || this.initializeEmptyBoard();
-    this.validColumns = [...this.state.keys()];
+    this.initializeValidColumns();
     this._currentPlayer = player;
     this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
     this._winner = 0;
+  }
+
+  initializeValidColumns() {
+    this.validColumns = [];
+    this.state.forEach((col, index) => {
+      if (col.indexOf(0) !== -1) {
+        this.validColumns.push(index);
+      }
+    });
   }
 
   initializeEmptyBoard() {
