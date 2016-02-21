@@ -12574,31 +12574,19 @@
 	  _createClass(AI, [{
 	    key: 'play',
 	    value: function play() {
-	      //this.moves = this.getPossibleScores(this.board, this.depth);
-	    }
-	  }, {
-	    key: 'getScores',
-	    value: function getScores(board) {
-	      return this.getMovesScores(this.cloneBoard(board));
-	    }
-	  }, {
-	    key: 'cloneBoard',
-	    value: function cloneBoard(board) {
-	      return new _BoardModel2.default(board.state);
-	    }
-	  }, {
-	    key: 'getMovesScores',
-	    value: function getMovesScores(board) {
-	      var scores = {};
+	      var testBoard = this.cloneBoard(board);
+	      var values = {};
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
 	      var _iteratorError = undefined;
 	
 	      try {
-	        for (var _iterator = board.validColumns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var move = _step.value;
+	        for (var _iterator = testBoard.validColumns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          move = _step.value;
 	
-	          scores[move] = this.getMoveScore(board, move);
+	          console.log;
+	          console.log(move);
+	          values[move] = this.getScores(testBoard, move, depth);
 	        }
 	      } catch (err) {
 	        _didIteratorError = true;
@@ -12615,22 +12603,53 @@
 	        }
 	      }
 	
-	      return scores;
+	      return values;
 	    }
 	  }, {
-	    key: 'getMoveScore',
-	    value: function getMoveScore(board, move) {
-	      var result = board.play(move);
-	      if (result.victory && board.winner === this.player) {
-	        return 1;
-	      }
-	      if (result.victory && board.winner !== this.player) {
-	        return -1;
-	      }
-	      if (board.fullBoard) {
+	    key: 'getScores',
+	    value: function getScores(board, move, depth) {
+	      board.play(move);
+	      if (board.winner === this.player) {
+	        console.log('winning!');
+	        console.log(this.depth);
+	        console.log(depth);
+	        return 1 * (depth + 1);
+	      } else if (board.winner && board.winner !== player) {
+	        return -1 * (depth + 1);
+	      } else if (depth === 0 || board.fullBoard) {
 	        return 0;
 	      }
-	      return 0;
+	      var testBoard = this.cloneBoard(board);
+	      console.log(testBoard);
+	      var _iteratorNormalCompletion2 = true;
+	      var _didIteratorError2 = false;
+	      var _iteratorError2 = undefined;
+	
+	      try {
+	        for (var _iterator2 = testBoard.validColumns[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	          newMove = _step2.value;
+	
+	          return this.getScores(testBoard, move, depth - 1);
+	        }
+	      } catch (err) {
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	            _iterator2.return();
+	          }
+	        } finally {
+	          if (_didIteratorError2) {
+	            throw _iteratorError2;
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'cloneBoard',
+	    value: function cloneBoard(board) {
+	      return new _BoardModel2.default(board.state);
 	    }
 	  }, {
 	    key: 'emptyScoresMap',
@@ -12805,8 +12824,7 @@
 	  test('Determine scores for next move', function (t) {
 	    t.plan(2);
 	    var ai = new Ai(1);
-	    t.same(ai.getScores(makeBoard('oneWillWinWithCol4')), [0, 0, 0, 0, 1, 0, 0], 'If AI wins with one move, assign 1 to such move');
-	    t.same(ai.getScores(makeBoard('base')), [0, 0, 0, 0, 0, 0, 0], 'If no player wins with one move, assign 0 to all moves');
+	    t.equal(ai.getScores(makeBoard('oneWillWinWithCol4'), 4, 0), 1, 'If AI wins with one move, assign 1 to such move');
 	  });
 	};
 	

@@ -9,37 +9,37 @@ class AI {
   }
 
   play() {
-    //this.moves = this.getPossibleScores(this.board, this.depth);
+    const testBoard = this.cloneBoard(board);
+    const values = {};
+    for (move of testBoard.validColumns) {
+      console.log
+      console.log(move);
+      values[move] = this.getScores(testBoard, move, depth);
+    }
+    return values;
   }
 
-  getScores(board) {
-    return this.getMovesScores(this.cloneBoard(board));
+  getScores(board, move, depth) {
+    board.play(move);
+    if (board.winner === this.player) {
+      console.log('winning!')
+      console.log(this.depth)
+      console.log(depth)
+      return 1 * (depth + 1);
+    } else if (board.winner && board.winner !== player) {
+      return -1 * (depth + 1);
+    } else if (depth === 0 || board.fullBoard) {
+      return 0;
+    }
+    const testBoard = this.cloneBoard(board);
+    console.log(testBoard)
+    for (newMove of testBoard.validColumns) {
+      return this.getScores(testBoard, move, depth - 1);
+    }
   }
 
   cloneBoard(board) {
     return new BoardModel(board.state);
-  }
-
-  getMovesScores(board) {
-    const scores = {};
-    for (const move of board.validColumns) {
-      scores[move] = this.getMoveScore(board, move);
-    }
-    return scores;
-  }
-
-  getMoveScore(board, move) {
-    const result = board.play(move);
-    if (result.victory && board.winner === this.player) {
-      return 1;
-    }
-    if (result.victory && board.winner !== this.player) {
-      return -1;
-    }
-    if (board.fullBoard) {
-      return 0;
-    }
-    return 0;
   }
 
   emptyScoresMap(board) {

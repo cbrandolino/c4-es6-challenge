@@ -33,11 +33,8 @@ const aiTest = (Ai, test, fixtures, BoardModel) => {
   test('Determine scores for next move', (t) => {
     t.plan(2);
     const ai = new Ai(1);
-    t.same(ai.getScores(makeBoard('oneWillWinWithCol4')), [0, 0, 0, 0, 1, 0, 0],
+    t.equal(ai.getScores(makeBoard('oneWillWinWithCol4'), 4, 0), 1,
       'If AI wins with one move, assign 1 to such move'
-    );
-    t.same(ai.getScores(makeBoard('base')), [0, 0, 0, 0, 0, 0, 0],
-      'If no player wins with one move, assign 0 to all moves'
     );
   });
 };
