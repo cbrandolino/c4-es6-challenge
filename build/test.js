@@ -12584,8 +12584,6 @@
 	        for (var _iterator = testBoard.validColumns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	          move = _step.value;
 	
-	          console.log;
-	          console.log(move);
 	          values[move] = this.getScores(testBoard, move, depth);
 	        }
 	      } catch (err) {
@@ -12610,26 +12608,22 @@
 	    value: function getScores(board, move, depth) {
 	      board.play(move);
 	      if (board.winner === this.player) {
-	        console.log('winning!');
-	        console.log(this.depth);
-	        console.log(depth);
 	        return 1 * (depth + 1);
-	      } else if (board.winner && board.winner !== player) {
+	      } else if (board.winner && board.winner !== this.player) {
 	        return -1 * (depth + 1);
 	      } else if (depth === 0 || board.fullBoard) {
 	        return 0;
 	      }
 	      var testBoard = this.cloneBoard(board);
-	      console.log(testBoard);
 	      var _iteratorNormalCompletion2 = true;
 	      var _didIteratorError2 = false;
 	      var _iteratorError2 = undefined;
 	
 	      try {
 	        for (var _iterator2 = testBoard.validColumns[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	          newMove = _step2.value;
+	          var nextMove = _step2.value;
 	
-	          return this.getScores(testBoard, move, depth - 1);
+	          return this.getScores(testBoard, nextMove, depth - 1);
 	        }
 	      } catch (err) {
 	        _didIteratorError2 = true;
@@ -12787,10 +12781,11 @@
 	  value: true
 	});
 	var aiTest = function aiTest(Ai, test, fixtures, BoardModel) {
-	
 	  var makeBoard = function makeBoard(fixture) {
 	    var board = new BoardModel();
-	    board.state = fixtures.boards[fixture];
+	    board.state = fixtures.boards[fixture].map(function (a) {
+	      return a.slice();
+	    });
 	    return board;
 	  };
 	
@@ -12821,10 +12816,12 @@
 	    t.same(ai.emptyScoresMap(makeBoard('noSpaceCol2')), makeTestMap([2]), 'If a column is full, do not include it in the map');
 	  });
 	
-	  test('Determine scores for next move', function (t) {
+	  test('Determine move value', function (t) {
 	    t.plan(2);
 	    var ai = new Ai(1);
 	    t.equal(ai.getScores(makeBoard('oneWillWinWithCol4'), 4, 0), 1, 'If AI wins with one move, assign 1 to such move');
+	    ai = new Ai(-1);
+	    t.equal(ai.getScores(makeBoard('oneWillWinWithCol4'), 4, 0), -1, 'If AI loses with one move, assign -1 to such move');
 	  });
 	};
 	

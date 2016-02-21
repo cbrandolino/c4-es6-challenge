@@ -12,8 +12,6 @@ class AI {
     const testBoard = this.cloneBoard(board);
     const values = {};
     for (move of testBoard.validColumns) {
-      console.log
-      console.log(move);
       values[move] = this.getScores(testBoard, move, depth);
     }
     return values;
@@ -22,19 +20,15 @@ class AI {
   getScores(board, move, depth) {
     board.play(move);
     if (board.winner === this.player) {
-      console.log('winning!')
-      console.log(this.depth)
-      console.log(depth)
       return 1 * (depth + 1);
-    } else if (board.winner && board.winner !== player) {
+    } else if (board.winner && board.winner !== this.player) {
       return -1 * (depth + 1);
     } else if (depth === 0 || board.fullBoard) {
       return 0;
     }
     const testBoard = this.cloneBoard(board);
-    console.log(testBoard)
-    for (newMove of testBoard.validColumns) {
-      return this.getScores(testBoard, move, depth - 1);
+    for (let nextMove of testBoard.validColumns) {
+      return this.getScores(testBoard, nextMove, depth - 1);
     }
   }
 

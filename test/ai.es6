@@ -1,8 +1,7 @@
 const aiTest = (Ai, test, fixtures, BoardModel) => {
-
   const makeBoard = (fixture) => {
     const board = new BoardModel();
-    board.state = fixtures.boards[fixture];
+    board.state = fixtures.boards[fixture].map(a => a.slice());
     return board;
   };
 
@@ -30,11 +29,15 @@ const aiTest = (Ai, test, fixtures, BoardModel) => {
     );
   });
 
-  test('Determine scores for next move', (t) => {
+  test('Determine move value', (t) => {
     t.plan(2);
-    const ai = new Ai(1);
+    let ai = new Ai(1);
     t.equal(ai.getScores(makeBoard('oneWillWinWithCol4'), 4, 0), 1,
       'If AI wins with one move, assign 1 to such move'
+    );
+    ai = new Ai(-1);
+    t.equal(ai.getScores(makeBoard('oneWillWinWithCol4'), 4, 0), -1,
+      'If AI loses with one move, assign -1 to such move'
     );
   });
 };
