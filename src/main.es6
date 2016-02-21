@@ -5,6 +5,25 @@ import TWEEN from 'tween.js';
 class App {
 
   constructor() {
+    this.playerTypes = {
+      human: 'Human',
+      ai1: 'Marvin',
+      ai2: 'HAL',
+    };
+    this.settings = {
+      players: [
+        {
+          name: 'Player 1',
+          symbol: 1,
+          type: 'human',
+        },
+        {
+          name: 'Player 2',
+          symbol: -1,
+          type: 'human',
+        },
+      ],
+    };
     this.stages = { Board, Menu };
     this.renderer = PIXI.autoDetectRenderer(600, 470);
     document.body.appendChild(this.renderer.view);
