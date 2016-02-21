@@ -6,18 +6,16 @@ class App {
 
   constructor() {
     this.stages = { Board, Menu };
-    this.renderer = PIXI.autoDetectRenderer(800, 600);
+    this.renderer = PIXI.autoDetectRenderer(600, 470);
     document.body.appendChild(this.renderer.view);
     this.changeStage('Menu');
     this.animate();
   }
 
-
   changeStage(stageName) {
     this.currentStage = new this.stages[stageName]();
-    this.currentStage.once('changestage', (stageName) =>
-      this.changeStage(stageName)
-
+    this.currentStage.once('changestage', (newStageName) =>
+      this.changeStage(newStageName)
     );
   }
 

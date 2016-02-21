@@ -5796,7 +5796,7 @@
 	    _classCallCheck(this, App);
 	
 	    this.stages = { Board: _Board2.default, Menu: _Menu2.default };
-	    this.renderer = PIXI.autoDetectRenderer(800, 600);
+	    this.renderer = PIXI.autoDetectRenderer(600, 470);
 	    document.body.appendChild(this.renderer.view);
 	    this.changeStage('Menu');
 	    this.animate();
@@ -5808,8 +5808,8 @@
 	      var _this = this;
 	
 	      this.currentStage = new this.stages[stageName]();
-	      this.currentStage.once('changestage', function (stageName) {
-	        return _this.changeStage(stageName);
+	      this.currentStage.once('changestage', function (newStageName) {
+	        return _this.changeStage(newStageName);
 	      });
 	    }
 	  }, {
@@ -34524,6 +34524,10 @@
 
 	'use strict';
 	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
@@ -34545,11 +34549,45 @@
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Menu).call(this));
 	
 	    _this.stage = new PIXI.Container();
-	    document.onclick = function () {
-	      return _this.emit('changestage', 'Board');
-	    };
+	    _this.makeButtons();
 	    return _this;
 	  }
+	
+	  _createClass(Menu, [{
+	    key: 'makeButtons',
+	    value: function makeButtons() {
+	      var _this2 = this;
+	
+	      var buttons = [['Play', 'play']];
+	      buttons.forEach(function (buttonData) {
+	        return _this2.makeButton(buttonData);
+	      });
+	    }
+	  }, {
+	    key: 'makeButton',
+	    value: function makeButton(_ref) {
+	      var _this3 = this;
+	
+	      var _ref2 = _slicedToArray(_ref, 2);
+	
+	      var text = _ref2[0];
+	      var handle = _ref2[1];
+	
+	      var button = new PIXI.Text(text, { font: '24px Arial', fill: 0xff1010, align: 'center' });
+	      button.interactive = true;
+	      button.on('click', function () {
+	        return _this3.buttonClicked(handle);
+	      });
+	      this.stage.addChild(button);
+	    }
+	  }, {
+	    key: 'buttonClicked',
+	    value: function buttonClicked(handle) {
+	      if (handle === 'play') {
+	        this.emit('changestage', 'Board');
+	      }
+	    }
+	  }]);
 	
 	  return Menu;
 	}(_events.EventEmitter);
