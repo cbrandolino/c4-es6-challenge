@@ -21,7 +21,7 @@ class App {
         {
           name: 'Player 2',
           symbol: -1,
-          type: 'human',
+          type: 'ai1',
         },
       ],
     };
@@ -36,7 +36,7 @@ class App {
     if (this.currentStage) {
       this.currentStage.stage.destroy();
     }
-    this.currentStage = new this.stages[stageName]();
+    this.currentStage = new this.stages[stageName](this.settings);
     this.currentStage.once('changestage', (newStageName) =>
       this.changeStage(newStageName)
     );

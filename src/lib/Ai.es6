@@ -4,7 +4,7 @@ class AI {
 
   constructor(player, board = null) {
     this.player = player;
-    this.depth = 6;
+    this.depth = 8;
     this._board = null;
     if (board) {
       this.board = board;
@@ -12,12 +12,12 @@ class AI {
   }
 
   play() {
-    this.board.play(this.getMaxMoveScore);
+    this.board.play(this.getMaxMoveScore());
   }
 
   getMaxMoveScore() {
     const scores = this.getScores();
-    console.log('scores');
+    console.log(scores)
     return Object.keys(scores).reduce(
       (a, b) => scores[a] > scores[b] ? a : b
     );
@@ -25,29 +25,36 @@ class AI {
 
   getScores() {
     const values = {};
-    for (const move of this.board.validColumns) {
-      values[move] = this.getMoveScore(this.board, move, this.depth);
+    for (let move of this.board.validColumns) {
+      values[move] = this.getMoveScore(this.cloneBoard(this.board), [move], this.depth);
     }
     return values;
   }
 
-  getMoveScore(board, move, depth) {
-    const testBoard = this.cloneBoard(board);
-    testBoard.play(move);
-    if (testBoard.winner === this.player) {
-      return 1 * (depth + 1);
-    } else if (testBoard.winner && testBoard.winner !== this.player) {
-      return -1 * (depth + 1);
-    } else if (depth === 0 || testBoard.fullBoard) {
+  getMoveScore(board, possibleMoves, depth ) {
+    if (!possibleMoves.length) {
       return 0;
     }
-    for (const nextMove of testBoard.validColumns) {
-      return this.getMoveScore(testBoard, nextMove, depth - 1);
+    board.play(possibleMoves.pop());
+    if (board.winner === this.player) {
+      return 1 * (depth + 1);
+    } else if (board.winner && board.winner !== this.player) {
+      return -1 * (depth + 1) +
+        this.getMoveScore(this.cloneBoard(this.board), possibleMoves, depth);
+    } else if (depth === 0 || board.fullBoard) {
+      return 0;
     }
+    let clone = this.cloneBoard(board);
+    let score = 0;
+    let futureMoves = possibleMoves.length ? possibleMoves : clone.validColumns;
+    while (futureMoves.length) {
+      score += this.getMoveScore(this.cloneBoard(board), futureMoves, depth -1);
+    }
+    return score;
   }
 
   cloneBoard(board) {
-    return new BoardModel(board.state);
+    return new BoardModel(board.state.map(a => a.slice()), board.currentPlayer);
   }
 
   emptyScoresMap(board) {

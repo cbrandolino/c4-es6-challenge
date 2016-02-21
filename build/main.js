@@ -5809,7 +5809,7 @@
 	      }, {
 	        name: 'Player 2',
 	        symbol: -1,
-	        type: 'human'
+	        type: 'ai1'
 	      }]
 	    };
 	    this.stages = { Board: _Board2.default, Menu: _Menu2.default };
@@ -5827,7 +5827,7 @@
 	      if (this.currentStage) {
 	        this.currentStage.stage.destroy();
 	      }
-	      this.currentStage = new this.stages[stageName]();
+	      this.currentStage = new this.stages[stageName](this.settings);
 	      this.currentStage.once('changestage', function (newStageName) {
 	        return _this.changeStage(newStageName);
 	      });
@@ -5874,6 +5874,10 @@
 	
 	var _BoardMarbleSprite2 = _interopRequireDefault(_BoardMarbleSprite);
 	
+	var _Ai = __webpack_require__(340);
+	
+	var _Ai2 = _interopRequireDefault(_Ai);
+	
 	var _events = __webpack_require__(195);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -5887,13 +5891,15 @@
 	var Board = function (_EventEmitter) {
 	  _inherits(Board, _EventEmitter);
 	
-	  function Board() {
+	  function Board(settings) {
 	    _classCallCheck(this, Board);
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Board).call(this));
 	
+	    _this.settings = settings;
 	    _this.boardModel = new _BoardModel2.default();
 	    _this.stage = new PIXI.Container();
+	    _this.setUpAis();
 	    _this.bootNextPlayer();
 	    _this.renderCells();
 	    return _this;
@@ -5929,6 +5935,10 @@
 	
 	      var player = this.boardModel.currentPlayer;
 	      this.currentPlayerMarble = new _BoardMarbleSprite2.default(this.stage, player);
+	      if (this.ais[player]) {
+	        this.ais[player].board = this.boardModel;
+	        console.log(this.ais[player].getScores());
+	      }
 	      this.currentPlayerMarble.on('moveComplete', function () {
 	        return _this3.moveComplete();
 	      });
@@ -5944,6 +5954,37 @@
 	      if (result) {
 	        this.currentPlayerMarble.coords = result;
 	        this.currentPlayerMarble.fire();
+	      }
+	    }
+	  }, {
+	    key: 'setUpAis',
+	    value: function setUpAis() {
+	      this.ais = {};
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+	
+	      try {
+	        for (var _iterator = this.settings.players[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var player = _step.value;
+	
+	          if (player.type !== 'human') {
+	            this.ais[player.symbol] = new _Ai2.default(player.symbol);
+	          }
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
 	      }
 	    }
 	  }]);
@@ -5982,6 +6023,7 @@
 	
 	  function BoardModel() {
 	    var state = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+	    var player = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
 	
 	    _classCallCheck(this, BoardModel);
 	
@@ -5989,7 +6031,7 @@
 	
 	    _this.state = state || _this.initializeEmptyBoard();
 	    _this.validColumns = [].concat(_toConsumableArray(_this.state.keys()));
-	    _this._currentPlayer = 1;
+	    _this._currentPlayer = player;
 	    _this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
 	    _this._winner = 0;
 	    return _this;
@@ -34594,6 +34636,137 @@
 	}(_events.EventEmitter);
 	
 	exports.default = Menu;
+
+/***/ },
+/* 340 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _BoardModel = __webpack_require__(194);
+	
+	var _BoardModel2 = _interopRequireDefault(_BoardModel);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var AI = function () {
+	  function AI(player) {
+	    var board = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+	
+	    _classCallCheck(this, AI);
+	
+	    this.player = player;
+	    this.depth = 8;
+	    this._board = null;
+	    if (board) {
+	      this.board = board;
+	    }
+	  }
+	
+	  _createClass(AI, [{
+	    key: 'play',
+	    value: function play() {
+	      this.board.play(this.getMaxMoveScore());
+	    }
+	  }, {
+	    key: 'getMaxMoveScore',
+	    value: function getMaxMoveScore() {
+	      var scores = this.getScores();
+	      console.log(scores);
+	      return Object.keys(scores).reduce(function (a, b) {
+	        return scores[a] > scores[b] ? a : b;
+	      });
+	    }
+	  }, {
+	    key: 'getScores',
+	    value: function getScores() {
+	      var values = {};
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+	
+	      try {
+	        for (var _iterator = this.board.validColumns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var move = _step.value;
+	
+	          values[move] = this.getMoveScore(this.cloneBoard(this.board), [move], this.depth);
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+	
+	      return values;
+	    }
+	  }, {
+	    key: 'getMoveScore',
+	    value: function getMoveScore(board, possibleMoves, depth) {
+	      if (!possibleMoves.length) {
+	        return 0;
+	      }
+	      board.play(possibleMoves.pop());
+	      if (board.winner === this.player) {
+	        return 1 * (depth + 1);
+	      } else if (board.winner && board.winner !== this.player) {
+	        return -1 * (depth + 1) + this.getMoveScore(this.cloneBoard(this.board), possibleMoves, depth);
+	      } else if (depth === 0 || board.fullBoard) {
+	        return 0;
+	      }
+	      var clone = this.cloneBoard(board);
+	      var score = 0;
+	      var futureMoves = possibleMoves.length ? possibleMoves : clone.validColumns;
+	      while (futureMoves.length) {
+	        score += this.getMoveScore(this.cloneBoard(board), futureMoves, depth - 1);
+	      }
+	      return score;
+	    }
+	  }, {
+	    key: 'cloneBoard',
+	    value: function cloneBoard(board) {
+	      return new _BoardModel2.default(board.state.map(function (a) {
+	        return a.slice();
+	      }), board.currentPlayer);
+	    }
+	  }, {
+	    key: 'emptyScoresMap',
+	    value: function emptyScoresMap(board) {
+	      return new Map(board.validColumns.map(function (el) {
+	        return [el, 0];
+	      }));
+	    }
+	  }, {
+	    key: 'board',
+	    get: function get() {
+	      return this._board;
+	    },
+	    set: function set(board) {
+	      this._board = board;
+	      return board;
+	    }
+	  }]);
+	
+	  return AI;
+	}();
+	
+	exports.default = AI;
 
 /***/ }
 /******/ ]);

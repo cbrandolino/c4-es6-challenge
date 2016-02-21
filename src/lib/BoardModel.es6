@@ -2,11 +2,11 @@ import { EventEmitter } from 'events';
 
 class BoardModel extends EventEmitter {
 
-  constructor(state = null) {
+  constructor(state = null, player = 1) {
     super();
     this.state = state || this.initializeEmptyBoard();
     this.validColumns = [...this.state.keys()];
-    this._currentPlayer = 1;
+    this._currentPlayer = player;
     this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
     this._winner = 0;
   }
