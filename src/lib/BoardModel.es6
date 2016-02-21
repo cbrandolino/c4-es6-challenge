@@ -1,19 +1,24 @@
 import { EventEmitter } from 'events';
 
-class BoardModel {
+class BoardModel extends EventEmitter {
 
-  constructor() {
-    Object.assign(this, new EventEmitter());
-    this.initializeEmptyBoard();
+  constructor(state = null) {
+    super();
+    this.state = state || this.initializeEmptyBoard();
+    this.validColumns = [...this.state.keys()];
     this._currentPlayer = 1;
     this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
     this._winner = 0;
   }
 
+  exception(message) {
+    this.message = message;
+    this.name = 'BoardException';
+  }
+
   initializeEmptyBoard() {
-    const cols = Array.from({ length: 7 },
+    return Array.from({ length: 7 },
       () => Array(6).fill(0));
-    this.state = cols;
   }
 
   changePlayer() {
@@ -23,27 +28,34 @@ class BoardModel {
 
   play(col) {
     if (this.fullBoard) {
-      throw new Exception('Board is full');
+      throw this.exception('Board is full');
     }
-    const column = this.state[col];
-    const freeRow = column.findIndex((cell) => cell === 0);
-    if (freeRow !== -1) {
-      return this.completeMove(col, freeRow);
+    if (this.validColumns.indexOf(col) === -1) {
+      throw this.exception('Column is full');
     }
-    this.events.emit('fullCol');
-    this.checkFullBoard();
-    return null;
+    const player = this.currentPlayer;
+    const row = this.firstEmptyRow(col);
+    this.swapCell(row, col, player);
+    const victory = this.checkVictory(row, col);
+    this.changePlayer();
+    return { col, row, player, victory };
   }
 
-  checkFullBoard() {
-    for (const col in this.state) {
-      if (col.includes(0)) {
-        return false;
-      }
+  swapCell(row, col, player) {
+    this._state[col][row] = player;
+  }
+
+  firstEmptyRow(col) {
+    const cells = this.state[col];
+    const freeCell = cells.findIndex((cell) => cell === 0);
+    if (freeCell === cells.length - 1) {
+      this.validColumns.splice(col, 1);
     }
-    this.fullBoard = true;
-    this.events.emit('fullBoard');
-    return true;
+    if (this.validColumns.length === 0) {
+      this.fullBoard = true;
+      this.events.emit('fullBoard');
+    }
+    return freeCell;
   }
 
   checkVector(centerX, centerY, changeX, changeY, length = 7) {
@@ -65,23 +77,14 @@ class BoardModel {
     return false;
   }
 
-  checkVictory(x, y) {
-    for (const [changeX, changeY] of this._possibleDirections) {
-      if (this.checkVector(x, y, changeX, changeY)) {
+  checkVictory(row, col) {
+    for (const [changeRow, changeCol] of this._possibleDirections) {
+      if (this.checkVector(row, col, changeRow, changeCol)) {
         this.winner = this.currentPlayer;
         return true;
       }
     }
     return false;
-  }
-
-  completeMove(col, row, player = this.currentPlayer) {
-    const oldState = this.state;
-    oldState[col][row] = player;
-    this.state = oldState;
-    this.checkVictory(col, row);
-    this.changePlayer();
-    return { col, row, player };
   }
 
   cellValue(x, y) {

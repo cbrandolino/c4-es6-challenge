@@ -5889,26 +5889,37 @@
 	
 	var _events = __webpack_require__(194);
 	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var BoardModel = function () {
 	  function BoardModel() {
+	    var state = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+	
 	    _classCallCheck(this, BoardModel);
 	
 	    Object.assign(this, new _events.EventEmitter());
-	    this.initializeEmptyBoard();
+	    this.state = state || this.initializeEmptyBoard();
+	    this.validColumns = [].concat(_toConsumableArray(this.state.keys()));
+	    console.log(this.validColumns);
 	    this._currentPlayer = 1;
 	    this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
 	    this._winner = 0;
 	  }
 	
 	  _createClass(BoardModel, [{
+	    key: 'exception',
+	    value: function exception(message) {
+	      this.message = message;
+	      this.name = "BoardException";
+	    }
+	  }, {
 	    key: 'initializeEmptyBoard',
 	    value: function initializeEmptyBoard() {
-	      var cols = Array.from({ length: 7 }, function () {
+	      return Array.from({ length: 7 }, function () {
 	        return Array(6).fill(0);
 	      });
-	      this.state = cols;
 	    }
 	  }, {
 	    key: 'changePlayer',
@@ -5920,30 +5931,41 @@
 	    key: 'play',
 	    value: function play(col) {
 	      if (this.fullBoard) {
-	        throw new Exception('Board is full');
+	        throw this.exception('Board is full');
 	      }
-	      var column = this.state[col];
-	      var freeRow = column.findIndex(function (cell) {
-	        return cell === 0;
-	      });
-	      if (freeRow !== -1) {
-	        return this.completeMove(col, freeRow);
+	      console.log(this.validColumns);
+	      console.log(col);
+	
+	      if (this.validColumns.indexOf(col) === -1) {
+	        throw this.exception('Column is full');
 	      }
-	      this.events.emit('fullCol');
-	      this.checkFullBoard();
-	      return null;
+	      var player = this.currentPlayer;
+	      var row = this.firstEmptyRow(col);
+	      this.swapCell(row, col, player);
+	      this.checkVictory(col, row);
+	      this.changePlayer();
+	      return { col: col, row: row, player: player };
 	    }
 	  }, {
-	    key: 'checkFullBoard',
-	    value: function checkFullBoard() {
-	      for (var col in this.state) {
-	        if (col.includes(0)) {
-	          return false;
-	        }
+	    key: 'swapCell',
+	    value: function swapCell(row, col, player) {
+	      this._state[col][row] = player;
+	    }
+	  }, {
+	    key: 'firstEmptyRow',
+	    value: function firstEmptyRow(col) {
+	      var cells = this.state[col];
+	      var freeCell = cells.findIndex(function (cell) {
+	        return cell === 0;
+	      });
+	      if (freeCell === cells.length - 1) {
+	        this.validColumns.splice(col, 1);
 	      }
-	      this.fullBoard = true;
-	      this.events.emit('fullBoard');
-	      return true;
+	      if (this.validColumns.length === 0) {
+	        this.fullBoard = true;
+	        this.events.emit('fullBoard');
+	      }
+	      return freeCell;
 	    }
 	  }, {
 	    key: 'checkVector',
@@ -6002,18 +6024,6 @@
 	      }
 	
 	      return false;
-	    }
-	  }, {
-	    key: 'completeMove',
-	    value: function completeMove(col, row) {
-	      var player = arguments.length <= 2 || arguments[2] === undefined ? this.currentPlayer : arguments[2];
-	
-	      var oldState = this.state;
-	      oldState[col][row] = player;
-	      this.state = oldState;
-	      this.checkVictory(col, row);
-	      this.changePlayer();
-	      return { col: col, row: row, player: player };
 	    }
 	  }, {
 	    key: 'cellValue',
