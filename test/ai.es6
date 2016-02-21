@@ -32,12 +32,20 @@ const aiTest = (Ai, test, fixtures, BoardModel) => {
   test('Determine move value', (t) => {
     t.plan(2);
     let ai = new Ai(1);
-    t.equal(ai.getScores(makeBoard('oneWillWinWithCol4'), 4, 0), 1,
+    t.equal(ai.getMoveScore(makeBoard('oneWillWinWithCol4'), 4, 0), 1,
       'If AI wins with one move, assign 1 to such move'
     );
     ai = new Ai(-1);
-    t.equal(ai.getScores(makeBoard('oneWillWinWithCol4'), 4, 0), -1,
+    t.equal(ai.getMoveScore(makeBoard('oneWillWinWithCol4'), 4, 0), -1,
       'If AI loses with one move, assign -1 to such move'
+    );
+  });
+
+  test('Determine max move value', (t) => {
+    t.plan(2);
+    const ai = new Ai(1, makeBoard('oneWillWinWithCol4'));
+    t.equal(ai.getMaxMoveScore(), '4',
+      'Winning move has max value'
     );
   });
 };

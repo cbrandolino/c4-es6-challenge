@@ -12564,27 +12564,45 @@
 	
 	var AI = function () {
 	  function AI(player) {
+	    var board = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+	
 	    _classCallCheck(this, AI);
 	
 	    this.player = player;
 	    this.depth = 6;
 	    this._board = null;
+	    if (board) {
+	      this.board = board;
+	    }
 	  }
 	
 	  _createClass(AI, [{
 	    key: 'play',
 	    value: function play() {
-	      var testBoard = this.cloneBoard(board);
+	      this.board.play(this.getMaxMoveScore);
+	    }
+	  }, {
+	    key: 'getMaxMoveScore',
+	    value: function getMaxMoveScore() {
+	      var scores = this.getScores();
+	      console.log('scores');
+	      return Object.keys(scores).reduce(function (a, b) {
+	        return scores[a] > scores[b] ? a : b;
+	      });
+	    }
+	  }, {
+	    key: 'getScores',
+	    value: function getScores() {
 	      var values = {};
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
 	      var _iteratorError = undefined;
 	
 	      try {
-	        for (var _iterator = testBoard.validColumns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          move = _step.value;
+	        for (var _iterator = this.board.validColumns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var move = _step.value;
 	
-	          values[move] = this.getScores(testBoard, move, depth);
+	          values[move] = this.getMoveScore(this.board, move, this.depth);
 	        }
 	      } catch (err) {
 	        _didIteratorError = true;
@@ -12604,17 +12622,17 @@
 	      return values;
 	    }
 	  }, {
-	    key: 'getScores',
-	    value: function getScores(board, move, depth) {
-	      board.play(move);
-	      if (board.winner === this.player) {
+	    key: 'getMoveScore',
+	    value: function getMoveScore(board, move, depth) {
+	      var testBoard = this.cloneBoard(board);
+	      testBoard.play(move);
+	      if (testBoard.winner === this.player) {
 	        return 1 * (depth + 1);
-	      } else if (board.winner && board.winner !== this.player) {
+	      } else if (testBoard.winner && testBoard.winner !== this.player) {
 	        return -1 * (depth + 1);
-	      } else if (depth === 0 || board.fullBoard) {
+	      } else if (depth === 0 || testBoard.fullBoard) {
 	        return 0;
 	      }
-	      var testBoard = this.cloneBoard(board);
 	      var _iteratorNormalCompletion2 = true;
 	      var _didIteratorError2 = false;
 	      var _iteratorError2 = undefined;
@@ -12623,7 +12641,7 @@
 	        for (var _iterator2 = testBoard.validColumns[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 	          var nextMove = _step2.value;
 	
-	          return this.getScores(testBoard, nextMove, depth - 1);
+	          return this.getMoveScore(testBoard, nextMove, depth - 1);
 	        }
 	      } catch (err) {
 	        _didIteratorError2 = true;
@@ -12819,9 +12837,15 @@
 	  test('Determine move value', function (t) {
 	    t.plan(2);
 	    var ai = new Ai(1);
-	    t.equal(ai.getScores(makeBoard('oneWillWinWithCol4'), 4, 0), 1, 'If AI wins with one move, assign 1 to such move');
+	    t.equal(ai.getMoveScore(makeBoard('oneWillWinWithCol4'), 4, 0), 1, 'If AI wins with one move, assign 1 to such move');
 	    ai = new Ai(-1);
-	    t.equal(ai.getScores(makeBoard('oneWillWinWithCol4'), 4, 0), -1, 'If AI loses with one move, assign -1 to such move');
+	    t.equal(ai.getMoveScore(makeBoard('oneWillWinWithCol4'), 4, 0), -1, 'If AI loses with one move, assign -1 to such move');
+	  });
+	
+	  test('Determine max move value', function (t) {
+	    t.plan(2);
+	    var ai = new Ai(1, makeBoard('oneWillWinWithCol4'));
+	    t.equal(ai.getMaxMoveScore(), '4', 'Winning move has max value');
 	  });
 	};
 	

@@ -2,33 +2,47 @@ import BoardModel from './BoardModel.es6';
 
 class AI {
 
-  constructor(player) {
+  constructor(player, board = null) {
     this.player = player;
     this.depth = 6;
     this._board = null;
+    if (board) {
+      this.board = board;
+    }
   }
 
   play() {
-    const testBoard = this.cloneBoard(board);
+    this.board.play(this.getMaxMoveScore);
+  }
+
+  getMaxMoveScore() {
+    const scores = this.getScores();
+    console.log('scores');
+    return Object.keys(scores).reduce(
+      (a, b) => scores[a] > scores[b] ? a : b
+    );
+  }
+
+  getScores() {
     const values = {};
-    for (move of testBoard.validColumns) {
-      values[move] = this.getScores(testBoard, move, depth);
+    for (const move of this.board.validColumns) {
+      values[move] = this.getMoveScore(this.board, move, this.depth);
     }
     return values;
   }
 
-  getScores(board, move, depth) {
-    board.play(move);
-    if (board.winner === this.player) {
+  getMoveScore(board, move, depth) {
+    const testBoard = this.cloneBoard(board);
+    testBoard.play(move);
+    if (testBoard.winner === this.player) {
       return 1 * (depth + 1);
-    } else if (board.winner && board.winner !== this.player) {
+    } else if (testBoard.winner && testBoard.winner !== this.player) {
       return -1 * (depth + 1);
-    } else if (depth === 0 || board.fullBoard) {
+    } else if (depth === 0 || testBoard.fullBoard) {
       return 0;
     }
-    const testBoard = this.cloneBoard(board);
-    for (let nextMove of testBoard.validColumns) {
-      return this.getScores(testBoard, nextMove, depth - 1);
+    for (const nextMove of testBoard.validColumns) {
+      return this.getMoveScore(testBoard, nextMove, depth - 1);
     }
   }
 
