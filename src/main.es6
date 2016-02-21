@@ -13,6 +13,9 @@ class App {
   }
 
   changeStage(stageName) {
+    if (this.currentStage) {
+      this.currentStage.destroy();
+    }
     this.currentStage = new this.stages[stageName]();
     this.currentStage.once('changestage', (newStageName) =>
       this.changeStage(newStageName)

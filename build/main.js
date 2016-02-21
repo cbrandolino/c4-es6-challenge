@@ -5807,6 +5807,9 @@
 	    value: function changeStage(stageName) {
 	      var _this = this;
 	
+	      if (this.currentStage) {
+	        this.currentStage.destroy();
+	      }
 	      this.currentStage = new this.stages[stageName]();
 	      this.currentStage.once('changestage', function (newStageName) {
 	        return _this.changeStage(newStageName);
