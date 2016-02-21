@@ -12548,8 +12548,6 @@
 
 	'use strict';
 	
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	Object.defineProperty(exports, "__esModule", {
@@ -12576,22 +12574,31 @@
 	  _createClass(AI, [{
 	    key: 'play',
 	    value: function play() {
-	      this.moves = this.getPossibleScores(this.board, this.depth);
+	      //this.moves = this.getPossibleScores(this.board, this.depth);
 	    }
 	  }, {
-	    key: 'getPossibleScores',
-	    value: function getPossibleScores(board, depth) {
-	      var possibleMoves = this.emptyScoresMap(tempBoard);
+	    key: 'getScores',
+	    value: function getScores(board) {
+	      return this.getMovesScores(this.cloneBoard(board));
+	    }
+	  }, {
+	    key: 'cloneBoard',
+	    value: function cloneBoard(board) {
+	      return new _BoardModel2.default(board.state);
+	    }
+	  }, {
+	    key: 'getMovesScores',
+	    value: function getMovesScores(board) {
+	      var scores = {};
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
 	      var _iteratorError = undefined;
 	
 	      try {
-	        for (var _iterator = possibleMoves[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var _step$value = _slicedToArray(_step.value, 2);
+	        for (var _iterator = board.validColumns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var move = _step.value;
 	
-	          move = _step$value[0];
-	          score = _step$value[1];
+	          scores[move] = this.getMoveScore(board, move);
 	        }
 	      } catch (err) {
 	        _didIteratorError = true;
@@ -12607,21 +12614,23 @@
 	          }
 	        }
 	      }
+	
+	      return scores;
 	    }
 	  }, {
 	    key: 'getMoveScore',
-	    value: function getMoveScore(board, move, depth) {
-	      result = tempBoard.play(move);
-	      if (result.victory && board.winner == this.player) {
+	    value: function getMoveScore(board, move) {
+	      var result = board.play(move);
+	      if (result.victory && board.winner === this.player) {
 	        return 1;
 	      }
-	      if (result.victory && board.winner != this.player) {
+	      if (result.victory && board.winner !== this.player) {
 	        return -1;
 	      }
-	      if (tempBoard.fullBoard) {
+	      if (board.fullBoard) {
 	        return 0;
 	      }
-	      return this.getPossibleScores(board, depth - 1);
+	      return 0;
 	    }
 	  }, {
 	    key: 'emptyScoresMap',
@@ -12791,6 +12800,12 @@
 	    var ai = new Ai();
 	    t.same(ai.emptyScoresMap(makeBoard('base')), makeTestMap(), 'Create a map containing (col, 0) for each column');
 	    t.same(ai.emptyScoresMap(makeBoard('noSpaceCol2')), makeTestMap([2]), 'If a column is full, do not include it in the map');
+	  });
+	
+	  test('Determine scores for next move', function (t) {
+	    t.plan(1);
+	    var ai = new Ai(1);
+	    t.same(ai.getScores(makeBoard('oneWillWinWithCol4')), [0, 0, 0, 0, 1, 0, 0]);
 	  });
 	};
 	

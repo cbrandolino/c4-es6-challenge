@@ -19,7 +19,6 @@ const aiTest = (Ai, test, fixtures, BoardModel) => {
     t.same(ai.depth, 6);
   });
 
-
   test('Empty scores array', (t) => {
     t.plan(2);
     const ai = new Ai();
@@ -29,6 +28,13 @@ const aiTest = (Ai, test, fixtures, BoardModel) => {
     t.same(ai.emptyScoresMap(makeBoard('noSpaceCol2')), makeTestMap([2]),
       'If a column is full, do not include it in the map'
     );
+  });
+
+  test('Determine scores for next move', (t) => {
+    t.plan(1);
+    const ai = new Ai(1);
+    t.same(ai.getScores(makeBoard('oneWillWinWithCol4')), [0, 0, 0, 0, 1, 0, 0])   
+
   });
 };
 
