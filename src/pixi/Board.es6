@@ -31,11 +31,14 @@ class Board extends EventEmitter {
   bootNextPlayer() {
     const player = this.boardModel.currentPlayer;
     this.currentPlayerMarble = new BoardMarbleSprite(this.stage, player);
+    this.currentPlayerMarble.once('moveComplete', () => this.moveComplete());
     if (this.ais[player]) {
       this.ais[player].board = this.boardModel;
-      console.log(this.ais[player].getScores());
+      this.ais[player].on('maxScoreReady', maxScore => {
+        this.makeMove(parseInt(maxScore));
+      });
+      this.ais[player].getMaxMoveScore();
     }
-    this.currentPlayerMarble.on('moveComplete', () => this.moveComplete());
   }
 
   makeMove(col) {

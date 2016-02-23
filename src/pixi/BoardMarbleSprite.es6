@@ -11,7 +11,6 @@ class BoardMarbleSprite extends BoardItemSprite {
     this.placeOnTarget();
     this.moveInProgress = false;
     this.aim(0);
-    this.on('moveComplete', () => this.moveInProgress = false);
   }
 
   aim(col) {
@@ -30,7 +29,8 @@ class BoardMarbleSprite extends BoardItemSprite {
       .onUpdate(((marble) =>
         function ass() { marble.y = this.y; })(this))
       .onComplete(() => { 
-        this.emit('moveComplete')
+        this.moveInProgress = false;
+        this.emit('moveComplete');
       })
       .start();
   }

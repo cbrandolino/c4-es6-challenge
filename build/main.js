@@ -5935,13 +5935,16 @@
 	
 	      var player = this.boardModel.currentPlayer;
 	      this.currentPlayerMarble = new _BoardMarbleSprite2.default(this.stage, player);
-	      if (this.ais[player]) {
-	        this.ais[player].board = this.boardModel;
-	        console.log(this.ais[player].getScores());
-	      }
-	      this.currentPlayerMarble.on('moveComplete', function () {
+	      this.currentPlayerMarble.once('moveComplete', function () {
 	        return _this3.moveComplete();
 	      });
+	      if (this.ais[player]) {
+	        this.ais[player].board = this.boardModel;
+	        this.ais[player].on('maxScoreReady', function (maxScore) {
+	          _this3.makeMove(parseInt(maxScore));
+	        });
+	        this.ais[player].getMaxMoveScore();
+	      }
 	    }
 	  }, {
 	    key: 'makeMove',
@@ -6010,13 +6013,21 @@
 	
 	var _events = __webpack_require__(195);
 	
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	function BoardException(message) {
+	  var _this = this;
+	
+	  this.message = message;
+	  this.name = 'BoardException';
+	  this.toString = function () {
+	    return _this.name + ': ' + _this.message;
+	  };
+	}
 	
 	var BoardModel = function (_EventEmitter) {
 	  _inherits(BoardModel, _EventEmitter);
@@ -6027,21 +6038,28 @@
 	
 	    _classCallCheck(this, BoardModel);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardModel).call(this));
+	    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardModel).call(this));
 	
-	    _this.state = state || _this.initializeEmptyBoard();
-	    _this.validColumns = [].concat(_toConsumableArray(_this.state.keys()));
-	    _this._currentPlayer = player;
-	    _this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
-	    _this._winner = 0;
-	    return _this;
+	    _this2.state = state || _this2.initializeEmptyBoard();
+	    _this2.initializeValidColumns();
+	    _this2._fullBoard = false;
+	    _this2._currentPlayer = player;
+	    _this2._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+	    _this2._winner = 0;
+	    return _this2;
 	  }
 	
 	  _createClass(BoardModel, [{
-	    key: 'exception',
-	    value: function exception(message) {
-	      this.message = message;
-	      this.name = 'BoardException';
+	    key: 'initializeValidColumns',
+	    value: function initializeValidColumns() {
+	      var _this3 = this;
+	
+	      this.validColumns = [];
+	      this.state.forEach(function (col, index) {
+	        if (col.indexOf(0) !== -1) {
+	          _this3.validColumns.push(index);
+	        }
+	      });
 	    }
 	  }, {
 	    key: 'initializeEmptyBoard',
@@ -6060,10 +6078,10 @@
 	    key: 'play',
 	    value: function play(col) {
 	      if (this.fullBoard) {
-	        throw this.exception('Board is full');
+	        throw new BoardException('Board is full');
 	      }
 	      if (this.validColumns.indexOf(col) === -1) {
-	        throw this.exception('Column is full');
+	        throw new BoardException('Column is full');
 	      }
 	      var player = this.currentPlayer;
 	      var row = this.firstEmptyRow(col);
@@ -33722,9 +33740,6 @@
 	    _this.placeOnTarget();
 	    _this.moveInProgress = false;
 	    _this.aim(0);
-	    _this.on('moveComplete', function () {
-	      return _this.moveInProgress = false;
-	    });
 	    return _this;
 	  }
 	
@@ -33748,6 +33763,7 @@
 	          marble.y = this.y;
 	        };
 	      }(this)).onComplete(function () {
+	        _this2.moveInProgress = false;
 	        _this2.emit('moveComplete');
 	      }).start();
 	    }
@@ -34649,6 +34665,8 @@
 	  value: true
 	});
 	
+	var _events = __webpack_require__(195);
+	
 	var _BoardModel = __webpack_require__(194);
 	
 	var _BoardModel2 = _interopRequireDefault(_BoardModel);
@@ -34657,93 +34675,42 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var AI = function () {
-	  function AI(player) {
-	    var board = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var AI = function (_EventEmitter) {
+	  _inherits(AI, _EventEmitter);
+	
+	  function AI(player) {
 	    _classCallCheck(this, AI);
 	
-	    this.player = player;
-	    this.depth = 8;
-	    this._board = null;
-	    if (board) {
-	      this.board = board;
-	    }
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(AI).call(this));
+	
+	    _this.player = player;
+	    _this.depth = 8;
+	    _this._board = null;
+	    return _this;
 	  }
 	
 	  _createClass(AI, [{
-	    key: 'play',
-	    value: function play() {
-	      this.board.play(this.getMaxMoveScore());
-	    }
-	  }, {
 	    key: 'getMaxMoveScore',
 	    value: function getMaxMoveScore() {
 	      var scores = this.getScores();
-	      console.log(scores);
-	      return Object.keys(scores).reduce(function (a, b) {
+	      var maxScore = Object.keys(scores).reduce(function (a, b) {
 	        return scores[a] > scores[b] ? a : b;
 	      });
-	    }
-	  }, {
-	    key: 'getScores',
-	    value: function getScores() {
-	      var values = {};
-	      var _iteratorNormalCompletion = true;
-	      var _didIteratorError = false;
-	      var _iteratorError = undefined;
-	
-	      try {
-	        for (var _iterator = this.board.validColumns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var move = _step.value;
-	
-	          values[move] = this.getMoveScore(this.cloneBoard(this.board), [move], this.depth);
-	        }
-	      } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion && _iterator.return) {
-	            _iterator.return();
-	          }
-	        } finally {
-	          if (_didIteratorError) {
-	            throw _iteratorError;
-	          }
-	        }
-	      }
-	
-	      return values;
-	    }
-	  }, {
-	    key: 'getMoveScore',
-	    value: function getMoveScore(board, possibleMoves, depth) {
-	      if (!possibleMoves.length) {
-	        return 0;
-	      }
-	      board.play(possibleMoves.pop());
-	      if (board.winner === this.player) {
-	        return 1 * (depth + 1);
-	      } else if (board.winner && board.winner !== this.player) {
-	        return -1 * (depth + 1) + this.getMoveScore(this.cloneBoard(this.board), possibleMoves, depth);
-	      } else if (depth === 0 || board.fullBoard) {
-	        return 0;
-	      }
-	      var clone = this.cloneBoard(board);
-	      var score = 0;
-	      var futureMoves = possibleMoves.length ? possibleMoves : clone.validColumns;
-	      while (futureMoves.length) {
-	        score += this.getMoveScore(this.cloneBoard(board), futureMoves, depth - 1);
-	      }
-	      return score;
+	      this.emit('maxScoreReady', maxScore);
+	      return maxScore;
 	    }
 	  }, {
 	    key: 'cloneBoard',
 	    value: function cloneBoard(board) {
-	      return new _BoardModel2.default(board.state.map(function (a) {
+	      var state = board.state.map(function (a) {
 	        return a.slice();
-	      }), board.currentPlayer);
+	      });
+	      var player = board.currentPlayer;
+	      return new _BoardModel2.default(state, player);
 	    }
 	  }, {
 	    key: 'emptyScoresMap',
@@ -34758,13 +34725,12 @@
 	      return this._board;
 	    },
 	    set: function set(board) {
-	      this._board = board;
-	      return board;
+	      this._board = this.cloneBoard(board);
 	    }
 	  }]);
 	
 	  return AI;
-	}();
+	}(_events.EventEmitter);
 	
 	exports.default = AI;
 

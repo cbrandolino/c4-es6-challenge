@@ -13,6 +13,7 @@ class App {
 
     this.settings = {
       players: [
+
         {
           name: 'Player 1',
           symbol: 1,

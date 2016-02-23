@@ -13,6 +13,7 @@ class BoardModel extends EventEmitter {
     super();
     this.state = state || this.initializeEmptyBoard();
     this.initializeValidColumns();
+    this._fullBoard = false; 
     this._currentPlayer = player;
     this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
     this._winner = 0;
