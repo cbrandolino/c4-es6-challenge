@@ -74,6 +74,17 @@ const boardTest = (test, fixtures, BoardModel) => {
     t.same(results, Array(6 * 7).fill(0));
   });
 
+  test('Edge cases/Final states', (t) => {
+    t.plan(2);
+    const board = new BoardModel();
+    const dupe = board.getDuplicate();
+    t.deepEqual(board.state, dupe.state,
+      "Board is cloned");
+    board.state = fixtures.boards.noSpaceCol2;
+    t.notDeepEqual(board.state, dupe.state,
+      "Clone is a deep copy");
+  });
+
   test('Edge cases/Final states', (container) => {
     const board = new BoardModel();
     container.test('Full-column edge cases', (t) => {

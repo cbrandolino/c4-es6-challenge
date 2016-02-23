@@ -12519,6 +12519,11 @@
 	      }
 	    }
 	  }, {
+	    key: 'getDuplicate',
+	    value: function getDuplicate() {
+	      return (0, _clone2.default)(this);
+	    }
+	  }, {
 	    key: 'validColumns',
 	    get: function get() {
 	      return (0, _clone2.default)(this._validColumns);
@@ -12812,6 +12817,15 @@
 	      return results.push(el.value);
 	    });
 	    t.same(results, Array(6 * 7).fill(0));
+	  });
+	
+	  test('Edge cases/Final states', function (t) {
+	    t.plan(2);
+	    var board = new BoardModel();
+	    var dupe = board.getDuplicate();
+	    t.deepEqual(board.state, dupe.state, "Board is cloned");
+	    board.state = fixtures.boards.noSpaceCol2;
+	    t.notDeepEqual(board.state, dupe.state, "Clone is a deep copy");
 	  });
 	
 	  test('Edge cases/Final states', function (container) {

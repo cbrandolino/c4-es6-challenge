@@ -116,6 +116,10 @@ class BoardModel extends EventEmitter {
     }
   }
 
+  getDuplicate() {
+    return clone(this);
+  }
+
   get validColumns() {
     return clone(this._validColumns);
   }
