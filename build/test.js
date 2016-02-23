@@ -5781,26 +5781,24 @@
 	
 	var _BoardModel2 = _interopRequireDefault(_BoardModel);
 	
-	var _Ai = __webpack_require__(248);
-	
-	var _Ai2 = _interopRequireDefault(_Ai);
-	
-	var _board = __webpack_require__(249);
+	var _board = __webpack_require__(250);
 	
 	var _board2 = _interopRequireDefault(_board);
 	
-	var _ai = __webpack_require__(250);
+	var _ai = __webpack_require__(251);
 	
 	var _ai2 = _interopRequireDefault(_ai);
 	
-	var _fixtures = __webpack_require__(251);
+	var _fixtures = __webpack_require__(252);
 	
 	var _fixtures2 = _interopRequireDefault(_fixtures);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	//boardTest(test, fixtures, BoardModel);
-	(0, _ai2.default)(_Ai2.default, _tape2.default, _fixtures2.default, _BoardModel2.default);
+	(0, _board2.default)(_tape2.default, _fixtures2.default, _BoardModel2.default);
+	//aiTest(Ai, test, fixtures, BoardModel);
+
+	//import Ai from '../src/lib/Ai.es6';
 
 /***/ },
 /* 193 */
@@ -12316,7 +12314,11 @@
 	
 	var _events = __webpack_require__(199);
 	
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	var _clone = __webpack_require__(248);
+	
+	var _clone2 = _interopRequireDefault(_clone);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -12324,29 +12326,47 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
+	function BoardException(message) {
+	  var _this = this;
+	
+	  this.message = message;
+	  this.name = 'BoardException';
+	  this.toString = function () {
+	    return _this.name + ': ' + _this.message;
+	  };
+	}
+	
 	var BoardModel = function (_EventEmitter) {
 	  _inherits(BoardModel, _EventEmitter);
 	
 	  function BoardModel() {
 	    var state = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+	    var player = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
 	
 	    _classCallCheck(this, BoardModel);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardModel).call(this));
+	    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardModel).call(this));
 	
-	    _this.state = state || _this.initializeEmptyBoard();
-	    _this.validColumns = [].concat(_toConsumableArray(_this.state.keys()));
-	    _this._currentPlayer = 1;
-	    _this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
-	    _this._winner = 0;
-	    return _this;
+	    _this2.state = state || _this2.initializeEmptyBoard();
+	    _this2.initializeValidColumns();
+	    _this2._fullBoard = false;
+	    _this2._currentPlayer = player;
+	    _this2._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+	    _this2._winner = 0;
+	    return _this2;
 	  }
 	
 	  _createClass(BoardModel, [{
-	    key: 'exception',
-	    value: function exception(message) {
-	      this.message = message;
-	      this.name = 'BoardException';
+	    key: 'initializeValidColumns',
+	    value: function initializeValidColumns() {
+	      var _this3 = this;
+	
+	      this._validColumns = [];
+	      this.state.forEach(function (col, index) {
+	        if (col.indexOf(0) !== -1) {
+	          _this3._validColumns.push(index);
+	        }
+	      });
 	    }
 	  }, {
 	    key: 'initializeEmptyBoard',
@@ -12365,10 +12385,10 @@
 	    key: 'play',
 	    value: function play(col) {
 	      if (this.fullBoard) {
-	        throw this.exception('Board is full');
+	        throw new BoardException('Board is full');
 	      }
 	      if (this.validColumns.indexOf(col) === -1) {
-	        throw this.exception('Column is full');
+	        throw new BoardException('Column is full');
 	      }
 	      var player = this.currentPlayer;
 	      var row = this.firstEmptyRow(col);
@@ -12499,6 +12519,14 @@
 	      }
 	    }
 	  }, {
+	    key: 'validColumns',
+	    get: function get() {
+	      return (0, _clone2.default)(this._validColumns);
+	    },
+	    set: function set(columns) {
+	      this._validColumns = columns;
+	    }
+	  }, {
 	    key: 'winner',
 	    get: function get() {
 	      return this._winner;
@@ -12546,148 +12574,170 @@
 /* 248 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	/* WEBPACK VAR INJECTION */(function(Buffer, module) {'use strict';
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
+	var clone = function () {
+	  'use strict';
 	
-	var _BoardModel = __webpack_require__(247);
+	  /**
+	   * Clones (copies) an Object using deep copying.
+	   *
+	   * This function supports circular references by default, but if you are certain
+	   * there are no circular references in your object, you can save some CPU time
+	   * by calling clone(obj, false).
+	   *
+	   * Caution: if `circular` is false and `parent` contains circular references,
+	   * your program may enter an infinite loop and crash.
+	   *
+	   * @param `parent` - the object to be cloned
+	   * @param `circular` - set to true if the object to be cloned may contain
+	   *    circular references. (optional - true by default)
+	   * @param `depth` - set to a number if the object is only to be cloned to
+	   *    a particular depth. (optional - defaults to Infinity)
+	   * @param `prototype` - sets the prototype to be used when cloning an object.
+	   *    (optional - defaults to parent prototype).
+	  */
 	
-	var _BoardModel2 = _interopRequireDefault(_BoardModel);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var AI = function () {
-	  function AI(player) {
-	    var board = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
-	
-	    _classCallCheck(this, AI);
-	
-	    this.player = player;
-	    this.depth = 6;
-	    this._board = null;
-	    if (board) {
-	      this.board = board;
+	  function clone(parent, circular, depth, prototype) {
+	    var filter;
+	    if ((typeof circular === 'undefined' ? 'undefined' : _typeof(circular)) === 'object') {
+	      depth = circular.depth;
+	      prototype = circular.prototype;
+	      filter = circular.filter;
+	      circular = circular.circular;
 	    }
+	    // maintain two arrays for circular references, where corresponding parents
+	    // and children have the same index
+	    var allParents = [];
+	    var allChildren = [];
+	
+	    var useBuffer = typeof Buffer != 'undefined';
+	
+	    if (typeof circular == 'undefined') circular = true;
+	
+	    if (typeof depth == 'undefined') depth = Infinity;
+	
+	    // recurse this function so we don't reset allParents and allChildren
+	    function _clone(parent, depth) {
+	      // cloning null always returns null
+	      if (parent === null) return null;
+	
+	      if (depth == 0) return parent;
+	
+	      var child;
+	      var proto;
+	      if ((typeof parent === 'undefined' ? 'undefined' : _typeof(parent)) != 'object') {
+	        return parent;
+	      }
+	
+	      if (clone.__isArray(parent)) {
+	        child = [];
+	      } else if (clone.__isRegExp(parent)) {
+	        child = new RegExp(parent.source, __getRegExpFlags(parent));
+	        if (parent.lastIndex) child.lastIndex = parent.lastIndex;
+	      } else if (clone.__isDate(parent)) {
+	        child = new Date(parent.getTime());
+	      } else if (useBuffer && Buffer.isBuffer(parent)) {
+	        child = new Buffer(parent.length);
+	        parent.copy(child);
+	        return child;
+	      } else {
+	        if (typeof prototype == 'undefined') {
+	          proto = Object.getPrototypeOf(parent);
+	          child = Object.create(proto);
+	        } else {
+	          child = Object.create(prototype);
+	          proto = prototype;
+	        }
+	      }
+	
+	      if (circular) {
+	        var index = allParents.indexOf(parent);
+	
+	        if (index != -1) {
+	          return allChildren[index];
+	        }
+	        allParents.push(parent);
+	        allChildren.push(child);
+	      }
+	
+	      for (var i in parent) {
+	        var attrs;
+	        if (proto) {
+	          attrs = Object.getOwnPropertyDescriptor(proto, i);
+	        }
+	
+	        if (attrs && attrs.set == null) {
+	          continue;
+	        }
+	        child[i] = _clone(parent[i], depth - 1);
+	      }
+	
+	      return child;
+	    }
+	
+	    return _clone(parent, depth);
 	  }
 	
-	  _createClass(AI, [{
-	    key: 'play',
-	    value: function play() {
-	      this.board.play(this.getMaxMoveScore);
-	    }
-	  }, {
-	    key: 'getMaxMoveScore',
-	    value: function getMaxMoveScore() {
-	      var scores = this.getScores();
-	      console.log('scores');
-	      return Object.keys(scores).reduce(function (a, b) {
-	        return scores[a] > scores[b] ? a : b;
-	      });
-	    }
-	  }, {
-	    key: 'getScores',
-	    value: function getScores() {
-	      var values = {};
-	      var _iteratorNormalCompletion = true;
-	      var _didIteratorError = false;
-	      var _iteratorError = undefined;
+	  /**
+	   * Simple flat clone using prototype, accepts only objects, usefull for property
+	   * override on FLAT configuration object (no nested props).
+	   *
+	   * USE WITH CAUTION! This may not behave as you wish if you do not know how this
+	   * works.
+	   */
+	  clone.clonePrototype = function clonePrototype(parent) {
+	    if (parent === null) return null;
 	
-	      try {
-	        for (var _iterator = this.board.validColumns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var move = _step.value;
+	    var c = function c() {};
+	    c.prototype = parent;
+	    return new c();
+	  };
 	
-	          values[move] = this.getMoveScore(this.board, move, this.depth);
-	        }
-	      } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion && _iterator.return) {
-	            _iterator.return();
-	          }
-	        } finally {
-	          if (_didIteratorError) {
-	            throw _iteratorError;
-	          }
-	        }
-	      }
+	  // private utility functions
 	
-	      return values;
-	    }
-	  }, {
-	    key: 'getMoveScore',
-	    value: function getMoveScore(board, move, depth) {
-	      var testBoard = this.cloneBoard(board);
-	      testBoard.play(move);
-	      if (testBoard.winner === this.player) {
-	        return 1 * (depth + 1);
-	      } else if (testBoard.winner && testBoard.winner !== this.player) {
-	        return -1 * (depth + 1);
-	      } else if (depth === 0 || testBoard.fullBoard) {
-	        return 0;
-	      }
-	      var _iteratorNormalCompletion2 = true;
-	      var _didIteratorError2 = false;
-	      var _iteratorError2 = undefined;
+	  function __objToStr(o) {
+	    return Object.prototype.toString.call(o);
+	  };
+	  clone.__objToStr = __objToStr;
 	
-	      try {
-	        for (var _iterator2 = testBoard.validColumns[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	          var nextMove = _step2.value;
+	  function __isDate(o) {
+	    return (typeof o === 'undefined' ? 'undefined' : _typeof(o)) === 'object' && __objToStr(o) === '[object Date]';
+	  };
+	  clone.__isDate = __isDate;
 	
-	          return this.getMoveScore(testBoard, nextMove, depth - 1);
-	        }
-	      } catch (err) {
-	        _didIteratorError2 = true;
-	        _iteratorError2 = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	            _iterator2.return();
-	          }
-	        } finally {
-	          if (_didIteratorError2) {
-	            throw _iteratorError2;
-	          }
-	        }
-	      }
-	    }
-	  }, {
-	    key: 'cloneBoard',
-	    value: function cloneBoard(board) {
-	      return new _BoardModel2.default(board.state);
-	    }
-	  }, {
-	    key: 'emptyScoresMap',
-	    value: function emptyScoresMap(board) {
-	      return new Map(board.validColumns.map(function (el) {
-	        return [el, 0];
-	      }));
-	    }
-	  }, {
-	    key: 'board',
-	    get: function get() {
-	      return this._board;
-	    },
-	    set: function set(board) {
-	      this._board = board;
-	      return board;
-	    }
-	  }]);
+	  function __isArray(o) {
+	    return (typeof o === 'undefined' ? 'undefined' : _typeof(o)) === 'object' && __objToStr(o) === '[object Array]';
+	  };
+	  clone.__isArray = __isArray;
 	
-	  return AI;
+	  function __isRegExp(o) {
+	    return (typeof o === 'undefined' ? 'undefined' : _typeof(o)) === 'object' && __objToStr(o) === '[object RegExp]';
+	  };
+	  clone.__isRegExp = __isRegExp;
+	
+	  function __getRegExpFlags(re) {
+	    var flags = '';
+	    if (re.global) flags += 'g';
+	    if (re.ignoreCase) flags += 'i';
+	    if (re.multiline) flags += 'm';
+	    return flags;
+	  };
+	  clone.__getRegExpFlags = __getRegExpFlags;
+	
+	  return clone;
 	}();
 	
-	exports.default = AI;
+	if (( false ? 'undefined' : _typeof(module)) === 'object' && module.exports) {
+	  module.exports = clone;
+	}
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(204).Buffer, __webpack_require__(190)(module)))
 
 /***/ },
-/* 249 */
+/* 249 */,
+/* 250 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -12718,11 +12768,11 @@
 	    var moveResult = board.play(0);
 	    t.plan(5);
 	    t.comment('A throw is executed on a column');
-	    t.same(moveResult, { col: 0, row: 0, player: 1 }, 'A thrown in a column should reach its lowest free cell');
+	    t.same(moveResult, { col: 0, row: 0, player: 1, victory: false }, 'A thrown in a column should reach its lowest free cell');
 	    t.equals(board.currentPlayer, -1, 'Player should switch automatically after one throw');
 	    t.same(board.state, fixtures.boards.first);
 	    moveResult = board.play(1);
-	    t.same(moveResult, { col: 1, row: 0, player: -1 });
+	    t.same(moveResult, { col: 1, row: 0, player: -1, victory: false });
 	    t.same(board.state, fixtures.boards.second, 'The board is updated correctly afer one throw');
 	  });
 	
@@ -12787,10 +12837,11 @@
 	    });
 	  });
 	};
+	
 	exports.default = boardTest;
 
 /***/ },
-/* 250 */
+/* 251 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -12852,7 +12903,7 @@
 	exports.default = aiTest;
 
 /***/ },
-/* 251 */
+/* 252 */
 /***/ function(module, exports) {
 
 	"use strict";

@@ -22,13 +22,13 @@ const boardTest = (test, fixtures, BoardModel) => {
     let moveResult = board.play(0);
     t.plan(5);
     t.comment('A throw is executed on a column');
-    t.same(moveResult, { col: 0, row: 0, player: 1 },
+    t.same(moveResult, { col: 0, row: 0, player: 1, victory: false },
       'A thrown in a column should reach its lowest free cell');
     t.equals(board.currentPlayer, -1,
       'Player should switch automatically after one throw');
     t.same(board.state, fixtures.boards.first);
     moveResult = board.play(1);
-    t.same(moveResult, { col: 1, row: 0, player: -1 });
+    t.same(moveResult, { col: 1, row: 0, player: -1, victory: false });
     t.same(board.state, fixtures.boards.second,
       'The board is updated correctly afer one throw');
   });
@@ -99,5 +99,6 @@ const boardTest = (test, fixtures, BoardModel) => {
       );
     });
   });
-}
+};
+
 export default boardTest;

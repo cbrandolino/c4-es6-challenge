@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import clone from 'clone';
 
 function BoardException(message) {
   this.message = message;
@@ -13,17 +14,17 @@ class BoardModel extends EventEmitter {
     super();
     this.state = state || this.initializeEmptyBoard();
     this.initializeValidColumns();
-    this._fullBoard = false; 
+    this._fullBoard = false;
     this._currentPlayer = player;
     this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
     this._winner = 0;
   }
 
   initializeValidColumns() {
-    this.validColumns = [];
+    this._validColumns = [];
     this.state.forEach((col, index) => {
       if (col.indexOf(0) !== -1) {
-        this.validColumns.push(index);
+        this._validColumns.push(index);
       }
     });
   }
@@ -113,6 +114,14 @@ class BoardModel extends EventEmitter {
         callback({ row, col, value: this.cellValue(row, col) });
       }
     }
+  }
+
+  get validColumns() {
+    return clone(this._validColumns);
+  }
+
+  set validColumns(columns) {
+    this._validColumns = columns;
   }
 
   get winner() {
