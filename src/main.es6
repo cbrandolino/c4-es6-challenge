@@ -5,6 +5,27 @@ import TWEEN from 'tween.js';
 class App {
 
   constructor() {
+    this.playerTypes = {
+      human: 'Human',
+      ai1: 'Marvin',
+      ai2: 'HAL',
+    };
+
+    this.settings = {
+      players: [
+
+        {
+          name: 'Player 1',
+          symbol: 1,
+          type: 'human',
+        },
+        {
+          name: 'Player 2',
+          symbol: -1,
+          type: 'ai1',
+        },
+      ],
+    };
     this.stages = { Board, Menu };
     this.renderer = PIXI.autoDetectRenderer(600, 470);
     document.body.appendChild(this.renderer.view);
@@ -14,9 +35,9 @@ class App {
 
   changeStage(stageName) {
     if (this.currentStage) {
-      this.currentStage.destroy();
+      this.currentStage.stage.destroy();
     }
-    this.currentStage = new this.stages[stageName]();
+    this.currentStage = new this.stages[stageName](this.settings);
     this.currentStage.once('changestage', (newStageName) =>
       this.changeStage(newStageName)
     );

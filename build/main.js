@@ -5795,6 +5795,23 @@
 	  function App() {
 	    _classCallCheck(this, App);
 	
+	    this.playerTypes = {
+	      human: 'Human',
+	      ai1: 'Marvin',
+	      ai2: 'HAL'
+	    };
+	
+	    this.settings = {
+	      players: [{
+	        name: 'Player 1',
+	        symbol: 1,
+	        type: 'human'
+	      }, {
+	        name: 'Player 2',
+	        symbol: -1,
+	        type: 'ai1'
+	      }]
+	    };
 	    this.stages = { Board: _Board2.default, Menu: _Menu2.default };
 	    this.renderer = PIXI.autoDetectRenderer(600, 470);
 	    document.body.appendChild(this.renderer.view);
@@ -5808,9 +5825,9 @@
 	      var _this = this;
 	
 	      if (this.currentStage) {
-	        this.currentStage.destroy();
+	        this.currentStage.stage.destroy();
 	      }
-	      this.currentStage = new this.stages[stageName]();
+	      this.currentStage = new this.stages[stageName](this.settings);
 	      this.currentStage.once('changestage', function (newStageName) {
 	        return _this.changeStage(newStageName);
 	      });
@@ -5857,6 +5874,10 @@
 	
 	var _BoardMarbleSprite2 = _interopRequireDefault(_BoardMarbleSprite);
 	
+	var _Ai = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"../lib/Ai.es6\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	
+	var _Ai2 = _interopRequireDefault(_Ai);
+	
 	var _events = __webpack_require__(195);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -5870,13 +5891,15 @@
 	var Board = function (_EventEmitter) {
 	  _inherits(Board, _EventEmitter);
 	
-	  function Board() {
+	  function Board(settings) {
 	    _classCallCheck(this, Board);
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Board).call(this));
 	
+	    _this.settings = settings;
 	    _this.boardModel = new _BoardModel2.default();
 	    _this.stage = new PIXI.Container();
+	    _this.setUpAis();
 	    _this.bootNextPlayer();
 	    _this.renderCells();
 	    return _this;
@@ -5912,9 +5935,16 @@
 	
 	      var player = this.boardModel.currentPlayer;
 	      this.currentPlayerMarble = new _BoardMarbleSprite2.default(this.stage, player);
-	      this.currentPlayerMarble.on('moveComplete', function () {
+	      this.currentPlayerMarble.once('moveComplete', function () {
 	        return _this3.moveComplete();
 	      });
+	      if (this.ais[player]) {
+	        this.ais[player].board = this.boardModel;
+	        this.ais[player].on('maxScoreReady', function (maxScore) {
+	          _this3.makeMove(parseInt(maxScore));
+	        });
+	        this.ais[player].getMaxMoveScore();
+	      }
 	    }
 	  }, {
 	    key: 'makeMove',
@@ -5927,6 +5957,37 @@
 	      if (result) {
 	        this.currentPlayerMarble.coords = result;
 	        this.currentPlayerMarble.fire();
+	      }
+	    }
+	  }, {
+	    key: 'setUpAis',
+	    value: function setUpAis() {
+	      this.ais = {};
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+	
+	      try {
+	        for (var _iterator = this.settings.players[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var player = _step.value;
+	
+	          if (player.type !== 'human') {
+	            this.ais[player.symbol] = new _Ai2.default(player.symbol);
+	          }
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
 	      }
 	    }
 	  }]);
@@ -5952,37 +6013,53 @@
 	
 	var _events = __webpack_require__(195);
 	
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
+	function BoardException(message) {
+	  var _this = this;
+	
+	  this.message = message;
+	  this.name = 'BoardException';
+	  this.toString = function () {
+	    return _this.name + ': ' + _this.message;
+	  };
+	}
+	
 	var BoardModel = function (_EventEmitter) {
 	  _inherits(BoardModel, _EventEmitter);
 	
 	  function BoardModel() {
 	    var state = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+	    var player = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
 	
 	    _classCallCheck(this, BoardModel);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardModel).call(this));
+	    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(BoardModel).call(this));
 	
-	    _this.state = state || _this.initializeEmptyBoard();
-	    _this.validColumns = [].concat(_toConsumableArray(_this.state.keys()));
-	    _this._currentPlayer = 1;
-	    _this._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
-	    _this._winner = 0;
-	    return _this;
+	    _this2.state = state || _this2.initializeEmptyBoard();
+	    _this2.initializeValidColumns();
+	    _this2._fullBoard = false;
+	    _this2._currentPlayer = player;
+	    _this2._possibleDirections = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+	    _this2._winner = 0;
+	    return _this2;
 	  }
 	
 	  _createClass(BoardModel, [{
-	    key: 'exception',
-	    value: function exception(message) {
-	      this.message = message;
-	      this.name = 'BoardException';
+	    key: 'initializeValidColumns',
+	    value: function initializeValidColumns() {
+	      var _this3 = this;
+	
+	      this.validColumns = [];
+	      this.state.forEach(function (col, index) {
+	        if (col.indexOf(0) !== -1) {
+	          _this3.validColumns.push(index);
+	        }
+	      });
 	    }
 	  }, {
 	    key: 'initializeEmptyBoard',
@@ -6001,10 +6078,10 @@
 	    key: 'play',
 	    value: function play(col) {
 	      if (this.fullBoard) {
-	        throw this.exception('Board is full');
+	        throw new BoardException('Board is full');
 	      }
 	      if (this.validColumns.indexOf(col) === -1) {
-	        throw this.exception('Column is full');
+	        throw new BoardException('Column is full');
 	      }
 	      var player = this.currentPlayer;
 	      var row = this.firstEmptyRow(col);
@@ -33663,9 +33740,6 @@
 	    _this.placeOnTarget();
 	    _this.moveInProgress = false;
 	    _this.aim(0);
-	    _this.on('moveComplete', function () {
-	      return _this.moveInProgress = false;
-	    });
 	    return _this;
 	  }
 	
@@ -33689,6 +33763,7 @@
 	          marble.y = this.y;
 	        };
 	      }(this)).onComplete(function () {
+	        _this2.moveInProgress = false;
 	        _this2.emit('moveComplete');
 	      }).start();
 	    }
@@ -34527,8 +34602,6 @@
 
 	'use strict';
 	
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	Object.defineProperty(exports, "__esModule", {
@@ -34561,34 +34634,17 @@
 	    value: function makeButtons() {
 	      var _this2 = this;
 	
-	      var buttons = [['Play', 'play']];
-	      buttons.forEach(function (buttonData) {
-	        return _this2.makeButton(buttonData);
+	      this.makeButton('Play', function () {
+	        return _this2.emit('changestage', 'Board');
 	      });
 	    }
 	  }, {
 	    key: 'makeButton',
-	    value: function makeButton(_ref) {
-	      var _this3 = this;
-	
-	      var _ref2 = _slicedToArray(_ref, 2);
-	
-	      var text = _ref2[0];
-	      var handle = _ref2[1];
-	
+	    value: function makeButton(text, click, selected) {
 	      var button = new PIXI.Text(text, { font: '24px Arial', fill: 0xff1010, align: 'center' });
 	      button.interactive = true;
-	      button.on('click', function () {
-	        return _this3.buttonClicked(handle);
-	      });
+	      button.on('click', click);
 	      this.stage.addChild(button);
-	    }
-	  }, {
-	    key: 'buttonClicked',
-	    value: function buttonClicked(handle) {
-	      if (handle === 'play') {
-	        this.emit('changestage', 'Board');
-	      }
 	    }
 	  }]);
 	
